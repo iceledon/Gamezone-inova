@@ -62,11 +62,18 @@ public class ProductService {
     }
 
     private void rejectIfIdExists(String id) {
+        if (find(id) != null) {
+            throw new IllegalArgumentException("Product id already exists: " + id);
+        }
+    }
+
+    private Product find(String id) {
         for (Product product : products) {
             if (product.getId().equals(id)) {
-                throw new IllegalArgumentException("Product id already exists: " + id);
+                return product;
             }
         }
+        return null;
     }
 
     /**
@@ -82,12 +89,11 @@ public class ProductService {
      * @throws NoSuchElementException if no product has that id
      */
     public Product findById(String id) {
-        for (Product product : products) {
-            if (product.getId().equals(id)) {
-                return product;
-            }
+        Product product = find(id);
+        if (product == null) {
+            throw new NoSuchElementException("Product not found: " + id);
         }
-        throw new NoSuchElementException("Product not found: " + id);
+        return product;
     }
 
     /**
