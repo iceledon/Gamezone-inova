@@ -86,4 +86,14 @@ public abstract class Product {
      * @return a full description of the product, including its specific characteristics
      */
     public abstract String getDescription();
+
+    /**
+     * Subtracts the given amount from the available quantity.
+     * Stock validation is the responsibility of the service layer, not this class.
+     *
+     * @param amount units to remove from inventory
+     */
+    public void decreaseStock(int amount) {
+        this.quantity = this.quantity - amount;
+    }
 }
