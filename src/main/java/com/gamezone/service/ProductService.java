@@ -7,6 +7,7 @@ import com.gamezone.persistence.ProductRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Business rules for managing products.
@@ -63,5 +64,31 @@ public class ProductService {
      */
     public List<Product> listAll() {
         return new ArrayList<>(products);
+    }
+
+    /**
+     * @param id unique identifier of the product to find
+     * @return the product with the given id
+     * @throws NoSuchElementException if no product has that id
+     */
+    public Product findById(String id) {
+        for (Product product : products) {
+            if (product.getId().equals(id)) {
+                return product;
+            }
+        }
+        throw new NoSuchElementException("Product not found: " + id);
+    }
+
+    /**
+     * Decreases the stock of the given product and persists the change.
+     *
+     * @param productId unique identifier of the product
+     * @param amount    units to remove from inventory
+     */
+    public void updateStock(String productId, int amount) {
+        Product product = findById(productId);
+        product.decreaseStock(amount);
+        repository.save(products);
     }
 }
