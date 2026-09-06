@@ -38,6 +38,7 @@ public class ProductService {
      */
     public void registerVideoGame(String id, String title, double price, int quantity,
                                    String platform, String genre, String ageRating) {
+        rejectIfIdExists(id);
         products.add(new VideoGame(id, title, price, quantity, platform, genre, ageRating));
         repository.save(products);
     }
@@ -55,8 +56,17 @@ public class ProductService {
      */
     public void registerConsole(String id, String title, double price, int quantity,
                                  String brand, String model, int generation) {
+        rejectIfIdExists(id);
         products.add(new Console(id, title, price, quantity, brand, model, generation));
         repository.save(products);
+    }
+
+    private void rejectIfIdExists(String id) {
+        for (Product product : products) {
+            if (product.getId().equals(id)) {
+                throw new IllegalArgumentException("Product id already exists: " + id);
+            }
+        }
     }
 
     /**
