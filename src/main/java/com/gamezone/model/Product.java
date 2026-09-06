@@ -81,4 +81,9 @@ public abstract class Product {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    /**
+     * @return a full description of the product, including its specific characteristics
+     */
+    public abstract String getDescription();
 }
