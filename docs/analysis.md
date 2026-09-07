@@ -86,3 +86,38 @@ against the available `quantity` of the product. Only if every check passes does
 affected product and persists the new inventory state through `ProductRepository`. The classes
 involved are therefore `SaleService` as the orchestrator, `ProductService` and `Product` for the
 stock update itself, and `ProductRepository` and `SaleRepository` to persist the resulting state.
+
+## Layered organization
+
+### Q9: The system must be organized into four layers: model, persistence, services, and user interface. What type of classes belong in each layer? What criterion allows one to decide in which layer a class should be placed?
+
+The `model` layer holds the pure domain entities — `Person`, `Customer`, `Seller`, `Product`,
+`VideoGame`, `Console` and `Sale` — which know their own state and behavior but perform no
+input/output. The `persistence` layer holds the classes that read and write those entities to the
+plain-text files under `data/`: `PersonRepository`, `ProductRepository` and `SaleRepository`. The
+`service` layer holds the classes that enforce the business rules and coordinate persistence:
+`PersonService`, `ProductService` and `SaleService`. The `ui` layer holds `ConsoleUI`, the only
+class that talks to the end user. The criterion for placing a class is its responsibility: does it
+represent business data, does it move data to and from storage, does it decide what is allowed, or
+does it interact with the person sitting at the keyboard?
+
+### Q10: Why should the logic for saving and retrieving data from files not be inside the domain classes? What problems arise when these responsibilities are mixed?
+
+Domain classes must model business concepts, not storage formats. If `Product` knew how to write
+itself to a file, three problems would appear at once: changing the persistence format would force
+edits to the domain classes, which have nothing to do with that decision; testing the business
+logic would require a real file system instead of plain objects in memory; and the class would have
+two reasons to change — a business one and a technical one — which is exactly what the single
+responsibility principle forbids. Isolating that logic in the `persistence` layer means the storage
+mechanism can be replaced without a single change to the model.
+
+### Q11: What dependencies are allowed between the layers, and which are forbidden? Justify the meaning of the allowed dependencies.
+
+The allowed dependencies are `ui → service`, `service → persistence`, `service → model` and
+`persistence → model`. The `model` layer depends on nothing. Every dependency in the opposite
+direction is forbidden: the model must never reference a repository, a service or the console, and
+the persistence layer must never call a service. Skipping a layer is forbidden as well — `ConsoleUI`
+never instantiates a repository directly, it always goes through a service. This inward flow keeps
+the domain at the stable core of the application while the outer layers, which are the ones most
+likely to change, depend on it and not the reverse; it also prevents circular dependencies and
+allows each layer to be tested or replaced on its own.
