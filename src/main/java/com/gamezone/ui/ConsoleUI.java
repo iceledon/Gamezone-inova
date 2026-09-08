@@ -2,11 +2,13 @@ package com.gamezone.ui;
 
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
+import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -54,6 +56,7 @@ public class ConsoleUI {
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
+                case "3" -> showSaleMenu();
                 case "4" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
@@ -211,6 +214,106 @@ public class ConsoleUI {
                     seller.getId(), seller.getName(), seller.getRoleDescription(),
                     seller.getEmployeeCode(), seller.getShift());
         }
+    }
+
+    /**
+     * Shows the sales submenu until the user goes back.
+     */
+    private void showSaleMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de ventas ---");
+            System.out.println("1. Registrar venta");
+            System.out.println("2. Historial completo de ventas");
+            System.out.println("3. Historial por cliente");
+            System.out.println("4. Historial por vendedor");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> registerSale();
+                case "2" -> showAllSales();
+                case "3" -> showSalesByCustomer();
+                case "4" -> showSalesBySeller();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Asks for the data of a sale and registers it.
+     */
+    private void registerSale() {
+        try {
+            String customerId = ask("Identificacion del cliente: ");
+            String sellerId = ask("Identificacion del vendedor: ");
+            int units = askInt("Cantidad de productos a vender: ");
+            List<String> productIds = new ArrayList<>();
+            for (int i = 1; i <= units; i++) {
+                productIds.add(ask("Codigo del producto " + i + ": "));
+            }
+            Sale sale = saleService.registerSale(customerId, sellerId, productIds);
+            System.out.println("Venta registrada correctamente.");
+            printSale(sale);
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la venta: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Prints the complete sales history.
+     */
+    private void showAllSales() {
+        printSales(saleService.getAllSales(), "No hay ventas registradas.");
+    }
+
+    /**
+     * Prints the sales history of one customer.
+     */
+    private void showSalesByCustomer() {
+        String customerId = ask("Identificacion del cliente: ");
+        printSales(saleService.getSalesByCustomer(customerId), "Este cliente no tiene compras registradas.");
+    }
+
+    /**
+     * Prints the sales history of one seller.
+     */
+    private void showSalesBySeller() {
+        String sellerId = ask("Identificacion del vendedor: ");
+        printSales(saleService.getSalesBySeller(sellerId), "Este vendedor no tiene ventas registradas.");
+    }
+
+    /**
+     * Prints a list of sales, or a message when the list is empty.
+     *
+     * @param sales        the sales to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printSales(List<Sale> sales, String emptyMessage) {
+        if (sales.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Sale sale : sales) {
+            printSale(sale);
+        }
+    }
+
+    /**
+     * Prints the detail of a single sale, including its products and total.
+     *
+     * @param sale the sale to print
+     */
+    private void printSale(Sale sale) {
+        System.out.printf("%nVenta %s | Fecha: %s%n", sale.getId(), sale.getDate());
+        System.out.printf("  Cliente:  [%s] %s%n", sale.getCustomer().getId(), sale.getCustomer().getName());
+        System.out.printf("  Vendedor: [%s] %s%n", sale.getSeller().getId(), sale.getSeller().getName());
+        System.out.println("  Productos:");
+        for (Product product : sale.getProducts()) {
+            System.out.printf("    - [%s] %s ($%.2f)%n", product.getId(), product.getTitle(), product.getPrice());
+        }
+        System.out.printf("  Total: $%.2f%n", sale.calculateTotal());
     }
 
     /**
