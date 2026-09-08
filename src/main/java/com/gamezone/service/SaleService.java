@@ -17,7 +17,8 @@ import java.util.Map;
  * <p>
  * This is the class that owns the business rules of the workshop: a sale needs at least
  * one product, every participant and product must exist, and there must be enough stock
- * for every unit requested.
+ * for every unit requested. Only when all of them hold does the sale get created, the
+ * inventory get updated and the result persisted.
  */
 public class SaleService {
 
@@ -45,8 +46,8 @@ public class SaleService {
     }
 
     /**
-     * Registers a new sale after validating every business rule, and persists the updated
-     * history.
+     * Registers a new sale after validating every business rule, then discounts the sold
+     * units from the inventory and persists the updated history.
      *
      * @param customerId the id of the customer making the purchase
      * @param sellerId   the id of the seller handling the sale
@@ -91,6 +92,11 @@ public class SaleService {
         }
 
         Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
+
+        for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
+            productService.updateStock(entry.getKey(), entry.getValue());
+        }
+
         sales.add(sale);
         repository.save(sales);
         return sale;
