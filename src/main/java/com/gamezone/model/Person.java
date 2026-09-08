@@ -20,4 +20,6 @@ public abstract class Person {
     public void setName(String name) { this.name = name; }
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
+
+    public abstract String getRoleDescription();
 }
