@@ -10,7 +10,8 @@ import java.util.List;
  * <p>
  * The sale is associated with exactly one customer and one seller, and aggregates the
  * products it sold: those products keep existing in the inventory independently of the
- * sale.
+ * sale. The sale computes its own total because the data needed for that calculation is
+ * data it already owns.
  */
 public class Sale {
 
@@ -89,5 +90,19 @@ public class Sale {
      */
     public List<Product> getProducts() {
         return products;
+    }
+
+    /**
+     * Calculates the total amount of this sale by adding up the price of every unit it
+     * contains.
+     *
+     * @return the total amount of the sale
+     */
+    public double calculateTotal() {
+        double total = 0.0;
+        for (Product product : products) {
+            total += product.getPrice();
+        }
+        return total;
     }
 }
