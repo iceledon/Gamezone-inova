@@ -105,4 +105,19 @@ public class Sale {
         }
         return total;
     }
+
+    /**
+     * Revisa si esta venta todavia se puede devolver, es decir, si no han pasado mas de
+     * 30 dias calendario desde que se hizo. Ese es el plazo maximo que da la tienda.
+     *
+     * @return true si todavia se puede devolver, false si ya paso el plazo
+     */
+    public boolean canBeReturned() {
+        LocalDate limitDate = this.date.plusDays(30);
+        LocalDate today = LocalDate.now();
+        if (today.isAfter(limitDate)) {
+            return false;
+        }
+        return true;
+    }
 }

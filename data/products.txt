@@ -1,2 +1,2 @@
-VIDEOGAME;VG001;The Legend of Zelda Tears of the Kingdom;259900.0;4;Nintendo Switch;Aventura;E10+
+VIDEOGAME;VG001;The Legend of Zelda Tears of the Kingdom;259900.0;5;Nintendo Switch;Aventura;E10+
 CONSOLE;CN001;Nintendo Switch OLED;1499900.0;2;Nintendo;OLED;2

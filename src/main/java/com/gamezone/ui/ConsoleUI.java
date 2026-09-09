@@ -2,10 +2,12 @@ package com.gamezone.ui;
 
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
+import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 
 import java.util.ArrayList;
@@ -24,19 +26,23 @@ public class ConsoleUI {
     private final ProductService productService;
     private final PersonService personService;
     private final SaleService saleService;
+    private final ReturnService returnService;
     private final Scanner scanner;
 
     /**
-     * Creates the console interface with the services it delegates to.
+     * Crea la interfaz de consola con los servicios a los que delega.
      *
-     * @param productService the service that handles products
-     * @param personService  the service that handles customers and sellers
-     * @param saleService    the service that handles sales
+     * @param productService servicio que maneja los productos
+     * @param personService  servicio que maneja clientes y vendedores
+     * @param saleService    servicio que maneja las ventas
+     * @param returnService  servicio que maneja las devoluciones
      */
-    public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService) {
+    public ConsoleUI(ProductService productService, PersonService personService,
+                     SaleService saleService, ReturnService returnService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
+        this.returnService = returnService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -51,13 +57,15 @@ public class ConsoleUI {
             System.out.println("1. Gestion de productos");
             System.out.println("2. Gestion de personas");
             System.out.println("3. Gestion de ventas");
-            System.out.println("4. Salir");
+            System.out.println("4. Gestion de devoluciones");
+            System.out.println("5. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
                 case "3" -> showSaleMenu();
-                case "4" -> {
+                case "4" -> showReturnMenu();
+                case "5" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -356,6 +364,117 @@ public class ConsoleUI {
             return Double.parseDouble(value);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Se esperaba un numero y se recibio '" + value + "'.");
+        }
+    }
+
+    /**
+     * Muestra el submenu de devoluciones hasta que el usuario decide volver.
+     */
+    private void showReturnMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de devoluciones ---");
+            System.out.println("1. Registrar devolucion");
+            System.out.println("2. Listar todas las devoluciones");
+            System.out.println("3. Devoluciones por cliente");
+            System.out.println("4. Devoluciones por venta");
+            System.out.println("5. Balance mensual");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> registerReturn();
+                case "2" -> showAllReturns();
+                case "3" -> showReturnsByCustomer();
+                case "4" -> showReturnsBySale();
+                case "5" -> showMonthlyBalance();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Pide los datos de una devolucion y la registra.
+     */
+    private void registerReturn() {
+        try {
+            String saleId = ask("Identificacion de la venta original: ");
+            int units = askInt("Cantidad de productos a devolver: ");
+            List<String> productIds = new ArrayList<>();
+            for (int i = 1; i <= units; i++) {
+                productIds.add(ask("Codigo del producto " + i + " a devolver: "));
+            }
+            String reason = ask("Motivo de la devolucion: ");
+            Return newReturn = returnService.registerReturn(saleId, productIds, reason);
+            System.out.println("Devolucion registrada correctamente.");
+            System.out.println(newReturn.generateReturnReceipt());
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la devolucion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Imprime todas las devoluciones registradas.
+     */
+    private void showAllReturns() {
+        printReturns(returnService.viewAllReturns(), "No hay devoluciones registradas.");
+    }
+
+    /**
+     * Imprime las devoluciones de un cliente.
+     */
+    private void showReturnsByCustomer() {
+        String customerId = ask("Identificacion del cliente: ");
+        printReturns(returnService.viewReturnsByCustomer(customerId), "Este cliente no tiene devoluciones registradas.");
+    }
+
+    /**
+     * Imprime las devoluciones de una venta.
+     */
+    private void showReturnsBySale() {
+        String saleId = ask("Identificacion de la venta: ");
+        printReturns(returnService.viewReturnsBySale(saleId), "Esta venta no tiene devoluciones registradas.");
+    }
+
+    /**
+     * Imprime una lista de devoluciones, o un mensaje cuando la lista esta vacia.
+     *
+     * @param returns      las devoluciones a imprimir
+     * @param emptyMessage el mensaje que se muestra cuando no hay nada
+     */
+    private void printReturns(List<Return> returns, String emptyMessage) {
+        if (returns.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Return oneReturn : returns) {
+            System.out.println();
+            System.out.println(oneReturn.generateReturnReceipt());
+        }
+    }
+
+    /**
+     * Pide un mes y un año y muestra el total de ventas, el total de devoluciones y el
+     * balance neto de ese periodo, que es lo que le interesa al dueño del negocio.
+     */
+    private void showMonthlyBalance() {
+        try {
+            int month = askInt("Mes a consultar (1-12): ");
+            int year = askInt("Anio a consultar: ");
+            if (month < 1 || month > 12) {
+                System.out.println("El mes debe estar entre 1 y 12.");
+                return;
+            }
+            double totalSales = returnService.calculateMonthlySales(month, year);
+            double totalReturns = returnService.calculateMonthlyReturns(month, year);
+            double balance = returnService.generateMonthlyBalance(month, year);
+            System.out.printf("%nBalance de %d/%d%n", month, year);
+            System.out.printf("  Total ventas:       $%.2f%n", totalSales);
+            System.out.printf("  Total devoluciones: $%.2f%n", totalReturns);
+            System.out.printf("  Balance neto:       $%.2f%n", balance);
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo calcular el balance: " + e.getMessage());
         }
     }
 }
