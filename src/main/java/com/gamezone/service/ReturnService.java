@@ -123,6 +123,17 @@ public class ReturnService {
      * @return balance del mes
      */
     public double generateMonthlyBalance(int month, int year) {
+        return calculateMonthlySales(month, year) - calculateMonthlyReturns(month, year);
+    }
+
+    /**
+     * Suma el total de las ventas hechas en el mes.
+     *
+     * @param month mes de 1 a 12
+     * @param year anio
+     * @return total vendido en el mes
+     */
+    public double calculateMonthlySales(int month, int year) {
         double totalSales = 0.0;
         List<Sale> allSales = saleService.getAllSales();
         for (int i = 0; i < allSales.size(); i++) {
@@ -131,6 +142,17 @@ public class ReturnService {
                 totalSales = totalSales + s.calculateTotal();
             }
         }
+        return totalSales;
+    }
+
+    /**
+     * Suma la plata reembolsada en el mes.
+     *
+     * @param month mes de 1 a 12
+     * @param year anio
+     * @return total devuelto en el mes
+     */
+    public double calculateMonthlyReturns(int month, int year) {
         double totalReturns = 0.0;
         for (int i = 0; i < returns.size(); i++) {
             Return r = returns.get(i);
@@ -138,6 +160,6 @@ public class ReturnService {
                 totalReturns = totalReturns + r.getRefundAmount();
             }
         }
-        return totalSales - totalReturns;
+        return totalReturns;
     }
 }
