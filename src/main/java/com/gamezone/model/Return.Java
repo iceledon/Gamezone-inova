@@ -64,7 +64,6 @@ public class Return extends product {
         return mount_return;
     }
 
-/**
-     * revisa si está bien, sino para hacer cambio
+/** ver si ya subio, esta es la parte que tengo, revisen, aun faltan algunos atributos
      */ no quiero subirse
 }
