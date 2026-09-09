@@ -146,6 +146,22 @@ public class SaleService {
     }
 
     /**
+     * Busca una venta por su identificador. Este metodo lo necesita el modulo de
+     * devoluciones, que siempre debe referenciar una venta que ya existe.
+     *
+     * @param id identificador de la venta a buscar
+     * @return la venta encontrada, o null si no existe ninguna con ese id
+     */
+    public Sale findById(String id) {
+        for (Sale sale : sales) {
+            if (sale.getId().equals(id)) {
+                return sale;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Counts how many units of each product a sale requests, since the same product id
      * may appear more than once in the same sale.
      *
