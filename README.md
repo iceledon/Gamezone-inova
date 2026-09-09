@@ -56,6 +56,7 @@ Plain text, one record per line, fields separated by `;`:
 | `data/customers.txt` | `id;name;phone;email` |
 | `data/sellers.txt` | `id;name;phone;employeeCode;shift` — preloaded with three sellers |
 | `data/sales.txt` | `id;date;customerId;sellerId;productId1,productId2,...` |
+| `data/returns.csv` | `id;date;saleId;productId1,productId2,...;reason;refundAmount` |
 
 Sales store only the ids of what they reference; the objects are resolved against the products and
 people already loaded in memory when the application starts.
@@ -65,10 +66,16 @@ people already loaded in memory when the application starts.
 **Products:** register a video game · register a console · list the inventory
 **People:** register a customer · list customers · list sellers
 **Sales:** register a sale · full sales history · history by customer · history by seller
+**Returns:** register a return · full return history · history by customer · history by sale · monthly balance
 
 Registering a sale validates that it has at least one product, that the customer, the seller and
 every product exist, and that there is enough stock for every unit requested; only then is the
 inventory discounted and the sale saved.
+
+Registering a return validates that the original sale exists, that no more than 30 calendar days
+have passed since it was made, and that every product being returned really belongs to that sale;
+only then is the stock restored and the return saved. The monthly balance subtracts the refunds of
+a month from the sales of that same month.
 
 ## Documentation
 
@@ -76,6 +83,8 @@ inventory discounted and the sale saved.
 - [docs/analysis.md](docs/analysis.md) — answers to the orienting questions
 - [docs/hierarchy-diagram.md](docs/hierarchy-diagram.md) — inheritance in the model layer
 - [docs/class-diagram.md](docs/class-diagram.md) — full class diagram of the four layers
+- [docs/return-analysis.md](docs/return-analysis.md) — answers to the return module orienting questions
+- [docs/return-class-diagram.md](docs/return-class-diagram.md) — class diagram of the return module
 - [docs/layers-diagram.md](docs/layers-diagram.md) — layer dependencies
 - [docs/ai-usage/](docs/ai-usage) — AI usage logs of each team member
 
