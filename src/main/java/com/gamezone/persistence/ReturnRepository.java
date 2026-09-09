@@ -17,14 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Guarda y lee las devoluciones del archivo data/returns.txt.
+ * Guarda y lee las devoluciones del archivo data/returns.csv.
  * <p>
  * En el archivo solo se guardan los ids de la venta y de los productos,
  * no los objetos completos. Por eso usa los servicios para buscar esos ids.
  */
 public class ReturnRepository {
 
-    private static final Path FILE_PATH = Path.of("data", "returns.txt");
+    private static final Path FILE_PATH = Path.of("data", "returns.csv");
     private static final String SEPARATOR = ";";
     private static final String PRODUCT_SEPARATOR = ",";
 
