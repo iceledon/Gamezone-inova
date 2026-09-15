@@ -8,6 +8,7 @@ import com.gamezone.persistence.AccessoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Business rules for managing accessories.
@@ -108,6 +109,31 @@ public class AccessoryService {
             }
         }
         return result;
+    }
+
+    /**
+     * @param id unique identifier of the accessory to find
+     * @return the accessory with the given id
+     * @throws NoSuchElementException if no accessory has that id
+     */
+    public Accessory findById(String id) {
+        Accessory accessory = find(id);
+        if (accessory == null) {
+            throw new NoSuchElementException("Accessory not found: " + id);
+        }
+        return accessory;
+    }
+
+    /**
+     * Decreases the stock of the given accessory and persists the change.
+     *
+     * @param accessoryId unique identifier of the accessory
+     * @param amount      units to remove from inventory
+     */
+    public void updateStock(String accessoryId, int amount) {
+        Accessory accessory = findById(accessoryId);
+        accessory.decreaseStock(amount);
+        repository.saveAll(accessories);
     }
 
     private String typeOf(Accessory accessory) {
