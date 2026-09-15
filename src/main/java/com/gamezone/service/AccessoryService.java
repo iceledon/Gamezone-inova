@@ -6,6 +6,7 @@ import com.gamezone.model.Controller;
 import com.gamezone.model.Memory;
 import com.gamezone.persistence.AccessoryRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,6 +72,39 @@ public class AccessoryService {
         rejectIfIdExists(id);
         accessories.add(new Memory(id, title, price, quantity, capacityGb, memoryType));
         repository.saveAll(accessories);
+    }
+
+    /**
+     * @return every accessory currently registered
+     */
+    public List<Accessory> listAllAccessories() {
+        return new ArrayList<>(accessories);
+    }
+
+    /**
+     * @param type the accessory type to filter by: {@code "CONTROLLER"}, {@code "CABLE"} or
+     *             {@code "MEMORY"} (not case-sensitive)
+     * @return every accessory of the given type
+     */
+    public List<Accessory> listAccessoriesByType(String type) {
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            if (typeOf(accessory).equalsIgnoreCase(type)) {
+                result.add(accessory);
+            }
+        }
+        return result;
+    }
+
+    private String typeOf(Accessory accessory) {
+        if (accessory instanceof Controller) {
+            return "CONTROLLER";
+        } else if (accessory instanceof Cable) {
+            return "CABLE";
+        } else if (accessory instanceof Memory) {
+            return "MEMORY";
+        }
+        throw new IllegalArgumentException("Unknown accessory type: " + accessory.getClass());
     }
 
     private void rejectIfIdExists(String id) {
