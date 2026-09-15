@@ -1,9 +1,11 @@
 package com.gamezone;
 
+import com.gamezone.persistence.AccessoryRepository;
 import com.gamezone.persistence.PersonRepository;
 import com.gamezone.persistence.ProductRepository;
 import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
@@ -30,15 +32,17 @@ public class Main {
             ProductRepository productRepository = new ProductRepository();
             PersonRepository personRepository = new PersonRepository();
             SaleRepository saleRepository = new SaleRepository();
+            AccessoryRepository accessoryRepository = new AccessoryRepository();
 
             ProductService productService = new ProductService(productRepository);
             PersonService personService = new PersonService(personRepository);
-            SaleService saleService = new SaleService(saleRepository, productService, personService);
+            AccessoryService accessoryService = new AccessoryService(accessoryRepository);
+            SaleService saleService = new SaleService(saleRepository, productService, personService, accessoryService);
 
             ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
             ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
 
-            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService);
+            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService, accessoryService);
             consoleUI.start();
         } catch (RuntimeException e) {
             System.err.println("Error fatal: " + e.getMessage());
