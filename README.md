@@ -41,9 +41,9 @@ flowchart TD
 
 | Layer | Responsibility |
 |---|---|
-| `model` | Domain entities: `Person`, `Customer`, `Seller`, `Product`, `VideoGame`, `Console`, `Sale`. Depends on nothing. |
-| `persistence` | Reads and writes the files under `data/`: `PersonRepository`, `ProductRepository`, `SaleRepository`. |
-| `service` | Business rules and coordination: `PersonService`, `ProductService`, `SaleService`. |
+| `model` | Domain entities: `Person`, `Customer`, `Seller`, `Product`, `VideoGame`, `Console`, `Accessory`, `Controller`, `Cable`, `Memory`, `Sale`, `Return`. Depends on nothing. |
+| `persistence` | Reads and writes the files under `data/`: `PersonRepository`, `ProductRepository`, `AccessoryRepository`, `SaleRepository`, `ReturnRepository`. |
+| `service` | Business rules and coordination: `PersonService`, `ProductService`, `AccessoryService`, `SaleService`, `ReturnService`. |
 | `ui` | `ConsoleUI`, the only class that talks to the user. Never touches a repository. |
 
 ## Data files
@@ -57,6 +57,7 @@ Plain text, one record per line, fields separated by `;`:
 | `data/sellers.txt` | `id;name;phone;employeeCode;shift` — preloaded with three sellers |
 | `data/sales.txt` | `id;date;customerId;sellerId;productId1,productId2,...` |
 | `data/returns.csv` | `id;date;saleId;productId1,productId2,...;reason;refundAmount` |
+| `data/accessories.csv` | `CONTROLLER,id,title,price,quantity,connectionType,compatibleConsoleIds`<br>`CABLE,id,title,price,quantity,lengthMeters,connectorType,compatibleConsoleIds`<br>`MEMORY,id,title,price,quantity,capacityGb,memoryType,compatibleConsoleIds`<br>(`compatibleConsoleIds` is a list of console ids joined with `\|`, empty if none) — preloaded with three accessories |
 
 Sales store only the ids of what they reference; the objects are resolved against the products and
 people already loaded in memory when the application starts.
@@ -65,8 +66,9 @@ people already loaded in memory when the application starts.
 
 **Products:** register a video game · register a console · list the inventory
 **People:** register a customer · list customers · list sellers
-**Sales:** register a sale · full sales history · history by customer · history by seller
+**Sales:** register a sale (products, accessories, or a mix of both) · full sales history · history by customer · history by seller
 **Returns:** register a return · full return history · history by customer · history by sale · monthly balance
+**Accessories:** register a controller · register a cable · register a memory card · list all accessories · list by type · list accessories compatible with a console
 
 Registering a sale validates that it has at least one product, that the customer, the seller and
 every product exist, and that there is enough stock for every unit requested; only then is the
@@ -85,6 +87,8 @@ a month from the sales of that same month.
 - [docs/class-diagram.md](docs/class-diagram.md) — full class diagram of the four layers
 - [docs/return-analysis.md](docs/return-analysis.md) — answers to the return module orienting questions
 - [docs/return-class-diagram.md](docs/return-class-diagram.md) — class diagram of the return module
+- [docs/accessory-analysis.md](docs/accessory-analysis.md) — answers to the accessory module orienting questions
+- [docs/accessory-class-diagram.md](docs/accessory-class-diagram.md) — class diagram of the accessory module
 - [docs/layers-diagram.md](docs/layers-diagram.md) — layer dependencies
 - [docs/ai-usage/](docs/ai-usage) — AI usage logs of each team member
 
