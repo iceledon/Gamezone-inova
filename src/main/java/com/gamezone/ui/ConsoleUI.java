@@ -1,10 +1,12 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Accessory;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
@@ -27,22 +29,26 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final AccessoryService accessoryService;
     private final Scanner scanner;
 
     /**
      * Crea la interfaz de consola con los servicios a los que delega.
      *
-     * @param productService servicio que maneja los productos
-     * @param personService  servicio que maneja clientes y vendedores
-     * @param saleService    servicio que maneja las ventas
-     * @param returnService  servicio que maneja las devoluciones
+     * @param productService   servicio que maneja los productos
+     * @param personService    servicio que maneja clientes y vendedores
+     * @param saleService      servicio que maneja las ventas
+     * @param returnService    servicio que maneja las devoluciones
+     * @param accessoryService servicio que maneja los accesorios
      */
     public ConsoleUI(ProductService productService, PersonService personService,
-                     SaleService saleService, ReturnService returnService) {
+                     SaleService saleService, ReturnService returnService,
+                     AccessoryService accessoryService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.accessoryService = accessoryService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -58,14 +64,16 @@ public class ConsoleUI {
             System.out.println("2. Gestion de personas");
             System.out.println("3. Gestion de ventas");
             System.out.println("4. Gestion de devoluciones");
-            System.out.println("5. Salir");
+            System.out.println("5. Gestion de accesorios");
+            System.out.println("6. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
                 case "3" -> showSaleMenu();
                 case "4" -> showReturnMenu();
-                case "5" -> {
+                case "5" -> showAccessoryMenu();
+                case "6" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -475,6 +483,136 @@ public class ConsoleUI {
             System.out.printf("  Balance neto:       $%.2f%n", balance);
         } catch (RuntimeException e) {
             System.out.println("No se pudo calcular el balance: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Shows the accessory submenu until the user goes back.
+     */
+    private void showAccessoryMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de accesorios ---");
+            System.out.println("1. Registrar control");
+            System.out.println("2. Registrar cable");
+            System.out.println("3. Registrar memoria");
+            System.out.println("4. Listar todos los accesorios");
+            System.out.println("5. Listar accesorios por tipo");
+            System.out.println("6. Consultar accesorios compatibles con una consola");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> registerController();
+                case "2" -> registerCable();
+                case "3" -> registerMemory();
+                case "4" -> listAllAccessories();
+                case "5" -> listAccessoriesByType();
+                case "6" -> listCompatibleAccessories();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Asks for the data of a controller and registers it.
+     */
+    private void registerController() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price = askDouble("Precio: ");
+            int quantity = askInt("Cantidad en stock: ");
+            String connectionType = ask("Tipo de conexion (inalambrico/alambrico): ");
+            accessoryService.registerController(id, title, price, quantity, connectionType);
+            System.out.println("Control registrado correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar el control: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a cable and registers it.
+     */
+    private void registerCable() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price = askDouble("Precio: ");
+            int quantity = askInt("Cantidad en stock: ");
+            double lengthMeters = askDouble("Longitud (metros): ");
+            String connectorType = ask("Tipo de conector (HDMI/USB/optico/etc): ");
+            accessoryService.registerCable(id, title, price, quantity, lengthMeters, connectorType);
+            System.out.println("Cable registrado correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar el cable: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a memory card and registers it.
+     */
+    private void registerMemory() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price = askDouble("Precio: ");
+            int quantity = askInt("Cantidad en stock: ");
+            int capacityGb = askInt("Capacidad (GB): ");
+            String memoryType = ask("Tipo de memoria (SD/microSD/tarjeta interna): ");
+            accessoryService.registerMemory(id, title, price, quantity, capacityGb, memoryType);
+            System.out.println("Memoria registrada correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la memoria: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Prints every accessory in the inventory, with its price and available stock.
+     */
+    private void listAllAccessories() {
+        printAccessories(accessoryService.listAllAccessories(), "No hay accesorios registrados.");
+    }
+
+    /**
+     * Asks for a type and prints the accessories that match it.
+     */
+    private void listAccessoriesByType() {
+        String type = ask("Tipo (control/cable/memoria): ");
+        String normalizedType = switch (type.toLowerCase()) {
+            case "control" -> "CONTROLLER";
+            case "cable" -> "CABLE";
+            case "memoria" -> "MEMORY";
+            default -> type;
+        };
+        printAccessories(accessoryService.listAccessoriesByType(normalizedType),
+                "No hay accesorios de ese tipo.");
+    }
+
+    /**
+     * Asks for a console id and prints the accessories compatible with it.
+     */
+    private void listCompatibleAccessories() {
+        String consoleId = ask("Codigo de la consola: ");
+        printAccessories(accessoryService.findAccessoriesCompatibleWith(consoleId),
+                "No hay accesorios compatibles con esa consola.");
+    }
+
+    /**
+     * Prints a list of accessories, or a message when the list is empty.
+     *
+     * @param accessories  the accessories to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printAccessories(List<Accessory> accessories, String emptyMessage) {
+        if (accessories.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Accessory accessory : accessories) {
+            System.out.printf("  [%s] %s | Precio: $%.2f | Stock: %d%n",
+                    accessory.getId(), accessory.getDescription(), accessory.getPrice(), accessory.getQuantity());
         }
     }
 }
