@@ -96,6 +96,20 @@ public class AccessoryService {
         return result;
     }
 
+    /**
+     * @param consoleId id of the console to check compatibility against
+     * @return every accessory compatible with the given console
+     */
+    public List<Accessory> findAccessoriesCompatibleWith(String consoleId) {
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            if (accessory.isCompatibleWith(consoleId)) {
+                result.add(accessory);
+            }
+        }
+        return result;
+    }
+
     private String typeOf(Accessory accessory) {
         if (accessory instanceof Controller) {
             return "CONTROLLER";
