@@ -264,10 +264,10 @@ public class ConsoleUI {
         try {
             String customerId = ask("Identificacion del cliente: ");
             String sellerId = ask("Identificacion del vendedor: ");
-            int units = askInt("Cantidad de productos a vender: ");
+            int units = askInt("Cantidad de items a vender (productos o accesorios): ");
             List<String> productIds = new ArrayList<>();
             for (int i = 1; i <= units; i++) {
-                productIds.add(ask("Codigo del producto " + i + ": "));
+                productIds.add(ask("Codigo del producto o accesorio " + i + ": "));
             }
             Sale sale = saleService.registerSale(customerId, sellerId, productIds);
             System.out.println("Venta registrada correctamente.");
@@ -325,7 +325,7 @@ public class ConsoleUI {
         System.out.printf("%nVenta %s | Fecha: %s%n", sale.getId(), sale.getDate());
         System.out.printf("  Cliente:  [%s] %s%n", sale.getCustomer().getId(), sale.getCustomer().getName());
         System.out.printf("  Vendedor: [%s] %s%n", sale.getSeller().getId(), sale.getSeller().getName());
-        System.out.println("  Productos:");
+        System.out.println("  Productos y accesorios:");
         for (Product product : sale.getProducts()) {
             System.out.printf("    - [%s] %s ($%.2f)%n", product.getId(), product.getTitle(), product.getPrice());
         }
