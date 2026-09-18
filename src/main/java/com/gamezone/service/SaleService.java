@@ -26,20 +26,24 @@ public class SaleService {
     private final SaleRepository repository;
     private final ProductService productService;
     private final PersonService personService;
+    private final PromotionService promotionService;
     private final List<Sale> sales;
 
     /**
      * Creates the service and loads the sales history into memory, resolving the entities
-     * each stored sale references through the other two services.
+     * each stored sale references through the other services.
      *
-     * @param repository     the repository used to read and write sales
-     * @param productService the service that owns the product inventory
-     * @param personService  the service that owns customers and sellers
+     * @param repository       the repository used to read and write sales
+     * @param productService   the service that owns the product inventory
+     * @param personService    the service that owns customers and sellers
+     * @param promotionService the service used to find the best promotion for a sale
      */
-    public SaleService(SaleRepository repository, ProductService productService, PersonService personService) {
+    public SaleService(SaleRepository repository, ProductService productService, PersonService personService,
+                        PromotionService promotionService) {
         this.repository = repository;
         this.productService = productService;
         this.personService = personService;
+        this.promotionService = promotionService;
         this.sales = new ArrayList<>(repository.load(
                 productService.listAll(),
                 personService.listCustomers(),
