@@ -61,17 +61,19 @@ public class SaleService {
 
     /**
      * Registers a new sale after validating every business rule, then discounts the sold
-     * units from the inventory and persists the updated history.
+     * units from the inventory, generates the corresponding warranties and persists the
+     * updated history.
      *
      * @param customerId the id of the customer making the purchase
-     * @param sellerId   the id of the seller handling the sale
+     * @param sellerId the id of the seller handling the sale
      * @param productIds the ids of the products being sold, one entry per unit
+     * @param productIdsWithExtendedWarranty ids of the products (consoles) that should also
+     * receive an extended warranty; null or empty means
+     * no extended warranty is applied [NUEVO PARAMETRO]
      * @return the registered sale
-     * @throws IllegalArgumentException if there is no product, if the customer, the seller
-     *                                  or a product does not exist, or if the available
-     *                                  stock is not enough for the units requested
      */
-    public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
+    public Sale registerSale(String customerId, String sellerId, List<String> productIds,
+                             List<String> productIdsWithExtendedWarranty) {
         if (productIds == null || productIds.isEmpty()) {
             throw new IllegalArgumentException("La venta debe contener al menos un producto.");
         }
@@ -107,6 +109,21 @@ public class SaleService {
 
         Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
 
+        // NUEVO: generacion automatica de garantia basica y, si se pidio, garantia extendida
+        if (warrantyService != null) {
+            for (Product product : soldProducts) {
+                if (product instanceof Console) {
+                    warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+                    if (productIdsWithExtendedWarranty != null
+                            && productIdsWithExtendedWarranty.contains(product.getId())) {
+                        ExtendedWarranty extendedWarranty =
+                                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
+                        sale.addExtraCost(extendedWarranty.getAdditionalCost());
+                    }
+                }
+            }
+        }
+
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
             productService.updateStock(entry.getKey(), entry.getValue());
         }
@@ -114,6 +131,10 @@ public class SaleService {
         sales.add(sale);
         repository.save(sales);
         return sale;
+    }
+
+    public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
+        return registerSale(customerId, sellerId, productIds, Collections.emptyList());
     }
 
     /**
