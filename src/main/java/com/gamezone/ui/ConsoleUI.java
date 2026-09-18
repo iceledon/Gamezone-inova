@@ -1,5 +1,6 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
@@ -258,10 +259,22 @@ public class ConsoleUI {
             String sellerId = ask("Identificacion del vendedor: ");
             int units = askInt("Cantidad de productos a vender: ");
             List<String> productIds = new ArrayList<>();
+            List<String> productIdsWithExtendedWarranty = new ArrayList<>(); // NUEVO
             for (int i = 1; i <= units; i++) {
-                productIds.add(ask("Codigo del producto " + i + ": "));
+                String productId = ask("Codigo del producto " + i + ": ");
+                productIds.add(productId);
+                // NUEVO: si es consola, se ofrece la garantia extendida
+                Product product = productService.findById(productId);
+                if (product instanceof Console) {
+                    String answer = ask("Desea agregar garantia extendida a la consola "
+                            + product.getTitle() + "? (S/N): ");
+                    if (answer.equalsIgnoreCase("S")) {
+                        productIdsWithExtendedWarranty.add(productId);
+                    }
+                }
             }
-            Sale sale = saleService.registerSale(customerId, sellerId, productIds);
+            Sale sale = saleService.registerSale(customerId, sellerId, productIds,
+                    productIdsWithExtendedWarranty); // MODIFICADO: nuevo parametro
             System.out.println("Venta registrada correctamente.");
             printSale(sale);
         } catch (RuntimeException e) {
@@ -322,6 +335,9 @@ public class ConsoleUI {
             System.out.printf("    - [%s] %s ($%.2f)%n", product.getId(), product.getTitle(), product.getPrice());
         }
         System.out.printf("  Total: $%.2f%n", sale.calculateTotal());
+        if (sale.getExtraCost() > 0) { // NUEVO
+            System.out.printf("   (incluye $%.2f en garantias extendidas)%n", sale.getExtraCost());
+        }
     }
 
     /**
