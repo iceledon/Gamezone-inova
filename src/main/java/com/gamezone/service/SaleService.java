@@ -1,6 +1,8 @@
 package com.gamezone.service;
 
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
+import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
@@ -29,6 +31,7 @@ public class SaleService {
     private final PersonService personService;
     private final PromotionService promotionService;
     private final List<Sale> sales;
+    private WarrantyService warrantyService;
 
     /**
      * Creates the service and loads the sales history into memory, resolving the entities
@@ -52,18 +55,30 @@ public class SaleService {
     }
 
     /**
-     * Registers a new sale after validating every business rule, then discounts the sold
-     * units from the inventory and persists the updated history.
+     * Connects this service with the warranty module. Wired from {@code Main} right after
+     * both services are built, to avoid a circular constructor dependency between the two.
      *
-     * @param customerId the id of the customer making the purchase
-     * @param sellerId   the id of the seller handling the sale
-     * @param productIds the ids of the products being sold, one entry per unit
-     * @return the registered sale
-     * @throws IllegalArgumentException if there is no product, if the customer, the seller
-     *                                  or a product does not exist, or if the available
-     *                                  stock is not enough for the units requested
+     * @param warrantyService the service used to assign warranties automatically
      */
-    public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
+    public void setWarrantyService(WarrantyService warrantyService) {
+        this.warrantyService = warrantyService;
+    }
+
+    /**
+     * Registers a new sale after validating every business rule, then discounts the sold
+     * units from the inventory, generates the corresponding warranties, applies the best
+     * available promotion and persists the updated history.
+     *
+     * @param customerId                      the id of the customer making the purchase
+     * @param sellerId                        the id of the seller handling the sale
+     * @param productIds                      the ids of the products being sold, one entry per unit
+     * @param productIdsWithExtendedWarranty  ids of the products (consoles) that should also
+     *                                        receive an extended warranty; null or empty means
+     *                                        no extended warranty is applied
+     * @return the registered sale
+     */
+    public Sale registerSale(String customerId, String sellerId, List<String> productIds,
+                             List<String> productIdsWithExtendedWarranty) {
         if (productIds == null || productIds.isEmpty()) {
             throw new IllegalArgumentException("La venta debe contener al menos un producto.");
         }
@@ -99,6 +114,22 @@ public class SaleService {
 
         Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
 
+        // Generacion automatica de garantia basica y, si se pidio, garantia extendida
+        if (warrantyService != null) {
+            for (Product product : soldProducts) {
+                if (product instanceof Console) {
+                    warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+                    if (productIdsWithExtendedWarranty != null
+                            && productIdsWithExtendedWarranty.contains(product.getId())) {
+                        ExtendedWarranty extendedWarranty =
+                                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
+                        sale.addExtraCost(extendedWarranty.getAdditionalCost());
+                    }
+                }
+            }
+        }
+
+        // Aplicacion automatica de la mejor promocion vigente, si hay alguna aplicable
         Promotion bestPromotion = promotionService.findBestPromotionFor(sale);
         if (bestPromotion != null) {
             sale.setAppliedPromotionName(bestPromotion.getName());
@@ -112,6 +143,18 @@ public class SaleService {
         sales.add(sale);
         repository.save(sales);
         return sale;
+    }
+
+    /**
+     * Registers a new sale without an extended warranty for any of its consoles.
+     *
+     * @param customerId the id of the customer making the purchase
+     * @param sellerId   the id of the seller handling the sale
+     * @param productIds the ids of the products being sold, one entry per unit
+     * @return the registered sale
+     */
+    public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
+        return registerSale(customerId, sellerId, productIds, Collections.emptyList());
     }
 
     /**

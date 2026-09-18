@@ -5,11 +5,13 @@ import com.gamezone.persistence.ProductRepository;
 import com.gamezone.persistence.PromotionRepository;
 import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.persistence.WarrantyRepository;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
+import com.gamezone.service.WarrantyService;
 import com.gamezone.ui.ConsoleUI;
 
 /**
@@ -32,6 +34,7 @@ public class Main {
             ProductRepository productRepository = new ProductRepository();
             PersonRepository personRepository = new PersonRepository();
             SaleRepository saleRepository = new SaleRepository();
+            WarrantyRepository warrantyRepository = new WarrantyRepository();
             PromotionRepository promotionRepository = new PromotionRepository();
 
             ProductService productService = new ProductService(productRepository);
@@ -39,10 +42,19 @@ public class Main {
             PromotionService promotionService = new PromotionService(promotionRepository);
             SaleService saleService = new SaleService(saleRepository, productService, personService, promotionService);
 
+            // WarrantyService se crea despues de SaleService porque necesita las ventas
+            // ya cargadas para reconstruir el historial de garantias.
+            WarrantyService warrantyService =
+                    new WarrantyService(warrantyRepository, productService, saleService);
+            // Se conecta con un setter (no por constructor) para evitar un ciclo
+            // SaleService -> WarrantyService -> SaleService.
+            saleService.setWarrantyService(warrantyService);
+
             ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
             ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
 
-            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService, promotionService);
+            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService,
+                    warrantyService, promotionService);
             consoleUI.start();
         } catch (RuntimeException e) {
             System.err.println("Error fatal: " + e.getMessage());

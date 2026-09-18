@@ -2,16 +2,13 @@ package com.gamezone.model;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents a sale of one or more products, made by a {@link Customer} and handled by
- * a {@link Seller}.
- * <p>
- * The sale is associated with exactly one customer and one seller, and aggregates the
- * products it sold: those products keep existing in the inventory independently of the
- * sale. The sale computes its own total because the data needed for that calculation is
- * data it already owns.
+ * Represents a sale registered in the store.
+ * A sale is associated with one customer, one seller
+ * and one or more products.
  */
 public class Sale {
 
@@ -20,78 +17,80 @@ public class Sale {
     private Customer customer;
     private Seller seller;
     private List<Product> products;
+    private double extraCost;
     private String appliedPromotionName;
     private double discountAmount;
 
     /**
-     * Creates a new sale with the given participants and products.
-     * <p>
-     * The constructor rejects an empty product list to protect the invariant of the
-     * class: a sale without products cannot exist. The business rule itself is verified
-     * earlier, in the service layer, so the end user gets a clear message instead of an
-     * exception; this check is the last line of defense.
+     * Creates a new sale.
      *
-     * @param id       the unique identifier of the sale
-     * @param date     the date the sale was made
-     * @param customer the customer who made the purchase
-     * @param seller   the seller who handled the sale
-     * @param products the products included in the sale, one entry per unit sold
-     * @throws IllegalArgumentException if the product list is null or empty
+     * @param id unique identifier of the sale
+     * @param date date when the sale was registered
+     * @param customer customer who made the purchase
+     * @param seller seller who registered the sale
+     * @param products products included in the sale
      */
-    public Sale(String id, LocalDate date, Customer customer, Seller seller, List<Product> products) {
-        if (products == null || products.isEmpty()) {
-            throw new IllegalArgumentException("La venta debe contener al menos un producto.");
-        }
+    public Sale(String id, LocalDate date, Customer customer,
+                Seller seller, List<Product> products) {
+
         this.id = id;
         this.date = date;
         this.customer = customer;
         this.seller = seller;
         this.products = new ArrayList<>(products);
+        this.extraCost = 0.0;
     }
 
     /**
-     * Returns the unique identifier of this sale.
-     *
-     * @return the sale id
+     * @return the unique identifier of the sale
      */
     public String getId() {
         return id;
     }
 
     /**
-     * Returns the date this sale was made.
-     *
-     * @return the sale date
+     * @return the date when the sale was registered
      */
     public LocalDate getDate() {
         return date;
     }
 
     /**
-     * Returns the customer who made this purchase.
-     *
-     * @return the customer
+     * @return the customer associated with the sale
      */
     public Customer getCustomer() {
         return customer;
     }
 
     /**
-     * Returns the seller who handled this sale.
-     *
-     * @return the seller
+     * @return the seller associated with the sale
      */
     public Seller getSeller() {
         return seller;
     }
 
     /**
-     * Returns the products included in this sale, one entry per unit sold.
-     *
-     * @return the list of sold products
+     * @return the products included in the sale
      */
     public List<Product> getProducts() {
-        return products;
+        return Collections.unmodifiableList(products);
+    }
+
+    /**
+     * @return the extra amount added to this sale by extended warranties
+     */
+    public double getExtraCost() {
+        return extraCost;
+    }
+
+    /**
+     * Adds an extra amount to this sale, used when an extended warranty
+     * is assigned to one of its products.
+     *
+     * @param amount the extra amount to add
+     */
+    public void addExtraCost(double amount) {
+        this.extraCost += amount;
     }
 
     /**
@@ -132,7 +131,7 @@ public class Sale {
 
     /**
      * Calculates the subtotal of this sale by adding up the price of every unit it
-     * contains, before any promotion discount.
+     * contains, before extended warranties or any promotion discount.
      *
      * @return the subtotal of the sale
      */
@@ -145,13 +144,13 @@ public class Sale {
     }
 
     /**
-     * Calculates the final amount of this sale: the subtotal minus the discount granted
-     * by the promotion applied, if any.
+     * Calculates the final amount of the sale: the subtotal, plus the extra cost of any
+     * extended warranties, minus the discount granted by the promotion applied, if any.
      *
      * @return the total amount of the sale
      */
     public double calculateTotal() {
-        return calculateSubtotal() - discountAmount;
+        return calculateSubtotal() + extraCost - discountAmount;
     }
 
     /**
@@ -170,8 +169,9 @@ public class Sale {
     }
 
     /**
-     * Builds a receipt in Spanish showing the subtotal, the discount applied (if any) and
-     * the final total, so the console interface can print it directly.
+     * Builds a receipt in Spanish showing the subtotal, the extended warranty cost (if
+     * any), the discount applied (if any) and the final total, so the console interface
+     * can print it directly.
      *
      * @return the formatted receipt text
      */
@@ -186,6 +186,9 @@ public class Sale {
                     .append(product.getTitle()).append(" ($").append(product.getPrice()).append(")\n");
         }
         receipt.append(String.format("  Subtotal: $%.2f%n", calculateSubtotal()));
+        if (extraCost > 0) {
+            receipt.append(String.format("  Garantias extendidas: +$%.2f%n", extraCost));
+        }
         if (discountAmount > 0) {
             receipt.append(String.format("  Descuento aplicado (%s): -$%.2f%n",
                     appliedPromotionName, discountAmount));

@@ -2,6 +2,7 @@ package com.gamezone.ui;
 
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Product;
@@ -9,11 +10,13 @@ import com.gamezone.model.Promotion;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
+import com.gamezone.model.Warranty;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
+import com.gamezone.service.WarrantyService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final WarrantyService warrantyService;
     private final PromotionService promotionService;
     private final Scanner scanner;
 
@@ -43,16 +47,34 @@ public class ConsoleUI {
      * @param personService    servicio que maneja clientes y vendedores
      * @param saleService      servicio que maneja las ventas
      * @param returnService    servicio que maneja las devoluciones
+     * @param warrantyService  servicio que maneja las garantias
      * @param promotionService servicio que maneja las promociones
      */
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
-                     ReturnService returnService, PromotionService promotionService) {
+                     ReturnService returnService, WarrantyService warrantyService, PromotionService promotionService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.warrantyService = warrantyService;
         this.promotionService = promotionService;
         this.scanner = new Scanner(System.in);
+    }
+
+    /**
+     * Convenience constructor used by callers that only wired the warranty module.
+     */
+    public ConsoleUI(ProductService productService, PersonService personService,
+                     SaleService saleService, WarrantyService warrantyService) {
+        this(productService, personService, saleService, null, warrantyService, null);
+    }
+
+    /**
+     * Convenience constructor used by callers that only wired the returns module.
+     */
+    public ConsoleUI(ProductService productService, PersonService personService,
+                     SaleService saleService, ReturnService returnService) {
+        this(productService, personService, saleService, returnService, null, null);
     }
 
     /**
@@ -67,16 +89,18 @@ public class ConsoleUI {
             System.out.println("2. Gestion de personas");
             System.out.println("3. Gestion de ventas");
             System.out.println("4. Gestion de devoluciones");
-            System.out.println("5. Gestion de promociones");
-            System.out.println("6. Salir");
+            System.out.println("5. Gestion de garantias");
+            System.out.println("6. Gestion de promociones");
+            System.out.println("7. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
                 case "3" -> showSaleMenu();
                 case "4" -> showReturnMenu();
-                case "5" -> showPromotionMenu();
-                case "6" -> {
+                case "5" -> showWarrantyMenu();
+                case "6" -> showPromotionMenu();
+                case "7" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -260,8 +284,7 @@ public class ConsoleUI {
         }
     }
 
-    /**
-     * Asks for the data of a sale and registers it.
+     * every console sold before sending the sale to the service layer.
      */
     private void registerSale() {
         try {
@@ -269,10 +292,21 @@ public class ConsoleUI {
             String sellerId = ask("Identificacion del vendedor: ");
             int units = askInt("Cantidad de productos a vender: ");
             List<String> productIds = new ArrayList<>();
+            List<String> productIdsWithExtendedWarranty = new ArrayList<>();
             for (int i = 1; i <= units; i++) {
-                productIds.add(ask("Codigo del producto " + i + ": "));
+                String productId = ask("Codigo del producto " + i + ": ");
+                productIds.add(productId);
+                Product product = productService.findById(productId);
+                if (product instanceof Console) {
+                    String answer = ask("Desea agregar garantia extendida a la consola "
+                            + product.getTitle() + "? (S/N): ");
+                    if (answer.equalsIgnoreCase("S")) {
+                        productIdsWithExtendedWarranty.add(productId);
+                    }
+                }
             }
-            Sale sale = saleService.registerSale(customerId, sellerId, productIds);
+            Sale sale = saleService.registerSale(customerId, sellerId, productIds,
+                    productIdsWithExtendedWarranty);
             System.out.println("Venta registrada correctamente.");
             printSale(sale);
         } catch (RuntimeException e) {
@@ -320,7 +354,9 @@ public class ConsoleUI {
     }
 
     /**
-     * Prints the detail of a single sale, including its products and total.
+     * Prints the receipt of a single sale, delegating the formatting to
+     * {@link Sale#generateReceipt()} so the same text is used whether this is called
+     * right after registering a sale or while browsing the sales history.
      *
      * @param sale the sale to print
      */
@@ -337,8 +373,6 @@ public class ConsoleUI {
      */
     private String ask(String prompt) {
         System.out.print(prompt);
-        return scanner.nextLine().trim();
-    }
 
     /**
      * Prints a prompt and reads a whole number.
@@ -352,7 +386,7 @@ public class ConsoleUI {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Se esperaba un numero entero y se recibio '" + value + "'.");
+            throw new IllegalArgumentException("Se esperaba un numero entero y se recibio " + value + ".");
         }
     }
 
@@ -366,9 +400,7 @@ public class ConsoleUI {
     private double askDouble(String prompt) {
         String value = ask(prompt);
         try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Se esperaba un numero y se recibio '" + value + "'.");
+            return Double.parseDou
         }
     }
 
@@ -384,7 +416,7 @@ public class ConsoleUI {
         try {
             return LocalDate.parse(value);
         } catch (java.time.format.DateTimeParseException e) {
-            throw new IllegalArgumentException("Se esperaba una fecha en formato aaaa-mm-dd y se recibio '" + value + "'.");
+            throw new IllegalArgumentException("Se esperaba una fecha en formato aaaa-mm-dd y se recibio " + value + ".");
         }
     }
 
@@ -500,7 +532,88 @@ public class ConsoleUI {
     }
 
     /**
-     * Shows the promotion submenu until the user goes back.
+     * Shows the warranty submenu until the user goes back.
+     */
+    private void showWarrantyMenu() {
+        if (warrantyService == null) {
+            System.out.println("Modulo de garantias no disponible.");
+            return;
+        }
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de garantias ---");
+            System.out.println("1. Consultar garantia de un producto en una venta");
+            System.out.println("2. Listar todas las garantias");
+            System.out.println("3. Listar garantias vigentes");
+            System.out.println("4. Listar garantias proximas a vencer");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> consultWarranty();
+                case "2" -> listAllWarranties();
+                case "3" -> listActiveWarranties();
+                case "4" -> listWarrantiesExpiringSoon();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Prints the warranty certificate of one product inside one sale.
+     */
+    private void consultWarranty() {
+        String productId = ask("Codigo del producto: ");
+        String saleId = ask("Identificacion de la venta: ");
+        Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
+        if (warranty == null) {
+            System.out.println("Este producto no tiene una garantia registrada en esa venta.");
+        } else {
+            System.out.println(warranty.generateWarrantyCertificate());
+        }
+    }
+
+    /**
+     * Prints every registered warranty.
+     */
+    private void listAllWarranties() {
+        printWarranties(warrantyService.listAllWarranties(), "No hay garantias registradas.");
+    }
+
+    /**
+     * Prints only the warranties active on the current date.
+     */
+    private void listActiveWarranties() {
+        printWarranties(warrantyService.listActiveWarranties(), "No hay garantias vigentes.");
+    }
+
+    /**
+     * Prints the warranties about to expire within a number of days the user provides.
+     */
+    private void listWarrantiesExpiringSoon() {
+        int days = askInt("Dias de anticipacion: ");
+        printWarranties(warrantyService.listWarrantiesExpiringSoon(days),
+                "No hay garantias proximas a vencer en ese rango.");
+    }
+
+    /**
+     * Prints a list of warranties, or a message when the list is empty.
+     *
+     * @param warranties   the warranties to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printWarranties(List<Warranty> warranties, String emptyMessage) {
+        if (warranties.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Warranty warranty : warranties) {
+            System.out.println();
+            System.out.println(warranty.generateWarrantyCertificate());
+        }
+    }
+
      */
     private void showPromotionMenu() {
         boolean back = false;

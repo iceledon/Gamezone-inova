@@ -102,7 +102,8 @@ public class SaleRepository {
                 sale.getDate().toString(),
                 sale.getCustomer().getId(),
                 sale.getSeller().getId(),
-                productIds.toString());
+                productIds.toString(),
+                String.valueOf(sale.getExtraCost()));
     }
 
     /**
@@ -149,6 +150,10 @@ public class SaleRepository {
             }
             soldProducts.add(found);
         }
-        return new Sale(id, date, customer, seller, soldProducts);
+        Sale sale = new Sale(id, date, customer, seller, soldProducts);
+        if (fields.length > 5 && !fields[5].isBlank()) {
+            sale.addExtraCost(Double.parseDouble(fields[5]));
+        }
+        return sale;
     }
 }
