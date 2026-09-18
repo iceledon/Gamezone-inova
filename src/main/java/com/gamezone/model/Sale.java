@@ -168,4 +168,29 @@ public class Sale {
         }
         return true;
     }
+
+    /**
+     * Builds a receipt in Spanish showing the subtotal, the discount applied (if any) and
+     * the final total, so the console interface can print it directly.
+     *
+     * @return the formatted receipt text
+     */
+    public String generateReceipt() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Recibo de venta ").append(id).append(" | Fecha: ").append(date).append("\n");
+        receipt.append("  Cliente:  [").append(customer.getId()).append("] ").append(customer.getName()).append("\n");
+        receipt.append("  Vendedor: [").append(seller.getId()).append("] ").append(seller.getName()).append("\n");
+        receipt.append("  Productos:\n");
+        for (Product product : products) {
+            receipt.append("    - [").append(product.getId()).append("] ")
+                    .append(product.getTitle()).append(" ($").append(product.getPrice()).append(")\n");
+        }
+        receipt.append(String.format("  Subtotal: $%.2f%n", calculateSubtotal()));
+        if (discountAmount > 0) {
+            receipt.append(String.format("  Descuento aplicado (%s): -$%.2f%n",
+                    appliedPromotionName, discountAmount));
+        }
+        receipt.append(String.format("  Total: $%.2f", calculateTotal()));
+        return receipt.toString();
+    }
 }
