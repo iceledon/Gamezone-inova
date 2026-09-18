@@ -105,11 +105,45 @@ public class PromotionService {
         return active;
     }
 
-    private void rejectIfIdExists(String id) {
+    /**
+     * Finds the promotion that grants the highest discount to the given sale, among the
+     * promotions currently valid. Promotions are not combined: only one, the best one,
+     * ever applies to a sale.
+     *
+     * @param sale the sale to evaluate
+     * @return the best applicable promotion, or null if none applies or the best discount is zero
+     */
+    public Promotion findBestPromotionFor(Sale sale) {
+        Promotion bestPromotion = null;
+        double bestDiscount = 0.0;
+        for (Promotion promotion : listActivePromotions()) {
+            double discount = promotion.calculateDiscount(sale);
+            if (discount > bestDiscount) {
+                bestDiscount = discount;
+                bestPromotion = promotion;
+            }
+        }
+        return bestPromotion;
+    }
+
+    /**
+     * Finds a promotion by its identifier.
+     *
+     * @param id the id of the promotion to look for
+     * @return the matching promotion, or null if none exists
+     */
+    public Promotion findById(String id) {
         for (Promotion promotion : promotions) {
             if (promotion.getId().equals(id)) {
-                throw new IllegalArgumentException("Ya existe una promocion con el codigo " + id + ".");
+                return promotion;
             }
+        }
+        return null;
+    }
+
+    private void rejectIfIdExists(String id) {
+        if (findById(id) != null) {
+            throw new IllegalArgumentException("Ya existe una promocion con el codigo " + id + ".");
         }
     }
 }
