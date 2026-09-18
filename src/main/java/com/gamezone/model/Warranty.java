@@ -82,7 +82,7 @@ public abstract double getAdditionalCost();
 * @return true if date falls within [startDate, endDate], false otherwise
 */
 public boolean isActive(LocalDate date) {
-return !date.isBefore(startDate) && !date.isAfter(endDate);
+    return !date.isBefore(startDate) && !date.isAfter(endDate);
 }
 /**
 * Builds a human-readable certificate of this warranty, in Spanish, so it can be
@@ -91,14 +91,18 @@ return !date.isBefore(startDate) && !date.isAfter(endDate);
 * @return the formatted certificate text
 */
 public String generateWarrantyCertificate() {
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-return String.format(
-"Certificado de garantia%n"
-+ " Garantia: %s (%s)%n"
-+ " Producto: [%s] %s%n"
-+ " Venta: %s%n"
-+ " Vigencia: %s al %s%n"
-+ " Costo adicional: $%.2f",
-id, getWarrantyType(),
-product.getId(), product.getTitle(),
-sale.getId(),
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    return String.format(
+            "Certificado de garantia%n"
+                    + " Garantia: %s (%s)%n"
+                    + " Producto: [%s] %s%n"
+                    + " Venta: %s%n"
+                    + " Vigencia: %s al %s%n"
+                    + " Costo adicional: $%.2f",
+            id, getWarrantyType(),
+            product.getId(), product.getTitle(),
+            sale.getId()
+            startDate.format(formatter), endDate.format(formatter),
+            getAdditionalCost());
+    }
+}
