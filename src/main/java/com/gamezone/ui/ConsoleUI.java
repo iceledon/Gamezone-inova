@@ -1,5 +1,6 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Accessory;
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.Console;
@@ -11,6 +12,7 @@ import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.model.Warranty;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
@@ -21,6 +23,7 @@ import com.gamezone.service.WarrantyService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
@@ -38,6 +41,7 @@ public class ConsoleUI {
     private final ReturnService returnService;
     private final WarrantyService warrantyService;
     private final PromotionService promotionService;
+    private final AccessoryService accessoryService;
     private final Scanner scanner;
 
     /**
@@ -49,15 +53,18 @@ public class ConsoleUI {
      * @param returnService    servicio que maneja las devoluciones
      * @param warrantyService  servicio que maneja las garantias
      * @param promotionService servicio que maneja las promociones
+     * @param accessoryService servicio que maneja los accesorios
      */
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
-                     ReturnService returnService, WarrantyService warrantyService, PromotionService promotionService) {
+                     ReturnService returnService, WarrantyService warrantyService, PromotionService promotionService,
+                     AccessoryService accessoryService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
         this.warrantyService = warrantyService;
         this.promotionService = promotionService;
+        this.accessoryService = accessoryService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -66,7 +73,7 @@ public class ConsoleUI {
      */
     public ConsoleUI(ProductService productService, PersonService personService,
                      SaleService saleService, WarrantyService warrantyService) {
-        this(productService, personService, saleService, null, warrantyService, null);
+        this(productService, personService, saleService, null, warrantyService, null, null);
     }
 
     /**
@@ -74,7 +81,7 @@ public class ConsoleUI {
      */
     public ConsoleUI(ProductService productService, PersonService personService,
                      SaleService saleService, ReturnService returnService) {
-        this(productService, personService, saleService, returnService, null, null);
+        this(productService, personService, saleService, returnService, null, null, null);
     }
 
     /**
@@ -91,7 +98,8 @@ public class ConsoleUI {
             System.out.println("4. Gestion de devoluciones");
             System.out.println("5. Gestion de garantias");
             System.out.println("6. Gestion de promociones");
-            System.out.println("7. Salir");
+            System.out.println("7. Gestion de accesorios");
+            System.out.println("8. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
@@ -100,7 +108,8 @@ public class ConsoleUI {
                 case "4" -> showReturnMenu();
                 case "5" -> showWarrantyMenu();
                 case "6" -> showPromotionMenu();
-                case "7" -> {
+                case "7" -> showAccessoryMenu();
+                case "8" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -156,8 +165,6 @@ public class ConsoleUI {
      */
     private void registerConsole() {
         try {
-            String id = ask("Codigo del producto: ");
-            String title = ask("Titulo: ");
             double price = askDouble("Precio: ");
             int quantity = askInt("Cantidad en stock: ");
             String brand = ask("Marca: ");
@@ -182,12 +189,7 @@ public class ConsoleUI {
         System.out.println("Productos en inventario:");
         for (Product product : products) {
             System.out.printf("  [%s] %s | Precio: $%.2f | Stock: %d%n",
-                    product.getId(), product.getDescription(), product.getPrice(), product.getQuantity());
-        }
-    }
-
-    /**
-     * Shows the people submenu until the user goes back.
+                    pr
      */
     private void showPersonMenu() {
         boolean back = false;
@@ -226,9 +228,7 @@ public class ConsoleUI {
     }
 
     /**
-     * Prints every registered customer.
-     */
-    private void listCustomers() {
+     * Prints every re
         List<Customer> customers = personService.listCustomers();
         if (customers.isEmpty()) {
             System.out.println("No hay clientes registrados.");
@@ -284,19 +284,22 @@ public class ConsoleUI {
         }
     }
 
-     * every console sold before sending the sale to the service layer.
+    /**
+     * Asks for the data of a sale and registers it, offering an extended warranty for
+     * every console sold before sending the sale to the service layer. Each item can be
+     * a regular product or an accessory, resolved through {@link #findAnyItemById(String)}.
      */
     private void registerSale() {
         try {
             String customerId = ask("Identificacion del cliente: ");
             String sellerId = ask("Identificacion del vendedor: ");
-            int units = askInt("Cantidad de productos a vender: ");
+            int units = askInt("Cantidad de items a vender (productos o accesorios): ");
             List<String> productIds = new ArrayList<>();
             List<String> productIdsWithExtendedWarranty = new ArrayList<>();
             for (int i = 1; i <= units; i++) {
-                String productId = ask("Codigo del producto " + i + ": ");
+                String productId = ask("Codigo del producto o accesorio " + i + ": ");
                 productIds.add(productId);
-                Product product = productService.findById(productId);
+                Product product = findAnyItemById(productId);
                 if (product instanceof Console) {
                     String answer = ask("Desea agregar garantia extendida a la consola "
                             + product.getTitle() + "? (S/N): ");
@@ -309,15 +312,32 @@ public class ConsoleUI {
                     productIdsWithExtendedWarranty);
             System.out.println("Venta registrada correctamente.");
             printSale(sale);
-        } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la venta: " + e.getMessage());
-        }
+        } catch (Runtim
     }
 
     /**
-     * Prints the complete sales history.
+     * Looks up a sold item by id in either catalog, only to decide whether to offer an
+     * extended warranty before the sale is actually registered. Returns null if the id
+     * does not match anything yet; {@link SaleService#registerSale} is the one that gives
+     * the real "item not found" error once the sale is actually submitted.
+     *
+     * @param id the id typed by the user
+     * @return the matching product or accessory, or null if none was found
      */
-    private void showAllSales() {
+    private Product findAnyItemById(String id) {
+        try {
+            return productService.findById(id);
+        } catch (NoSuchElementException e) {
+            if (accessoryService == null) {
+                return null;
+            }
+            try {
+                return accessoryService.findById(id);
+            } catch (NoSuchElementException e2) {
+                return null;
+            }
+        }
+    }
         printSales(saleService.getAllSales(), "No hay ventas registradas.");
     }
 
@@ -343,11 +363,6 @@ public class ConsoleUI {
      * @param sales        the sales to print
      * @param emptyMessage the message shown when there is nothing to print
      */
-    private void printSales(List<Sale> sales, String emptyMessage) {
-        if (sales.isEmpty()) {
-            System.out.println(emptyMessage);
-            return;
-        }
         for (Sale sale : sales) {
             printSale(sale);
         }
@@ -373,6 +388,8 @@ public class ConsoleUI {
      */
     private String ask(String prompt) {
         System.out.print(prompt);
+        return scanner.nextLine().trim();
+    }
 
     /**
      * Prints a prompt and reads a whole number.
@@ -400,7 +417,9 @@ public class ConsoleUI {
     private double askDouble(String prompt) {
         String value = ask(prompt);
         try {
-            return Double.parseDou
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Se esperaba un numero y se recibio " + value + ".");
         }
     }
 
@@ -467,11 +486,6 @@ public class ConsoleUI {
         }
     }
 
-    /**
-     * Imprime todas las devoluciones registradas.
-     */
-    private void showAllReturns() {
-        printReturns(returnService.viewAllReturns(), "No hay devoluciones registradas.");
     }
 
     /**
@@ -585,11 +599,7 @@ public class ConsoleUI {
      * Prints only the warranties active on the current date.
      */
     private void listActiveWarranties() {
-        printWarranties(warrantyService.listActiveWarranties(), "No hay garantias vigentes.");
-    }
-
-    /**
-     * Prints the warranties about to expire within a number of days the user provides.
+        printWarranties(w
      */
     private void listWarrantiesExpiringSoon() {
         int days = askInt("Dias de anticipacion: ");
@@ -614,6 +624,8 @@ public class ConsoleUI {
         }
     }
 
+    /**
+     * Shows the promotion submenu until the user goes back.
      */
     private void showPromotionMenu() {
         boolean back = false;
@@ -675,8 +687,6 @@ public class ConsoleUI {
     }
 
     /**
-     * Asks for the data of a bulk purchase discount and registers it.
-     */
     private void registerBulkPurchaseDiscount() {
         try {
             String id = ask("Codigo de la promocion: ");
@@ -702,11 +712,7 @@ public class ConsoleUI {
     /**
      * Prints only the promotions valid on the current date.
      */
-    private void listActivePromotions() {
-        printPromotions(promotionService.listActivePromotions(), "No hay promociones vigentes.");
-    }
-
-    /**
+    private void listActi
      * Prints a list of promotions, or a message when the list is empty.
      *
      * @param promotions   the promotions to print
@@ -742,5 +748,132 @@ public class ConsoleUI {
                     bulkPurchaseDiscount.getMinimumQuantity());
         }
         return "";
+    }
+
+    /**
+     * Shows the accessory submenu until the user goes back.
+     */
+    private void showAccessoryMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de accesorios ---");
+            System.out.println("1. Registrar control");
+            System.out.println("2. Registrar cable");
+            System.out.println("3. Registrar memoria");
+            System.out.println("4. Listar todos los accesorios");
+            System.out.println("5. Listar accesorios por tipo");
+            System.out.println("6. Consultar accesorios compatibles con una consola");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> registerController();
+                case "2" -> registerCable();
+                case "3" -> registerMemory();
+                case "4" -> listAllAccessories();
+                case "5" -> listAccessoriesByType();
+                case "6" -> listCompatibleAccessories();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Asks for the data of a controller and registers it.
+     */
+    private void registerController() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price = askDouble("Precio: ");
+            int quantity = askInt("Cantidad en stock: ");
+            String connectionType = ask("Tipo de conexion (inalambrico/alambrico): ");
+            accessoryService.registerController(id, title, price, quantity, connectionType);
+            System.out.println("Control registrado correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar el control: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a cable and registers it.
+     */
+    private void registerCable() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price =
+            int quantity = askInt("Cantidad en stock: ");
+            double lengthMeters = askDouble("Longitud (metros): ");
+            String connectorType = ask("Tipo de conector (HDMI/USB/optico/etc): ");
+            accessoryService.registerCable(id, title, price, quantity, lengthMeters, connectorType);
+            System.out.println("Cable registrado correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar el cable: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a memory card and registers it.
+     */
+    private void registerMemory() {
+        try {
+            String id = ask("Codigo del accesorio: ");
+            String title = ask("Titulo: ");
+            double price = askDouble("Precio: ");
+            int quantity = askInt("Cantidad en stock: ");
+            int capacityGb = askInt("Capacidad (GB): ");
+            String memoryType = ask("Tipo de memoria (SD/microSD/tarjeta interna): ");
+            accessoryService.registerMemory(id, title, price, quantity, capacityGb, memoryType);
+            System.out.println("Memoria registrada correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la memoria: " + e.getMessage());
+        }
+    }
+     */
+    private void listAllAccessories() {
+        printAccessories(accessoryService.listAllAccessories(), "No hay accesorios registrados.");
+    }
+
+    /**
+     * Asks for a type and prints the accessories that match it.
+     */
+    private void listAccessoriesByType() {
+        String type = ask("Tipo (control/cable/memoria): ");
+        String normalizedType = switch (type.toLowerCase()) {
+            case "control" -> "CONTROLLER";
+            case "cable" -> "CABLE";
+            case "memoria" -> "MEMORY";
+            default -> type;
+        };
+        printAccessories(accessoryService.listAccessoriesByType(normalizedType),
+                "No hay accesorios de ese tipo.");
+    }
+
+    /**
+     * Asks for a console id and prints the accessories compatible with it.
+     */
+    private void listCompatibleAccessories() {
+        String consoleId = ask("Codigo de la consola: ");
+        printAccessories(accessoryService.findAccessoriesCompatibleWith(consoleId),
+                "No hay accesorios compatibles con esa consola.");
+    }
+
+    /**
+     * Prints a list of accessories, or a message when the list is empty.
+     *
+     * @param accessories  the accessories to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printAccessories(List<Accessory> accessories, String emptyMessage) {
+        if (accessories.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Accessory accessory : accessories) {
+            System.out.printf("  [%s] %s | Precio: $%.2f | Stock: %d%n",
+                    accessory.getId(), accessory.getDescription(), accessory.getPrice(), accessory.getQuantity());
+        }
     }
 }

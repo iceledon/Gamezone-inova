@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * Business operations available for sales.
@@ -30,6 +31,7 @@ public class SaleService {
     private final ProductService productService;
     private final PersonService personService;
     private final PromotionService promotionService;
+    private final AccessoryService accessoryService;
     private final List<Sale> sales;
     private WarrantyService warrantyService;
 
@@ -41,15 +43,19 @@ public class SaleService {
      * @param productService   the service that owns the product inventory
      * @param personService    the service that owns customers and sellers
      * @param promotionService the service used to find the best promotion for a sale
+     * @param accessoryService the service that owns the accessory inventory
      */
     public SaleService(SaleRepository repository, ProductService productService, PersonService personService,
-                        PromotionService promotionService) {
+                        PromotionService promotionService, AccessoryService accessoryService) {
         this.repository = repository;
         this.productService = productService;
         this.personService = personService;
         this.promotionService = promotionService;
+        this.accessoryService = accessoryService;
+        List<Product> catalog = new ArrayList<>(productService.listAll());
+        catalog.addAll(accessoryService.listAllAccessories());
         this.sales = new ArrayList<>(repository.load(
-                productService.listAll(),
+                catalog,
                 personService.listCustomers(),
                 personService.listSellers()));
     }
@@ -71,7 +77,7 @@ public class SaleService {
      *
      * @param customerId                      the id of the customer making the purchase
      * @param sellerId                        the id of the seller handling the sale
-     * @param productIds                      the ids of the products being sold, one entry per unit
+     * @param productIds                      the ids of the products or accessories being sold, one entry per unit
      * @param productIdsWithExtendedWarranty  ids of the products (consoles) that should also
      *                                        receive an extended warranty; null or empty means
      *                                        no extended warranty is applied
@@ -95,16 +101,16 @@ public class SaleService {
 
         List<Product> soldProducts = new ArrayList<>();
         for (String productId : productIds) {
-            Product product = productService.findById(productId);
-            if (product == null) {
-                throw new IllegalArgumentException("No existe un producto con el codigo " + productId + ".");
+            try {
+                soldProducts.add(findItemById(productId));
+            } catch (NoSuchElementException e) {
+                throw new IllegalArgumentException("No existe un producto ni un accesorio con el codigo " + productId + ".");
             }
-            soldProducts.add(product);
         }
 
         Map<String, Integer> requestedUnits = countUnitsByProduct(soldProducts);
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
-            Product product = productService.findById(entry.getKey());
+            Product product = findItemById(entry.getKey());
             if (product.getQuantity() < entry.getValue()) {
                 throw new IllegalArgumentException(String.format(
                         "Stock insuficiente para %s. Disponible: %d, solicitado: %d.",
@@ -137,7 +143,7 @@ public class SaleService {
         }
 
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
-            productService.updateStock(entry.getKey(), entry.getValue());
+            updateStockOf(entry.getKey(), entry.getValue());
         }
 
         sales.add(sale);
@@ -150,7 +156,7 @@ public class SaleService {
      *
      * @param customerId the id of the customer making the purchase
      * @param sellerId   the id of the seller handling the sale
-     * @param productIds the ids of the products being sold, one entry per unit
+     * @param productIds the ids of the products or accessories being sold, one entry per unit
      * @return the registered sale
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
@@ -213,6 +219,39 @@ public class SaleService {
             }
         }
         return null;
+    }
+
+    /**
+     * Looks up an item sold in the store by id, checking the product catalog first and
+     * falling back to the accessory catalog, since a sale can include either. This is the
+     * one place that needs to know both catalogs exist; everything else in this class just
+     * works with {@code Product} references, because {@code Accessory extends Product}.
+     *
+     * @param id id of the product or accessory to find
+     * @return the matching product or accessory
+     * @throws NoSuchElementException if neither catalog has an item with that id
+     */
+    private Product findItemById(String id) {
+        try {
+            return productService.findById(id);
+        } catch (NoSuchElementException e) {
+            return accessoryService.findById(id);
+        }
+    }
+
+    /**
+     * Decreases the stock of a sold item, delegating to whichever service actually owns
+     * it, the same way {@link #findItemById(String)} resolves it for lookups.
+     *
+     * @param id     id of the product or accessory whose stock was sold
+     * @param amount units to remove from inventory
+     */
+    private void updateStockOf(String id, int amount) {
+        try {
+            productService.updateStock(id, amount);
+        } catch (NoSuchElementException e) {
+            accessoryService.updateStock(id, amount);
+        }
     }
 
     /**

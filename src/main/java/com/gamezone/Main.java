@@ -1,11 +1,13 @@
 package com.gamezone;
 
+import com.gamezone.persistence.AccessoryRepository;
 import com.gamezone.persistence.PersonRepository;
 import com.gamezone.persistence.ProductRepository;
 import com.gamezone.persistence.PromotionRepository;
 import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
@@ -36,11 +38,14 @@ public class Main {
             SaleRepository saleRepository = new SaleRepository();
             WarrantyRepository warrantyRepository = new WarrantyRepository();
             PromotionRepository promotionRepository = new PromotionRepository();
+            AccessoryRepository accessoryRepository = new AccessoryRepository();
 
             ProductService productService = new ProductService(productRepository);
             PersonService personService = new PersonService(personRepository);
             PromotionService promotionService = new PromotionService(promotionRepository);
-            SaleService saleService = new SaleService(saleRepository, productService, personService, promotionService);
+            AccessoryService accessoryService = new AccessoryService(accessoryRepository);
+            SaleService saleService = new SaleService(saleRepository, productService, personService,
+                    promotionService, accessoryService);
 
             // WarrantyService se crea despues de SaleService porque necesita las ventas
             // ya cargadas para reconstruir el historial de garantias.
@@ -54,7 +59,7 @@ public class Main {
             ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
 
             ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService,
-                    warrantyService, promotionService);
+                    warrantyService, promotionService, accessoryService);
             consoleUI.start();
         } catch (RuntimeException e) {
             System.err.println("Error fatal: " + e.getMessage());
