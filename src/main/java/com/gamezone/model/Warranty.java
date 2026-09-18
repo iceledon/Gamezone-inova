@@ -101,7 +101,7 @@ public String generateWarrantyCertificate() {
                     + " Costo adicional: $%.2f",
             id, getWarrantyType(),
             product.getId(), product.getTitle(),
-            sale.getId()
+            sale.getId(),
             startDate.format(formatter), endDate.format(formatter),
             getAdditionalCost());
     }
