@@ -86,4 +86,14 @@ public abstract class Promotion {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
+
+    /**
+     * Checks whether this promotion is valid on the given date.
+     *
+     * @param date the date to check
+     * @return true if date falls within [startDate, endDate], false otherwise
+     */
+    public boolean isActive(LocalDate date) {
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
+    }
 }
