@@ -9,6 +9,7 @@ import com.gamezone.persistence.WarrantyRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class WarrantyService {
@@ -35,6 +36,31 @@ public class WarrantyService {
         warranties.add(warranty);
         repository.saveAll(warranties);
         return warranty;
+    }
+
+    public Warranty findWarrantyByProduct(String productId, String saleId) {
+        for (Warranty warranty : warranties) {
+            if (warranty.getProduct().getId().equals(productId)
+                    && warranty.getSale().getId().equals(saleId)) {
+                return warranty;
+            }
+        }
+        return null;
+    }
+
+    public List<Warranty> listAllWarranties() {
+        return Collections.unmodifiableList(warranties);
+    }
+
+    public List<Warranty> listActiveWarranties() {
+        List<Warranty> result = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        for (Warranty warranty : warranties) {
+            if (warranty.isActive(today)) {
+                result.add(warranty);
+            }
+        }
+        return result;
     }
 
     private String generateWarrantyId() {
