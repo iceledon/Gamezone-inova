@@ -20,6 +20,8 @@ public class Sale {
     private Customer customer;
     private Seller seller;
     private List<Product> products;
+    private String appliedPromotionName;
+    private double discountAmount;
 
     /**
      * Creates a new sale with the given participants and products.
@@ -90,6 +92,42 @@ public class Sale {
      */
     public List<Product> getProducts() {
         return products;
+    }
+
+    /**
+     * Returns the name of the promotion applied to this sale.
+     *
+     * @return the applied promotion's name, or null if no promotion was applied
+     */
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
+    }
+
+    /**
+     * Sets the name of the promotion applied to this sale.
+     *
+     * @param appliedPromotionName the name of the applied promotion
+     */
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
+    }
+
+    /**
+     * Returns the discount amount applied to this sale.
+     *
+     * @return the discount amount, or 0.0 if no promotion was applied
+     */
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    /**
+     * Sets the discount amount applied to this sale.
+     *
+     * @param discountAmount the discount amount to set
+     */
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     /**
