@@ -18,6 +18,8 @@ public class Sale {
     private Seller seller;
     private List<Product> products;
     private double extraCost;
+    private String appliedPromotionName;
+    private double discountAmount;
 
     /**
      * Creates a new sale.
@@ -92,19 +94,63 @@ public class Sale {
     }
 
     /**
-     * Calculates the total amount of the sale, including
-     * the additional cost of extended warranties.
+     * Returns the name of the promotion applied to this sale.
+     *
+     * @return the applied promotion's name, or null if no promotion was applied
+     */
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
+    }
+
+    /**
+     * Sets the name of the promotion applied to this sale.
+     *
+     * @param appliedPromotionName the name of the applied promotion
+     */
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
+    }
+
+    /**
+     * Returns the discount amount applied to this sale.
+     *
+     * @return the discount amount, or 0.0 if no promotion was applied
+     */
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    /**
+     * Sets the discount amount applied to this sale.
+     *
+     * @param discountAmount the discount amount to set
+     */
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    /**
+     * Calculates the subtotal of this sale by adding up the price of every unit it
+     * contains, before extended warranties or any promotion discount.
+     *
+     * @return the subtotal of the sale
+     */
+    public double calculateSubtotal() {
+        double subtotal = 0.0;
+        for (Product product : products) {
+            subtotal += product.getPrice();
+        }
+        return subtotal;
+    }
+
+    /**
+     * Calculates the final amount of the sale: the subtotal, plus the extra cost of any
+     * extended warranties, minus the discount granted by the promotion applied, if any.
      *
      * @return the total amount of the sale
      */
     public double calculateTotal() {
-        double total = 0.0;
-
-        for (Product product : products) {
-            total += product.getPrice();
-        }
-
-        return total + extraCost;
+        return calculateSubtotal() + extraCost - discountAmount;
     }
 
     /**
@@ -120,5 +166,34 @@ public class Sale {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Builds a receipt in Spanish showing the subtotal, the extended warranty cost (if
+     * any), the discount applied (if any) and the final total, so the console interface
+     * can print it directly.
+     *
+     * @return the formatted receipt text
+     */
+    public String generateReceipt() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Recibo de venta ").append(id).append(" | Fecha: ").append(date).append("\n");
+        receipt.append("  Cliente:  [").append(customer.getId()).append("] ").append(customer.getName()).append("\n");
+        receipt.append("  Vendedor: [").append(seller.getId()).append("] ").append(seller.getName()).append("\n");
+        receipt.append("  Productos:\n");
+        for (Product product : products) {
+            receipt.append("    - [").append(product.getId()).append("] ")
+                    .append(product.getTitle()).append(" ($").append(product.getPrice()).append(")\n");
+        }
+        receipt.append(String.format("  Subtotal: $%.2f%n", calculateSubtotal()));
+        if (extraCost > 0) {
+            receipt.append(String.format("  Garantias extendidas: +$%.2f%n", extraCost));
+        }
+        if (discountAmount > 0) {
+            receipt.append(String.format("  Descuento aplicado (%s): -$%.2f%n",
+                    appliedPromotionName, discountAmount));
+        }
+        receipt.append(String.format("  Total: $%.2f", calculateTotal()));
+        return receipt.toString();
     }
 }

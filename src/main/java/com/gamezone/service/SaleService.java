@@ -4,6 +4,7 @@ import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
+import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.SaleRepository;
@@ -28,21 +29,25 @@ public class SaleService {
     private final SaleRepository repository;
     private final ProductService productService;
     private final PersonService personService;
+    private final PromotionService promotionService;
     private final List<Sale> sales;
     private WarrantyService warrantyService;
 
     /**
      * Creates the service and loads the sales history into memory, resolving the entities
-     * each stored sale references through the other two services.
+     * each stored sale references through the other services.
      *
-     * @param repository     the repository used to read and write sales
-     * @param productService the service that owns the product inventory
-     * @param personService  the service that owns customers and sellers
+     * @param repository       the repository used to read and write sales
+     * @param productService   the service that owns the product inventory
+     * @param personService    the service that owns customers and sellers
+     * @param promotionService the service used to find the best promotion for a sale
      */
-    public SaleService(SaleRepository repository, ProductService productService, PersonService personService) {
+    public SaleService(SaleRepository repository, ProductService productService, PersonService personService,
+                        PromotionService promotionService) {
         this.repository = repository;
         this.productService = productService;
         this.personService = personService;
+        this.promotionService = promotionService;
         this.sales = new ArrayList<>(repository.load(
                 productService.listAll(),
                 personService.listCustomers(),
@@ -61,15 +66,15 @@ public class SaleService {
 
     /**
      * Registers a new sale after validating every business rule, then discounts the sold
-     * units from the inventory, generates the corresponding warranties and persists the
-     * updated history.
+     * units from the inventory, generates the corresponding warranties, applies the best
+     * available promotion and persists the updated history.
      *
-     * @param customerId the id of the customer making the purchase
-     * @param sellerId the id of the seller handling the sale
-     * @param productIds the ids of the products being sold, one entry per unit
-     * @param productIdsWithExtendedWarranty ids of the products (consoles) that should also
-     * receive an extended warranty; null or empty means
-     * no extended warranty is applied [NUEVO PARAMETRO]
+     * @param customerId                      the id of the customer making the purchase
+     * @param sellerId                        the id of the seller handling the sale
+     * @param productIds                      the ids of the products being sold, one entry per unit
+     * @param productIdsWithExtendedWarranty  ids of the products (consoles) that should also
+     *                                        receive an extended warranty; null or empty means
+     *                                        no extended warranty is applied
      * @return the registered sale
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds,
@@ -109,7 +114,7 @@ public class SaleService {
 
         Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
 
-        // NUEVO: generacion automatica de garantia basica y, si se pidio, garantia extendida
+        // Generacion automatica de garantia basica y, si se pidio, garantia extendida
         if (warrantyService != null) {
             for (Product product : soldProducts) {
                 if (product instanceof Console) {
@@ -124,6 +129,13 @@ public class SaleService {
             }
         }
 
+        // Aplicacion automatica de la mejor promocion vigente, si hay alguna aplicable
+        Promotion bestPromotion = promotionService.findBestPromotionFor(sale);
+        if (bestPromotion != null) {
+            sale.setAppliedPromotionName(bestPromotion.getName());
+            sale.setDiscountAmount(bestPromotion.calculateDiscount(sale));
+        }
+
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
             productService.updateStock(entry.getKey(), entry.getValue());
         }
@@ -133,6 +145,14 @@ public class SaleService {
         return sale;
     }
 
+    /**
+     * Registers a new sale without an extended warranty for any of its consoles.
+     *
+     * @param customerId the id of the customer making the purchase
+     * @param sellerId   the id of the seller handling the sale
+     * @param productIds the ids of the products being sold, one entry per unit
+     * @return the registered sale
+     */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
         return registerSale(customerId, sellerId, productIds, Collections.emptyList());
     }
