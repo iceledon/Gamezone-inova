@@ -1,6 +1,8 @@
 package com.gamezone.service;
 
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
+import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
@@ -27,6 +29,7 @@ public class SaleService {
     private final ProductService productService;
     private final PersonService personService;
     private final List<Sale> sales;
+    private WarrantyService warrantyService;
 
     /**
      * Creates the service and loads the sales history into memory, resolving the entities
@@ -44,6 +47,16 @@ public class SaleService {
                 productService.listAll(),
                 personService.listCustomers(),
                 personService.listSellers()));
+    }
+
+    /**
+     * Connects this service with the warranty module. Wired from {@code Main} right after
+     * both services are built, to avoid a circular constructor dependency between the two.
+     *
+     * @param warrantyService the service used to assign warranties automatically
+     */
+    public void setWarrantyService(WarrantyService warrantyService) {
+        this.warrantyService = warrantyService;
     }
 
     /**
