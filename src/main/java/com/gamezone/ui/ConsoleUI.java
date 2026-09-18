@@ -165,6 +165,8 @@ public class ConsoleUI {
      */
     private void registerConsole() {
         try {
+            String id = ask("Codigo del producto: ");
+            String title = ask("Titulo: ");
             double price = askDouble("Precio: ");
             int quantity = askInt("Cantidad en stock: ");
             String brand = ask("Marca: ");
@@ -189,7 +191,12 @@ public class ConsoleUI {
         System.out.println("Productos en inventario:");
         for (Product product : products) {
             System.out.printf("  [%s] %s | Precio: $%.2f | Stock: %d%n",
-                    pr
+                    product.getId(), product.getDescription(), product.getPrice(), product.getQuantity());
+        }
+    }
+
+    /**
+     * Shows the people submenu until the user goes back.
      */
     private void showPersonMenu() {
         boolean back = false;
@@ -228,7 +235,9 @@ public class ConsoleUI {
     }
 
     /**
-     * Prints every re
+     * Prints every registered customer.
+     */
+    private void listCustomers() {
         List<Customer> customers = personService.listCustomers();
         if (customers.isEmpty()) {
             System.out.println("No hay clientes registrados.");
@@ -312,7 +321,9 @@ public class ConsoleUI {
                     productIdsWithExtendedWarranty);
             System.out.println("Venta registrada correctamente.");
             printSale(sale);
-        } catch (Runtim
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la venta: " + e.getMessage());
+        }
     }
 
     /**
@@ -338,6 +349,11 @@ public class ConsoleUI {
             }
         }
     }
+
+    /**
+     * Prints the complete sales history.
+     */
+    private void showAllSales() {
         printSales(saleService.getAllSales(), "No hay ventas registradas.");
     }
 
@@ -363,6 +379,11 @@ public class ConsoleUI {
      * @param sales        the sales to print
      * @param emptyMessage the message shown when there is nothing to print
      */
+    private void printSales(List<Sale> sales, String emptyMessage) {
+        if (sales.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
         for (Sale sale : sales) {
             printSale(sale);
         }
@@ -486,6 +507,11 @@ public class ConsoleUI {
         }
     }
 
+    /**
+     * Imprime todas las devoluciones registradas.
+     */
+    private void showAllReturns() {
+        printReturns(returnService.viewAllReturns(), "No hay devoluciones registradas.");
     }
 
     /**
@@ -599,7 +625,11 @@ public class ConsoleUI {
      * Prints only the warranties active on the current date.
      */
     private void listActiveWarranties() {
-        printWarranties(w
+        printWarranties(warrantyService.listActiveWarranties(), "No hay garantias vigentes.");
+    }
+
+    /**
+     * Prints the warranties about to expire within a number of days the user provides.
      */
     private void listWarrantiesExpiringSoon() {
         int days = askInt("Dias de anticipacion: ");
@@ -687,6 +717,8 @@ public class ConsoleUI {
     }
 
     /**
+     * Asks for the data of a bulk purchase discount and registers it.
+     */
     private void registerBulkPurchaseDiscount() {
         try {
             String id = ask("Codigo de la promocion: ");
@@ -712,7 +744,11 @@ public class ConsoleUI {
     /**
      * Prints only the promotions valid on the current date.
      */
-    private void listActi
+    private void listActivePromotions() {
+        printPromotions(promotionService.listActivePromotions(), "No hay promociones vigentes.");
+    }
+
+    /**
      * Prints a list of promotions, or a message when the list is empty.
      *
      * @param promotions   the promotions to print
@@ -803,7 +839,7 @@ public class ConsoleUI {
         try {
             String id = ask("Codigo del accesorio: ");
             String title = ask("Titulo: ");
-            double price =
+            double price = askDouble("Precio: ");
             int quantity = askInt("Cantidad en stock: ");
             double lengthMeters = askDouble("Longitud (metros): ");
             String connectorType = ask("Tipo de conector (HDMI/USB/optico/etc): ");
@@ -831,6 +867,9 @@ public class ConsoleUI {
             System.out.println("No se pudo registrar la memoria: " + e.getMessage());
         }
     }
+
+    /**
+     * Prints every accessory in the inventory, with its price and available stock.
      */
     private void listAllAccessories() {
         printAccessories(accessoryService.listAllAccessories(), "No hay accesorios registrados.");
