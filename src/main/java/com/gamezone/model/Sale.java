@@ -131,17 +131,27 @@ public class Sale {
     }
 
     /**
-     * Calculates the total amount of this sale by adding up the price of every unit it
-     * contains.
+     * Calculates the subtotal of this sale by adding up the price of every unit it
+     * contains, before any promotion discount.
+     *
+     * @return the subtotal of the sale
+     */
+    public double calculateSubtotal() {
+        double subtotal = 0.0;
+        for (Product product : products) {
+            subtotal += product.getPrice();
+        }
+        return subtotal;
+    }
+
+    /**
+     * Calculates the final amount of this sale: the subtotal minus the discount granted
+     * by the promotion applied, if any.
      *
      * @return the total amount of the sale
      */
     public double calculateTotal() {
-        double total = 0.0;
-        for (Product product : products) {
-            total += product.getPrice();
-        }
-        return total;
+        return calculateSubtotal() - discountAmount;
     }
 
     /**
