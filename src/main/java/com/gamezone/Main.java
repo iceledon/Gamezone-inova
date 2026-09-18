@@ -42,7 +42,7 @@ public class Main {
             ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
             ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
 
-            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService);
+            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService, promotionService);
             consoleUI.start();
         } catch (RuntimeException e) {
             System.err.println("Error fatal: " + e.getMessage());

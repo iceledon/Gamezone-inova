@@ -1,15 +1,21 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.BulkPurchaseDiscount;
+import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.Customer;
+import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Product;
+import com.gamezone.model.Promotion;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -27,22 +33,25 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final PromotionService promotionService;
     private final Scanner scanner;
 
     /**
      * Crea la interfaz de consola con los servicios a los que delega.
      *
-     * @param productService servicio que maneja los productos
-     * @param personService  servicio que maneja clientes y vendedores
-     * @param saleService    servicio que maneja las ventas
-     * @param returnService  servicio que maneja las devoluciones
+     * @param productService   servicio que maneja los productos
+     * @param personService    servicio que maneja clientes y vendedores
+     * @param saleService      servicio que maneja las ventas
+     * @param returnService    servicio que maneja las devoluciones
+     * @param promotionService servicio que maneja las promociones
      */
-    public ConsoleUI(ProductService productService, PersonService personService,
-                     SaleService saleService, ReturnService returnService) {
+    public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
+                     ReturnService returnService, PromotionService promotionService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.promotionService = promotionService;
         this.scanner = new Scanner(System.in);
     }
 
@@ -58,14 +67,16 @@ public class ConsoleUI {
             System.out.println("2. Gestion de personas");
             System.out.println("3. Gestion de ventas");
             System.out.println("4. Gestion de devoluciones");
-            System.out.println("5. Salir");
+            System.out.println("5. Gestion de promociones");
+            System.out.println("6. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
                 case "3" -> showSaleMenu();
                 case "4" -> showReturnMenu();
-                case "5" -> {
+                case "5" -> showPromotionMenu();
+                case "6" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -362,6 +373,22 @@ public class ConsoleUI {
     }
 
     /**
+     * Prints a prompt and reads a date in ISO format (yyyy-MM-dd).
+     *
+     * @param prompt the text shown to the user
+     * @return the date typed by the user
+     * @throws IllegalArgumentException if what the user typed is not a valid date
+     */
+    private LocalDate askDate(String prompt) {
+        String value = ask(prompt);
+        try {
+            return LocalDate.parse(value);
+        } catch (java.time.format.DateTimeParseException e) {
+            throw new IllegalArgumentException("Se esperaba una fecha en formato aaaa-mm-dd y se recibio '" + value + "'.");
+        }
+    }
+
+    /**
      * Muestra el submenu de devoluciones hasta que el usuario decide volver.
      */
     private void showReturnMenu() {
@@ -470,5 +497,137 @@ public class ConsoleUI {
         } catch (RuntimeException e) {
             System.out.println("No se pudo calcular el balance: " + e.getMessage());
         }
+    }
+
+    /**
+     * Shows the promotion submenu until the user goes back.
+     */
+    private void showPromotionMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de promociones ---");
+            System.out.println("1. Registrar promocion por porcentaje");
+            System.out.println("2. Registrar promocion por categoria");
+            System.out.println("3. Registrar promocion por volumen de compra");
+            System.out.println("4. Listar todas las promociones");
+            System.out.println("5. Listar promociones vigentes");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> registerPercentageDiscount();
+                case "2" -> registerCategoryDiscount();
+                case "3" -> registerBulkPurchaseDiscount();
+                case "4" -> listAllPromotions();
+                case "5" -> listActivePromotions();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    /**
+     * Asks for the data of a percentage discount and registers it.
+     */
+    private void registerPercentageDiscount() {
+        try {
+            String id = ask("Codigo de la promocion: ");
+            String name = ask("Nombre de la promocion: ");
+            LocalDate startDate = askDate("Fecha de inicio (aaaa-mm-dd): ");
+            LocalDate endDate = askDate("Fecha de fin (aaaa-mm-dd): ");
+            double percentage = askDouble("Porcentaje de descuento: ");
+            promotionService.registerPercentageDiscount(id, name, startDate, endDate, percentage);
+            System.out.println("Promocion registrada correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a category discount and registers it.
+     */
+    private void registerCategoryDiscount() {
+        try {
+            String id = ask("Codigo de la promocion: ");
+            String name = ask("Nombre de la promocion: ");
+            LocalDate startDate = askDate("Fecha de inicio (aaaa-mm-dd): ");
+            LocalDate endDate = askDate("Fecha de fin (aaaa-mm-dd): ");
+            double percentage = askDouble("Porcentaje de descuento: ");
+            String targetCategory = ask("Categoria objetivo (VIDEOGAME/CONSOLE): ");
+            promotionService.registerCategoryDiscount(id, name, startDate, endDate, percentage, targetCategory);
+            System.out.println("Promocion registrada correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Asks for the data of a bulk purchase discount and registers it.
+     */
+    private void registerBulkPurchaseDiscount() {
+        try {
+            String id = ask("Codigo de la promocion: ");
+            String name = ask("Nombre de la promocion: ");
+            LocalDate startDate = askDate("Fecha de inicio (aaaa-mm-dd): ");
+            LocalDate endDate = askDate("Fecha de fin (aaaa-mm-dd): ");
+            int minimumQuantity = askInt("Cantidad minima de productos: ");
+            double percentage = askDouble("Porcentaje de descuento: ");
+            promotionService.registerBulkPurchaseDiscount(id, name, startDate, endDate, minimumQuantity, percentage);
+            System.out.println("Promocion registrada correctamente.");
+        } catch (RuntimeException e) {
+            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Prints every registered promotion.
+     */
+    private void listAllPromotions() {
+        printPromotions(promotionService.listAllPromotions(), "No hay promociones registradas.");
+    }
+
+    /**
+     * Prints only the promotions valid on the current date.
+     */
+    private void listActivePromotions() {
+        printPromotions(promotionService.listActivePromotions(), "No hay promociones vigentes.");
+    }
+
+    /**
+     * Prints a list of promotions, or a message when the list is empty.
+     *
+     * @param promotions   the promotions to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printPromotions(List<Promotion> promotions, String emptyMessage) {
+        if (promotions.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Promotion promotion : promotions) {
+            System.out.printf("  [%s] %s | Vigencia: %s al %s | %s%n",
+                    promotion.getId(), promotion.getName(), promotion.getStartDate(), promotion.getEndDate(),
+                    describePromotion(promotion));
+        }
+    }
+
+    /**
+     * Builds a short description of a promotion's type-specific rule.
+     *
+     * @param promotion the promotion to describe
+     * @return the description text
+     */
+    private String describePromotion(Promotion promotion) {
+        if (promotion instanceof PercentageDiscount percentageDiscount) {
+            return String.format("%.0f%% sobre el total", percentageDiscount.getPercentage());
+        }
+        if (promotion instanceof CategoryDiscount categoryDiscount) {
+            return String.format("%.0f%% sobre %s", categoryDiscount.getPercentage(), categoryDiscount.getTargetCategory());
+        }
+        if (promotion instanceof BulkPurchaseDiscount bulkPurchaseDiscount) {
+            return String.format("%.0f%% desde %d productos", bulkPurchaseDiscount.getPercentage(),
+                    bulkPurchaseDiscount.getMinimumQuantity());
+        }
+        return "";
     }
 }
