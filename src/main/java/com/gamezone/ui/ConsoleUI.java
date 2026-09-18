@@ -314,14 +314,8 @@ public class ConsoleUI {
      * @param sale the sale to print
      */
     private void printSale(Sale sale) {
-        System.out.printf("%nVenta %s | Fecha: %s%n", sale.getId(), sale.getDate());
-        System.out.printf("  Cliente:  [%s] %s%n", sale.getCustomer().getId(), sale.getCustomer().getName());
-        System.out.printf("  Vendedor: [%s] %s%n", sale.getSeller().getId(), sale.getSeller().getName());
-        System.out.println("  Productos:");
-        for (Product product : sale.getProducts()) {
-            System.out.printf("    - [%s] %s ($%.2f)%n", product.getId(), product.getTitle(), product.getPrice());
-        }
-        System.out.printf("  Total: $%.2f%n", sale.calculateTotal());
+        System.out.println();
+        System.out.println(sale.generateReceipt());
     }
 
     /**
