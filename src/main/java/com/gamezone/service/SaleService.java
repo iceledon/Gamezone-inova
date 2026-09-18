@@ -2,6 +2,7 @@ package com.gamezone.service;
 
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
+import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.SaleRepository;
@@ -97,6 +98,12 @@ public class SaleService {
         }
 
         Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
+
+        Promotion bestPromotion = promotionService.findBestPromotionFor(sale);
+        if (bestPromotion != null) {
+            sale.setAppliedPromotionName(bestPromotion.getName());
+            sale.setDiscountAmount(bestPromotion.calculateDiscount(sale));
+        }
 
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
             productService.updateStock(entry.getKey(), entry.getValue());
