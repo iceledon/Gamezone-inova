@@ -6,10 +6,12 @@ import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
+import com.gamezone.model.Warranty;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
+import com.gamezone.service.WarrantyService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,23 +30,28 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final WarrantyService warrantyService;
     private final Scanner scanner;
 
-    /**
-     * Crea la interfaz de consola con los servicios a los que delega.
-     *
-     * @param productService servicio que maneja los productos
-     * @param personService  servicio que maneja clientes y vendedores
-     * @param saleService    servicio que maneja las ventas
-     * @param returnService  servicio que maneja las devoluciones
-     */
     public ConsoleUI(ProductService productService, PersonService personService,
-                     SaleService saleService, ReturnService returnService) {
+                     SaleService saleService, ReturnService returnService,
+                     WarrantyService warrantyService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.warrantyService = warrantyService;
         this.scanner = new Scanner(System.in);
+    }
+
+    public ConsoleUI(ProductService productService, PersonService personService,
+                     SaleService saleService, WarrantyService warrantyService) {
+        this(productService, personService, saleService, null, warrantyService);
+    }
+
+    public ConsoleUI(ProductService productService, PersonService personService,
+                     SaleService saleService, ReturnService returnService) {
+        this(productService, personService, saleService, returnService, null);
     }
 
     /**
@@ -59,14 +66,16 @@ public class ConsoleUI {
             System.out.println("2. Gestion de personas");
             System.out.println("3. Gestion de ventas");
             System.out.println("4. Gestion de devoluciones");
-            System.out.println("5. Salir");
+            System.out.println("5. Gestion de garantias");
+            System.out.println("6. Salir");
             System.out.print("Seleccione una opcion: ");
             switch (scanner.nextLine().trim()) {
                 case "1" -> showProductMenu();
                 case "2" -> showPersonMenu();
                 case "3" -> showSaleMenu();
                 case "4" -> showReturnMenu();
-                case "5" -> {
+                case "5" -> showWarrantyMenu();
+                case "6" -> {
                     running = false;
                     System.out.println("Gracias por usar GameZone Inova.");
                 }
@@ -491,6 +500,77 @@ public class ConsoleUI {
             System.out.printf("  Balance neto:       $%.2f%n", balance);
         } catch (RuntimeException e) {
             System.out.println("No se pudo calcular el balance: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Shows the warranty submenu until the user goes back.
+     */
+    private void showWarrantyMenu() {
+        if (warrantyService == null) {
+            System.out.println("Modulo de garantias no disponible.");
+            return;
+        }
+        boolean back = false;
+        while (!back) {
+            System.out.println();
+            System.out.println("--- Gestion de garantias ---");
+            System.out.println("1. Consultar garantia de un producto en una venta");
+            System.out.println("2. Listar todas las garantias");
+            System.out.println("3. Listar garantias vigentes");
+            System.out.println("4. Listar garantias proximas a vencer");
+            System.out.println("0. Volver");
+            System.out.print("Seleccione una opcion: ");
+            switch (scanner.nextLine().trim()) {
+                case "1" -> consultWarranty();
+                case "2" -> listAllWarranties();
+                case "3" -> listActiveWarranties();
+                case "4" -> listWarrantiesExpiringSoon();
+                case "0" -> back = true;
+                default -> System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    private void consultWarranty() {
+        String productId = ask("Codigo del producto: ");
+        String saleId = ask("Identificacion de la venta: ");
+        Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
+        if (warranty == null) {
+            System.out.println("Este producto no tiene una garantia registrada en esa venta.");
+        } else {
+            System.out.println(warranty.generateWarrantyCertificate());
+        }
+    }
+
+    private void listAllWarranties() {
+        printWarranties(warrantyService.listAllWarranties(), "No hay garantias registradas.");
+    }
+
+    private void listActiveWarranties() {
+        printWarranties(warrantyService.listActiveWarranties(), "No hay garantias vigentes.");
+    }
+
+    private void listWarrantiesExpiringSoon() {
+        int days = askInt("Dias de anticipacion: ");
+        printWarranties(warrantyService.listWarrantiesExpiringSoon(days),
+                "No hay garantias proximas a vencer en ese rango.");
+    }
+
+    /**
+     * Prints a list of warranties, or a message when the list is empty.
+     *
+     * @param warranties   the warranties to print
+     * @param emptyMessage the message shown when there is nothing to print
+     */
+    private void printWarranties(List<Warranty> warranties, String emptyMessage) {
+        if (warranties.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Warranty warranty : warranties) {
+            System.out.println();
+            System.out.println(warranty.generateWarrantyCertificate());
         }
     }
 }
