@@ -16,6 +16,15 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Reads and writes {@link Warranty} records to {@code data/warranties.csv}.
+ * <p>
+ * A warranty references a product and a sale, so the file stores only their ids and each
+ * warranty is rebuilt against the products and sales already loaded in memory, following
+ * the same convention already used by {@code SaleRepository}. A discriminator column
+ * tells the two concrete subclasses apart when the file is read back, the same way
+ * {@code ProductRepository} distinguishes CONSOLE from VIDEOGAME.
+ */
 public class WarrantyRepository {
 
     private static final Path FILE_PATH = Path.of("data", "warranties.csv");
@@ -23,6 +32,12 @@ public class WarrantyRepository {
     private static final String BASIC = "BASIC";
     private static final String EXTENDED = "EXTENDED";
 
+    /**
+     * Overwrites the warranties file with the given list.
+     *
+     * @param warranties the complete list of warranties to persist
+     * @throws RuntimeException if the file cannot be written
+     */
     public void saveAll(List<Warranty> warranties) {
         try {
             Files.createDirectories(FILE_PATH.getParent());
@@ -37,6 +52,16 @@ public class WarrantyRepository {
         }
     }
 
+    /**
+     * Reads every warranty stored in the warranties file, resolving the product and the
+     * sale of each one against the given lists. Returns an empty list if the file does
+     * not exist yet, the same convention used by every other repository in the project.
+     *
+     * @param products the products currently loaded in the inventory
+     * @param sales the sales currently registered
+     * @return the list of stored warranties
+     * @throws RuntimeException if the file cannot be read or a referenced id is missing
+     */
     public List<Warranty> loadAll(List<Product> products, List<Sale> sales) {
         List<Warranty> warranties = new ArrayList<>();
         if (!Files.exists(FILE_PATH)) {
