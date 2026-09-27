@@ -63,6 +63,9 @@ public class PromotionService {
     public void registerCategoryDiscount(String id, String name, LocalDate startDate, LocalDate endDate,
                                           double percentage, String targetCategory) {
         rejectIfIdExists(id);
+        if (!isValidTargetCategory(targetCategory)) {
+            throw new IllegalArgumentException("La categoria debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
+        }
         promotions.add(new CategoryDiscount(id, name, startDate, endDate, percentage, targetCategory));
         repository.saveAll(promotions);
     }
@@ -145,5 +148,18 @@ public class PromotionService {
         if (findById(id) != null) {
             throw new IllegalArgumentException("Ya existe una promocion con el codigo " + id + ".");
         }
+    }
+
+    /**
+     * Checks whether a category name is one of the three categories a
+     * {@link CategoryDiscount} is allowed to target.
+     *
+     * @param targetCategory the category name to validate
+     * @return true if it is VIDEOGAME, CONSOLE or ACCESSORY
+     */
+    private boolean isValidTargetCategory(String targetCategory) {
+        return "VIDEOGAME".equals(targetCategory)
+                || "CONSOLE".equals(targetCategory)
+                || "ACCESSORY".equals(targetCategory);
     }
 }
