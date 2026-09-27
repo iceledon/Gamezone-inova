@@ -123,16 +123,19 @@ public class Return {
      * @return el comprobante de la devolucion en forma de texto
      */
     public String generateReturnReceipt() {
+        double ratio = discountRatio();
         StringBuilder receipt = new StringBuilder();
         receipt.append("Devolucion ").append(id).append(" | Fecha: ").append(date).append("\n");
         receipt.append("  Venta original: ").append(originalSale.getId()).append("\n");
         receipt.append("  Productos devueltos:\n");
         for (Product product : returnedProducts) {
-            receipt.append("    - [").append(product.getId()).append("] ")
-                    .append(product.getTitle()).append(" ($").append(product.getPrice()).append(")\n");
+            double itemDiscount = product.getPrice() * ratio;
+            double itemRefund = product.getPrice() - itemDiscount;
+            receipt.append(String.format("    - [%s] %s | Precio: $%.2f, Descuento: -$%.2f, Reembolsado: $%.2f%n",
+                    product.getId(), product.getTitle(), product.getPrice(), itemDiscount, itemRefund));
         }
         receipt.append("  Motivo: ").append(reason).append("\n");
-        receipt.append("  Monto reembolsado: $").append(refundAmount);
+        receipt.append(String.format("  Monto reembolsado: $%.2f", refundAmount));
         return receipt.toString();
     }
 }
