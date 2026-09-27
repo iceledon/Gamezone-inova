@@ -87,18 +87,33 @@ public class Return {
     }
 
     /**
-     * Suma el precio de cada producto devuelto para saber cuanto hay que reembolsar, y
-     * deja ese valor guardado en el atributo refundAmount.
+     * Calcula cuanto hay que reembolsar de cada producto devuelto, aplicando la misma
+     * proporcion de descuento que tuvo la venta original, para no reembolsar mas de lo que
+     * el cliente realmente pago.
      *
      * @return el monto total a reembolsar
      */
     public double calculateRefundAmount() {
+        double ratio = discountRatio();
         double total = 0.0;
         for (Product product : returnedProducts) {
-            total = total + product.getPrice();
+            total = total + product.getPrice() * (1 - ratio);
         }
         this.refundAmount = total;
         return total;
+    }
+
+    /**
+     * @return la fraccion del precio de cada producto que descuento la promocion de la
+     *         venta original, o 0.0 si la venta no tuvo descuento o no tiene productos
+     *         sobre los cuales calcular la proporcion
+     */
+    private double discountRatio() {
+        double subtotal = originalSale.calculateSubtotal();
+        if (subtotal <= 0) {
+            return 0.0;
+        }
+        return originalSale.getDiscountAmount() / subtotal;
     }
 
     /**
