@@ -708,7 +708,7 @@ public class ConsoleUI {
             LocalDate startDate = askDate("Fecha de inicio (aaaa-mm-dd): ");
             LocalDate endDate = askDate("Fecha de fin (aaaa-mm-dd): ");
             double percentage = askDouble("Porcentaje de descuento: ");
-            String targetCategory = ask("Categoria objetivo (VIDEOGAME/CONSOLE): ");
+            String targetCategory = ask("Categoria objetivo (VIDEOGAME/CONSOLE/ACCESSORY): ");
             promotionService.registerCategoryDiscount(id, name, startDate, endDate, percentage, targetCategory);
             System.out.println("Promocion registrada correctamente.");
         } catch (RuntimeException e) {
