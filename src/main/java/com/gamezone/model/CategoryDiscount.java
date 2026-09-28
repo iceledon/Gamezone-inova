@@ -4,7 +4,8 @@ import java.time.LocalDate;
 
 /**
  * Promotion that grants a percentage discount, but only over the products of a sale that
- * belong to a specific category ({@code "VIDEOGAME"} or {@code "CONSOLE"}).
+ * belong to a specific category ({@code "VIDEOGAME"}, {@code "CONSOLE"} or
+ * {@code "ACCESSORY"}).
  */
 public class CategoryDiscount extends Promotion {
 
@@ -19,7 +20,8 @@ public class CategoryDiscount extends Promotion {
      * @param startDate      date the promotion becomes valid
      * @param endDate        date the promotion stops being valid
      * @param percentage     discount percentage to apply, between 0 and 100
-     * @param targetCategory category the discount applies to, {@code "VIDEOGAME"} or {@code "CONSOLE"}
+     * @param targetCategory category the discount applies to, {@code "VIDEOGAME"},
+     *                       {@code "CONSOLE"} or {@code "ACCESSORY"}
      */
     public CategoryDiscount(String id, String name, LocalDate startDate, LocalDate endDate,
                              double percentage, String targetCategory) {
@@ -80,6 +82,9 @@ public class CategoryDiscount extends Promotion {
         }
         if ("CONSOLE".equals(targetCategory)) {
             return product instanceof Console;
+        }
+        if ("ACCESSORY".equals(targetCategory)) {
+            return product instanceof Accessory;
         }
         return false;
     }
