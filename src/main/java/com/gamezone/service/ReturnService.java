@@ -8,6 +8,7 @@ import com.gamezone.persistence.ReturnRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Reglas de negocio de las devoluciones: registrar, consultar y balance mensual.
@@ -17,17 +18,20 @@ public class ReturnService {
     private final ReturnRepository repository;
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
     private final List<Return> returns;
 
     /**
      * @param repository repositorio para guardar las devoluciones
      * @param saleService servicio para buscar las ventas
      * @param productService servicio para devolver el stock
+     * @param accessoryService servicio para devolver el stock de accesorios
      */
-    public ReturnService(ReturnRepository repository, SaleService saleService, ProductService productService) {
+        public ReturnService(ReturnRepository repository, SaleService saleService, ProductService productService, AccessoryService accessoryService) {
         this.repository = repository;
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.returns = new ArrayList<>(repository.loadAll());
     }
 
