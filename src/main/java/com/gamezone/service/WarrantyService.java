@@ -1,16 +1,17 @@
 package com.gamezone.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.gamezone.model.BasicWarranty;
 import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
+import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Business operations available for warranties.
@@ -26,23 +27,30 @@ public class WarrantyService {
     private final List<Warranty> warranties;
 
     /**
-     * Creates the service and loads the warranty history into memory, resolving the
-     * products and sales each stored warranty references through the given services.
-     * <p>
-     * {@code saleService} must already have its own sales loaded when this constructor
-     * runs (which is always true, since {@code SaleService} loads its history in its own
-     * constructor), so the warranty-to-sale references can be resolved on the first read.
-     *
-     * @param repository the repository used to read and write warranties
-     * @param productService the service that owns the product inventory
-     * @param saleService the service that owns the sales history
-     */
-    public WarrantyService(WarrantyRepository repository, ProductService productService,
-                           SaleService saleService) {
-        this.repository = repository;
-        this.warranties = new ArrayList<>(
-                repository.loadAll(productService.listAll(), saleService.getAllSales()));
-    }
+ * Creates the service and loads existing warranties.
+ * Resolves sales directly through SaleRepository.
+ *
+ * @param repository repository used to read and write warranties
+ * @param saleRepository repository used to load existing sales
+ * @param productService service that provides the products
+ * @param personService service that provides customers and sellers
+ */
+    public WarrantyService(WarrantyRepository repository,
+                       SaleRepository saleRepository,
+                       ProductService productService,
+                       PersonService personService) {
+    this.repository = repository;
+
+    List<Sale> sales = saleRepository.load(
+            productService.listAll(),
+            personService.listCustomers(),
+            personService.listSellers()
+    );
+
+    this.warranties = new ArrayList<>(
+            repository.loadAll(productService.listAll(), sales)
+    );
+}
 
     /**
      * Creates, persists and returns the automatic basic warranty for a product sold.

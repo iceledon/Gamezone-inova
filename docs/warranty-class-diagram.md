@@ -76,6 +76,8 @@ class WarrantyService {
 +listWarrantiesExpiringSoon(int) List~Warranty~
 }
 WarrantyService --> WarrantyRepository
+WarrantyService --> SaleRepository : resolves sale references
+WarrantyService --> PersonService : resolves customers and sellers
 WarrantyService --> Warranty : manages
 
 class SaleService {
