@@ -62,7 +62,7 @@ SaleService saleService = new SaleService(
 saleService.setWarrantyService(warrantyService);
 
           ReturnRepository returnRepository = new ReturnRepository(saleService, productService , accessoryService);
-          ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService);
+          ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService, warrantyService);
 
             ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService,
                     warrantyService, promotionService, accessoryService);

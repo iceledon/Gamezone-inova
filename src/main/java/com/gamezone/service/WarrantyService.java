@@ -148,4 +148,27 @@ public class WarrantyService {
     private String generateWarrantyId() {
         return String.format("G%03d", warranties.size() + 1);
     }
+        /**
+     * Cancels warranties for a returned product in a specific sale.
+     *
+     * @param productId id of the returned product
+     * @param saleId id of the original sale
+     * @return refundable cost of the cancelled warranties
+     */
+    public double cancelWarranties(String productId, String saleId) {
+        double refundable = 0.0;
+        List<Warranty> toRemove = new ArrayList<>();
+
+        for (Warranty warranty : warranties) {
+            if (warranty.getProduct().getId().equals(productId)
+                    && warranty.getSale().getId().equals(saleId)) {
+                refundable += warranty.getAdditionalCost();
+                toRemove.add(warranty);
+            }
+        }
+
+        warranties.removeAll(toRemove);
+        repository.saveAll(warranties);
+        return refundable;
+    }
 }
