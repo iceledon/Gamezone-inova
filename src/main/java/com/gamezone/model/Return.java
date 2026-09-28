@@ -20,6 +20,7 @@ public class Return {
     private List<Product> returnedProducts;
     private String reason;
     private double refundAmount;
+    private double warrantyRefund;
 
     /**
      * Crea una devolucion nueva con sus datos basicos.
@@ -32,7 +33,7 @@ public class Return {
      * @param returnedProducts productos que el cliente esta devolviendo
      * @param reason motivo que dio el cliente
      */
-    public Return(String id, LocalDate date, Sale originalSale, List<Product> returnedProducts, String reason) {
+    public Return(String id, LocalDate date, Sale originalSale, List<Product> returnedProducts, String reason, double warrantyRefund) {
         if (returnedProducts == null || returnedProducts.isEmpty()) {
             throw new IllegalArgumentException("La devolucion debe contener al menos un producto.");
         }
@@ -41,6 +42,7 @@ public class Return {
         this.originalSale = originalSale;
         this.returnedProducts = new ArrayList<>(returnedProducts);
         this.reason = reason;
+        this.warrantyRefund = warrantyRefund;
         this.refundAmount = calculateRefundAmount();
     }
 
@@ -82,6 +84,9 @@ public class Return {
     /**
      * @return el monto que se le reembolsa al cliente
      */
+    public double getWarrantyRefund() {
+    return warrantyRefund;
+}
     public double getRefundAmount() {
         return refundAmount;
     }
@@ -99,6 +104,7 @@ public class Return {
         for (Product product : returnedProducts) {
             total = total + product.getPrice() * (1 - ratio);
         }
+        total = total + warrantyRefund;
         this.refundAmount = total;
         return total;
     }
@@ -135,6 +141,9 @@ public class Return {
                     product.getId(), product.getTitle(), product.getPrice(), itemDiscount, itemRefund));
         }
         receipt.append("  Motivo: ").append(reason).append("\n");
+        if (warrantyRefund > 0) {
+    receipt.append(String.format("  Garantía reembolsada: $%.2f%n", warrantyRefund));
+}
         receipt.append(String.format("  Monto reembolsado: $%.2f", refundAmount));
         return receipt.toString();
     }
