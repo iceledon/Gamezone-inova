@@ -1,5 +1,13 @@
 package com.gamezone.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
 import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.ExtendedWarranty;
@@ -9,21 +17,13 @@ import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.SaleRepository;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-
 /**
  * Business operations available for sales.
  * <p>
- * This is the class that owns the business rules of the workshop: a sale needs at least
- * one product, every participant and product must exist, and there must be enough stock
- * for every unit requested. Only when all of them hold does the sale get created, the
- * inventory get updated and the result persisted.
+ * A sale needs at least one item, every participant and item must exist,
+ * and there must be enough stock for every unit requested. Once validated,
+ * the service creates the sale, applies the best promotion, assigns warranties,
+ * updates inventory and persists the result.
  */
 public class SaleService {
 
@@ -36,8 +36,8 @@ public class SaleService {
     private WarrantyService warrantyService;
 
     /**
-     * Creates the service and loads the sales history into memory, resolving the entities
-     * each stored sale references through the other services.
+     * Creates the service and loads the sales history into memory, resolving
+     * the entities each stored sale references through the other services.
      *
      * @param repository       the repository used to read and write sales
      * @param productService   the service that owns the product inventory
@@ -45,15 +45,18 @@ public class SaleService {
      * @param promotionService the service used to find the best promotion for a sale
      * @param accessoryService the service that owns the accessory inventory
      */
-    public SaleService(SaleRepository repository, ProductService productService, PersonService personService,
-                        PromotionService promotionService, AccessoryService accessoryService) {
+    public SaleService(SaleRepository repository, ProductService productService,
+                       PersonService personService, PromotionService promotionService,
+                       AccessoryService accessoryService) {
         this.repository = repository;
         this.productService = productService;
         this.personService = personService;
         this.promotionService = promotionService;
         this.accessoryService = accessoryService;
+
         List<Product> catalog = new ArrayList<>(productService.listAll());
         catalog.addAll(accessoryService.listAllAccessories());
+
         this.sales = new ArrayList<>(repository.load(
                 catalog,
                 personService.listCustomers(),
@@ -61,8 +64,8 @@ public class SaleService {
     }
 
     /**
-     * Connects this service with the warranty module. Wired from {@code Main} right after
-     * both services are built, to avoid a circular constructor dependency between the two.
+     * Connects this service with the warranty module.
+     * Called from {@code Main} after the required services are constructed.
      *
      * @param warrantyService the service used to assign warranties automatically
      */
@@ -71,32 +74,42 @@ public class SaleService {
     }
 
     /**
-     * Registers a new sale after validating every business rule, then discounts the sold
-     * units from the inventory, generates the corresponding warranties, applies the best
-     * available promotion and persists the updated history.
+     * Registers a new sale in the following order:
+     * <ol>
+     *   <li>Validate items, customer, seller and available stock.</li>
+     *   <li>Create the sale.</li>
+     *   <li>Apply the best active promotion to the item subtotal.</li>
+     *   <li>Assign console warranties and add extended warranty costs.</li>
+     *   <li>Update inventory.</li>
+     *   <li>Persist the updated sales history.</li>
+     * </ol>
      *
-     * @param customerId                      the id of the customer making the purchase
-     * @param sellerId                        the id of the seller handling the sale
-     * @param productIds                      the ids of the products or accessories being sold, one entry per unit
-     * @param productIdsWithExtendedWarranty  ids of the products (consoles) that should also
-     *                                        receive an extended warranty; null or empty means
-     *                                        no extended warranty is applied
+     * @param customerId                     the id of the customer making the purchase
+     * @param sellerId                       the id of the seller handling the sale
+     * @param productIds                     the ids of the products or accessories
+     *                                       being sold, one entry per unit
+     * @param productIdsWithExtendedWarranty ids of the consoles that should also
+     *                                       receive an extended warranty; null or
+     *                                       empty means no extended warranty is applied
      * @return the registered sale
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds,
                              List<String> productIdsWithExtendedWarranty) {
         if (productIds == null || productIds.isEmpty()) {
-            throw new IllegalArgumentException("La venta debe contener al menos un producto.");
+            throw new IllegalArgumentException(
+                    "La venta debe contener al menos un producto.");
         }
 
         Customer customer = personService.findCustomerById(customerId);
         if (customer == null) {
-            throw new IllegalArgumentException("No existe un cliente con la identificacion " + customerId + ".");
+            throw new IllegalArgumentException(
+                    "No existe un cliente con la identificacion " + customerId + ".");
         }
 
         Seller seller = personService.findSellerById(sellerId);
         if (seller == null) {
-            throw new IllegalArgumentException("No existe un vendedor con la identificacion " + sellerId + ".");
+            throw new IllegalArgumentException(
+                    "No existe un vendedor con la identificacion " + sellerId + ".");
         }
 
         List<Product> soldProducts = new ArrayList<>();
@@ -104,7 +117,9 @@ public class SaleService {
             try {
                 soldProducts.add(findItemById(productId));
             } catch (NoSuchElementException e) {
-                throw new IllegalArgumentException("No existe un producto ni un accesorio con el codigo " + productId + ".");
+                throw new IllegalArgumentException(
+                        "No existe un producto ni un accesorio con el codigo "
+                                + productId + ".");
             }
         }
 
@@ -118,28 +133,33 @@ public class SaleService {
             }
         }
 
-        Sale sale = new Sale(generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
+        Sale sale = new Sale(
+                generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
 
-        // Generacion automatica de garantia basica y, si se pidio, garantia extendida
-        if (warrantyService != null) {
-            for (Product product : soldProducts) {
-                if (product instanceof Console) {
-                    warrantyService.assignBasicWarranty(product, sale, sale.getDate());
-                    if (productIdsWithExtendedWarranty != null
-                            && productIdsWithExtendedWarranty.contains(product.getId())) {
-                        ExtendedWarranty extendedWarranty =
-                                warrantyService.assignExtendedWarranty(product, sale, sale.getDate());
-                        sale.addExtraCost(extendedWarranty.getAdditionalCost());
-                    }
-                }
-            }
-        }
-
-        // Aplicacion automatica de la mejor promocion vigente, si hay alguna aplicable
+        // Apply the best active promotion before adding warranty costs.
         Promotion bestPromotion = promotionService.findBestPromotionFor(sale);
         if (bestPromotion != null) {
             sale.setAppliedPromotionName(bestPromotion.getName());
             sale.setDiscountAmount(bestPromotion.calculateDiscount(sale));
+        }
+
+        // Assign basic and optional extended warranties to consoles.
+        if (warrantyService != null) {
+            for (Product product : soldProducts) {
+                if (product instanceof Console) {
+                    warrantyService.assignBasicWarranty(
+                            product, sale, sale.getDate());
+
+                    if (productIdsWithExtendedWarranty != null
+                            && productIdsWithExtendedWarranty.contains(product.getId())) {
+                        ExtendedWarranty extendedWarranty =
+                                warrantyService.assignExtendedWarranty(
+                                        product, sale, sale.getDate());
+
+                        sale.addExtraCost(extendedWarranty.getAdditionalCost());
+                    }
+                }
+            }
         }
 
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
@@ -156,11 +176,14 @@ public class SaleService {
      *
      * @param customerId the id of the customer making the purchase
      * @param sellerId   the id of the seller handling the sale
-     * @param productIds the ids of the products or accessories being sold, one entry per unit
+     * @param productIds the ids of the products or accessories being sold,
+     *                   one entry per unit
      * @return the registered sale
      */
-    public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
-        return registerSale(customerId, sellerId, productIds, Collections.emptyList());
+    public Sale registerSale(String customerId, String sellerId,
+                             List<String> productIds) {
+        return registerSale(
+                customerId, sellerId, productIds, Collections.emptyList());
     }
 
     /**
@@ -173,8 +196,8 @@ public class SaleService {
     }
 
     /**
-     * Returns the purchase history of a customer. This is why {@code Customer} does not
-     * need to keep its own list of sales.
+     * Returns the purchase history of a customer.
+     * This is why {@code Customer} does not need to keep its own list of sales.
      *
      * @param customerId the id of the customer to filter by
      * @return the sales made by that customer
@@ -206,11 +229,11 @@ public class SaleService {
     }
 
     /**
-     * Busca una venta por su identificador. Este metodo lo necesita el modulo de
-     * devoluciones, que siempre debe referenciar una venta que ya existe.
+     * Finds a sale by its identifier.
+     * The return module uses this method to reference an existing sale.
      *
-     * @param id identificador de la venta a buscar
-     * @return la venta encontrada, o null si no existe ninguna con ese id
+     * @param id the identifier of the sale to find
+     * @return the matching sale, or null if no sale has that identifier
      */
     public Sale findById(String id) {
         for (Sale sale : sales) {
@@ -222,12 +245,11 @@ public class SaleService {
     }
 
     /**
-     * Looks up an item sold in the store by id, checking the product catalog first and
-     * falling back to the accessory catalog, since a sale can include either. This is the
-     * one place that needs to know both catalogs exist; everything else in this class just
-     * works with {@code Product} references, because {@code Accessory extends Product}.
+     * Looks up an item sold in the store by id, checking the product catalog
+     * first and falling back to the accessory catalog.
+     * Both catalogs contain objects that can be used as {@code Product} references.
      *
-     * @param id id of the product or accessory to find
+     * @param id the id of the product or accessory to find
      * @return the matching product or accessory
      * @throws NoSuchElementException if neither catalog has an item with that id
      */
@@ -240,11 +262,11 @@ public class SaleService {
     }
 
     /**
-     * Decreases the stock of a sold item, delegating to whichever service actually owns
-     * it, the same way {@link #findItemById(String)} resolves it for lookups.
+     * Decreases the stock of a sold item through the service that owns it,
+     * using the same catalog lookup order as {@link #findItemById(String)}.
      *
-     * @param id     id of the product or accessory whose stock was sold
-     * @param amount units to remove from inventory
+     * @param id     the id of the product or accessory whose stock was sold
+     * @param amount the number of units to remove from inventory
      */
     private void updateStockOf(String id, int amount) {
         try {
@@ -255,8 +277,8 @@ public class SaleService {
     }
 
     /**
-     * Counts how many units of each product a sale requests, since the same product id
-     * may appear more than once in the same sale.
+     * Counts how many units of each product a sale requests, since the same
+     * product id may appear more than once in the same sale.
      *
      * @param soldProducts the products of the sale, one entry per unit
      * @return the number of units requested per product id
