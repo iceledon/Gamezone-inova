@@ -1,12 +1,5 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Product;
-import com.gamezone.model.Return;
-import com.gamezone.model.Sale;
-import com.gamezone.service.AccessoryService;
-import com.gamezone.service.ProductService;
-import com.gamezone.service.SaleService;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -16,6 +9,13 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gamezone.model.Product;
+import com.gamezone.model.Return;
+import com.gamezone.model.Sale;
+import com.gamezone.service.AccessoryService;
+import com.gamezone.service.ProductService;
+import com.gamezone.service.SaleService;
 
 /**
  * Guarda y lee las devoluciones del archivo data/returns.csv.
@@ -105,7 +105,8 @@ public class ReturnRepository {
                 + oneReturn.getOriginalSale().getId() + SEPARATOR
                 + productIds + SEPARATOR
                 + oneReturn.getReason() + SEPARATOR
-                + oneReturn.getRefundAmount();
+                + oneReturn.getRefundAmount() + SEPARATOR
+                + oneReturn.getWarrantyRefund();
     }
 
     /**
@@ -120,7 +121,7 @@ public class ReturnRepository {
         LocalDate date = LocalDate.parse(fields[1]);
         Sale sale = saleService.findById(fields[2]);
         String reason = fields[4];
-
+        double warrantyRefund = fields.length > 6 ? Double.parseDouble(fields[6]) : 0.0;
         List<Product> found = new ArrayList<>();
         String[] ids = fields[3].split(PRODUCT_SEPARATOR);
                for (int i = 0; i < ids.length; i++) {
@@ -132,7 +133,7 @@ public class ReturnRepository {
                 found.add(item);
             }
         }
-        return new Return(id, date, sale, found, reason);
+        return new Return(id, date, sale, found, reason, warrantyRefund);
     }
         private Product findInList(List<? extends Product> items, String id) {
         for (Product item : items) {
