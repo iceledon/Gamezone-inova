@@ -44,19 +44,25 @@ public class Main {
             PersonService personService = new PersonService(personRepository);
             PromotionService promotionService = new PromotionService(promotionRepository);
             AccessoryService accessoryService = new AccessoryService(accessoryRepository);
-            SaleService saleService = new SaleService(saleRepository, productService, personService,
-                    promotionService, accessoryService);
+                     WarrantyService warrantyService = new WarrantyService(
+                    warrantyRepository,
+                    saleRepository,
+                    productService,
+                    personService,
+                    accessoryService);
 
-            // WarrantyService se crea despues de SaleService porque necesita las ventas
-            // ya cargadas para reconstruir el historial de garantias.
-            WarrantyService warrantyService =
-                    new WarrantyService(warrantyRepository, productService, saleService);
-            // Se conecta con un setter (no por constructor) para evitar un ciclo
-            // SaleService -> WarrantyService -> SaleService.
-            saleService.setWarrantyService(warrantyService);
+SaleService saleService = new SaleService(
+        saleRepository,
+        productService,
+        personService,
+        promotionService,
+        accessoryService
+);
 
-            ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
-            ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
+saleService.setWarrantyService(warrantyService);
+
+          ReturnRepository returnRepository = new ReturnRepository(saleService, productService , accessoryService);
+          ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService, warrantyService);
 
             ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService,
                     warrantyService, promotionService, accessoryService);

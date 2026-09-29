@@ -1,10 +1,5 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Customer;
-import com.gamezone.model.Product;
-import com.gamezone.model.Sale;
-import com.gamezone.model.Seller;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -15,15 +10,20 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gamezone.model.Customer;
+import com.gamezone.model.Product;
+import com.gamezone.model.Sale;
+import com.gamezone.model.Seller;
+
 /**
  * Reads and writes {@link Sale} records to {@code data/sales.txt}.
  * <p>
  * A sale references a customer, a seller and several products, so the file stores only
  * their ids and the sale is rebuilt against the entities already loaded in memory:
- * <pre>
- * id;date;customerId;sellerId;productId1,productId2,...
+  * <pre>
+ * id;date;customerId;sellerId;productIds;extraCost;discountAmount;appliedPromotionName
  * </pre>
- * The lists needed to resolve those ids are received as parameters instead of being
+ * ts needed to resolve those ids are received as parameters instead of being
  * pulled from the service layer, so this class keeps depending only on {@code model} and
  * the layer direction {@code persistence -> model} is never inverted.
  */
@@ -97,13 +97,17 @@ public class SaleRepository {
             }
             productIds.append(products.get(i).getId());
         }
-        return String.join(SEPARATOR,
+               return String.join(SEPARATOR,
                 sale.getId(),
                 sale.getDate().toString(),
                 sale.getCustomer().getId(),
                 sale.getSeller().getId(),
                 productIds.toString(),
-                String.valueOf(sale.getExtraCost()));
+                String.valueOf(sale.getExtraCost()),
+                String.valueOf(sale.getDiscountAmount()),
+                sale.getAppliedPromotionName() == null
+                        ? ""
+                        : sale.getAppliedPromotionName());
     }
 
     /**
@@ -151,9 +155,20 @@ public class SaleRepository {
             soldProducts.add(found);
         }
         Sale sale = new Sale(id, date, customer, seller, soldProducts);
+
         if (fields.length > 5 && !fields[5].isBlank()) {
             sale.addExtraCost(Double.parseDouble(fields[5]));
         }
+
+        // Older records without promotion fields keep the default values.
+        if (fields.length > 6 && !fields[6].isBlank()) {
+            sale.setDiscountAmount(Double.parseDouble(fields[6]));
+        }
+
+        if (fields.length > 7 && !fields[7].isBlank()) {
+            sale.setAppliedPromotionName(fields[7]);
+        }
+
         return sale;
     }
 }

@@ -1,13 +1,15 @@
 package com.gamezone.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.persistence.ReturnRepository;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Reglas de negocio de las devoluciones: registrar, consultar y balance mensual.
@@ -17,17 +19,28 @@ public class ReturnService {
     private final ReturnRepository repository;
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
+
     private final List<Return> returns;
 
     /**
      * @param repository repositorio para guardar las devoluciones
      * @param saleService servicio para buscar las ventas
      * @param productService servicio para devolver el stock
+     * @param accessoryService servicio para devolver el stock de accesorios
      */
-    public ReturnService(ReturnRepository repository, SaleService saleService, ProductService productService) {
+        public ReturnService(
+        ReturnRepository repository,
+        SaleService saleService,
+        ProductService productService,
+        AccessoryService accessoryService,
+        WarrantyService warrantyService) {
         this.repository = repository;
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
         this.returns = new ArrayList<>(repository.loadAll());
     }
 
@@ -65,11 +78,23 @@ public class ReturnService {
         }
 
         String newId = "D" + String.format("%03d", returns.size() + 1);
-        Return newReturn = new Return(newId, LocalDate.now(), sale, toReturn, reason);
+       double warrantyRefund = 0.0;
+for (Product product : toReturn) {
+    if (product instanceof Console) {
+        warrantyRefund += warrantyService.cancelWarranties(product.getId(), saleId);
+    }
+}
 
-        for (int i = 0; i < toReturn.size(); i++) {
-            productService.restoreStock(toReturn.get(i).getId(), 1);
-        }
+Return newReturn = new Return(
+        newId, LocalDate.now(), sale, toReturn, reason, warrantyRefund);
+
+        for (Product product : toReturn) {
+    if (product instanceof Accessory) {
+        accessoryService.restoreStock(product.getId(), 1);
+    } else {
+        productService.restoreStock(product.getId(), 1);
+    }
+}
 
         returns.add(newReturn);
         repository.saveAll(returns);

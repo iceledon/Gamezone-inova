@@ -1,103 +1,261 @@
 # GameZone Inova
 
-Console application for managing a video game and console store: it registers products,
-customers, sellers and sales, and updates the inventory automatically every time a sale is
-registered. Data survives between runs through plain-text files, with no database involved.
+Java console application for managing a video game store with products,
+accessories, customers, sellers, promotions, sales, warranties and returns.
 
-Built in Java with a strict four-layer architecture as the workshop requires.
+The application stores data in text files under `data/`.
 
 ## Requirements
 
-- JDK 17 or later
-- Maven 3.8 or later
+- JDK 17 or later.
+- Maven 3.8 or later for the Maven build.
 
-## Build
+## Build and run with Maven
 
-```
+From the repository root:
+
+```text
 mvn clean package
-```
-
-## Run
-
-```
 java -jar target/gamezone-inova-1.0.0-SNAPSHOT.jar
 ```
 
-The application must be run from the repository root, because the data files are read from and
-written to the `data/` folder using relative paths.
+## Compile and run without Maven on Windows
 
-## Architecture
+The application declares no external dependencies. In PowerShell, from
+the repository root:
 
-Four layers under the `com.gamezone` package, with dependencies flowing in one direction only:
-`ui → service → persistence → model`.
+```powershell
+New-Item -ItemType Directory -Force -Path target/manual-classes | Out-Null
 
-```mermaid
-flowchart TD
-    UI["ui — console menus"] --> SERVICE["service — business rules"]
-    SERVICE --> PERSISTENCE["persistence — file input/output"]
-    SERVICE --> MODEL["model — domain entities"]
-    PERSISTENCE --> MODEL
+$gamezoneSources = @(
+    Get-ChildItem -Path src/main/java -Recurse -Filter *.java |
+    Select-Object -ExpandProperty FullName
+)
+
+javac --release 17 -encoding UTF-8 -d target/manual-classes $gamezoneSources
 ```
 
-| Layer | Responsibility |
-|---|---|
-| `model` | Domain entities: `Person`, `Customer`, `Seller`, `Product`, `VideoGame`, `Console`, `Accessory`, `Controller`, `Cable`, `Memory`, `Sale`, `Return`, `Warranty`, `BasicWarranty`, `ExtendedWarranty`. Depends on nothing. |
-| `persistence` | Reads and writes the files under `data/`: `PersonRepository`, `ProductRepository`, `AccessoryRepository`, `SaleRepository`, `ReturnRepository`, `WarrantyRepository`. |
-| `service` | Business rules and coordination: `PersonService`, `ProductService`, `AccessoryService`, `SaleService`, `ReturnService`, `WarrantyService`. |
-| `ui` | `ConsoleUI`, the only class that talks to the user. Never touches a repository. |
+If compilation succeeds, run:
 
-## Data files
+```powershell
+java -cp target/manual-classes com.gamezone.Main
+```
 
-Plain text, one record per line, fields separated by `;`:
+This compiles application sources; it does not execute an automated
+test suite.
 
-| File | Format |
-|---|---|
-| `data/products.txt` | `VIDEOGAME;id;title;price;quantity;platform;genre;ageRating`<br>`CONSOLE;id;title;price;quantity;brand;model;generation` |
-| `data/customers.txt` | `id;name;phone;email` |
-| `data/sellers.txt` | `id;name;phone;employeeCode;shift` — preloaded with three sellers |
-| `data/sales.txt` | `id;date;customerId;sellerId;productId1,productId2,...;extraCost` |
-| `data/returns.csv` | `id;date;saleId;productId1,productId2,...;reason;refundAmount` |
-| `data/warranties.csv` | `BASIC/EXTENDED;id;productId;saleId;startDate` |
-| `data/accessories.csv` | `CONTROLLER,id,title,price,quantity,connectionType,compatibleConsoleIds`<br>`CABLE,id,title,price,quantity,lengthMeters,connectorType,compatibleConsoleIds`<br>`MEMORY,id,title,price,quantity,capacityGb,memoryType,compatibleConsoleIds`<br>(`compatibleConsoleIds` is a list of console ids joined with `\|`, empty if none) — preloaded with three accessories |
-
-Sales store only the ids of what they reference; the objects are resolved against the products and
-people already loaded in memory when the application starts.
+Run the application from the repository root because data paths are relative.
 
 ## Available operations
 
-**Products:** register a video game · register a console · list the inventory
-**People:** register a customer · list customers · list sellers
-**Sales:** register a sale (products, accessories, or a mix of both) · full sales history · history by customer · history by seller
-**Returns:** register a return · full return history · history by customer · history by sale · monthly balance
-**Warranties:** consult warranty by product and sale · list all warranties · list active warranties · list warranties expiring soon
-**Accessories:** register a controller · register a cable · register a memory card · list all accessories · list by type · list accessories compatible with a console
+- **Products:** register videogames and consoles; list inventory.
+- **People:** register customers; list customers and sellers.
+- **Accessories:** register controllers, cables and memory cards; query
+  accessories by type or console compatibility.
+- **Promotions:** register percentage, category and bulk purchase discounts;
+  list registered and active promotions.
+- **Sales:** register sales containing products and accessories; consult
+  history by customer or seller.
+- **Warranties:** query coverage by product and sale; list all, active and
+  soon-to-expire warranties.
+- **Returns:** register returns; query history by customer or sale; display
+  monthly sales, returns and net balance.
 
-Registering a sale validates that it has at least one product, that the customer, the seller and
-every product exist, and that there is enough stock for every unit requested; only then is the
-inventory discounted and the sale saved. For each console sold, a basic factory defect warranty
-(6 months, no additional cost) is automatically assigned, and an optional extended warranty (12 months,
-10% of product price) can be requested and added to the sale total.
+## Integrated sale flow
 
-Registering a return validates that the original sale exists, that no more than 30 calendar days
-have passed since it was made, and that every product being returned really belongs to that sale;
-only then is the stock restored and the return saved. The monthly balance subtracts the refunds of
-a month from the sales of that same month.
+Sale registration validates the customer, seller, items and available stock.
+It creates the sale, assigns the best active promotion, assigns console
+warranties, updates inventory and saves the sale.
+
+Only one promotion applies: the active promotion offering the highest
+positive monetary discount. Category promotions support `VIDEOGAME`,
+`CONSOLE` and `ACCESSORY`.
+
+Consoles receive a basic warranty. An optional extended warranty adds its
+cost separately from the item subtotal used for discounts.
+
+```text
+sale total = item subtotal - promotion discount + warranty costs
+```
+
+The saved sale includes its warranty costs, discount amount and applied
+promotion name.
+
+## Integrated return flow
+
+Return registration checks that the original sale exists, that it is
+within the 30-day return period and that requested items belong to it.
+
+Stock is restored through `ProductService` or `AccessoryService`,
+depending on the item type.
+
+The original sale discount is allocated proportionally across item prices:
+
+```text
+discount ratio = original discount / original item subtotal
+item refund = item price * (1 - discount ratio)
+total refund = sum of item refunds + warranty refund
+```
+
+When the original subtotal is zero or negative, the discount ratio is zero.
+
+Returning a console removes warranties matching its product and sale
+identifiers and adds their additional costs to the refund.
+
+The monthly balance reports sales and returns separately, then calculates:
+
+```text
+monthly net balance = monthly sales - monthly returns
+```
+
+Sales are counted by sale date; returns are counted by return date.
+
+## Integration adjustments
+
+| Adjustment | Result |
+|---|---|
+| A1 | Category promotions recognize accessories; registration validates the three supported categories. |
+| A2 | `WarrantyService` loads sales through `SaleRepository`, removing its dependency on `SaleService`. |
+| A3 | Sale registration assigns the promotion before generating warranties. |
+| A4 | Accessory returns restore accessory stock and can be resolved when loading return records. |
+| A5 | Item refunds apply the original sale's proportional discount. |
+| A6 | Monthly sales, returns and net balance are exposed separately; existing behavior was reviewed. |
+| A7 | Console returns cancel matching warranties and include their refundable costs. |
+
+Additional persistence corrections save promotion information with each
+sale and include accessories when reconstructing sales for warranty loading.
+
+## Architecture
+
+The application has four packages under `com.gamezone`:
+
+| Layer | Responsibility |
+|---|---|
+| `model` | Products, people, accessories, promotions, sales, warranties and returns. |
+| `persistence` | File access through the corresponding repositories. |
+| `service` | Business rules and coordination across modules. |
+| `ui` | Console interaction through `ConsoleUI`. |
+
+`Main` constructs and connects the application components.
+
+The intended layer direction is `ui -> service -> persistence -> model`,
+with services also using model objects and the UI reading returned objects.
+
+An existing exception is `ReturnRepository`, which depends on
+`SaleService`, `ProductService` and `AccessoryService` to resolve identifiers.
+See [the layers diagram](docs/layers-diagram.md).
+
+`WarrantyService` receives `SaleRepository`, `ProductService`,
+`PersonService` and `AccessoryService` during construction. It combines
+products and accessories before loading sale and warranty references.
+
+## Data files
+
+Most files use semicolons between fields. Accessories use commas.
+
+| File | Record format |
+|---|---|
+| `data/products.txt` | `VIDEOGAME;id;title;price;quantity;platform;genre;ageRating` or `CONSOLE;id;title;price;quantity;brand;model;generation` |
+| `data/customers.txt` | `id;name;phone;email` |
+| `data/sellers.txt` | `id;name;phone;employeeCode;shift` |
+| `data/sales.txt` | `id;date;customerId;sellerId;productIds;extraCost;discountAmount;appliedPromotionName` |
+| `data/returns.csv` | `id;date;saleId;productIds;reason;refundAmount;warrantyRefund` |
+| `data/warranties.csv` | `BASIC/EXTENDED;id;productId;saleId;startDate` |
+| `data/promotions.csv` | Formats listed below. |
+| `data/accessories.csv` | Formats listed below. |
+
+Sale and return product identifiers are separated by commas.
+
+Promotion records:
+
+```text
+PERCENTAGE;id;name;startDate;endDate;percentage
+CATEGORY;id;name;startDate;endDate;percentage;targetCategory
+BULK;id;name;startDate;endDate;minimumQuantity;percentage
+```
+
+Accessory records:
+
+```text
+CONTROLLER,id,title,price,quantity,connectionType,compatibleConsoleIds
+CABLE,id,title,price,quantity,lengthMeters,connectorType,compatibleConsoleIds
+MEMORY,id,title,price,quantity,capacityGb,memoryType,compatibleConsoleIds
+```
+
+Compatible console identifiers are separated by `|`.
+
+Older sales without promotion fields remain readable. Missing discount
+amounts default to zero, and missing promotion names remain unset.
+
+Older return records without `warrantyRefund` load with a zero warranty
+refund. If the field is present, it must contain a numeric value.
+
+## Persistence corrections and remaining limitations
+
+`SaleRepository` now saves and restores `discountAmount` and
+`appliedPromotionName`, in addition to warranty costs.
+
+Previously unsaved discounts cannot be recovered automatically from older
+records. The application does not recalculate historical promotions to
+replace missing information.
+
+`WarrantyService` now combines the product and accessory catalogs when
+loading sales and warranty references. This addresses unresolved accessory
+identifiers during warranty initialization.
+
+Compilation succeeded with Java 17 compatibility. End-to-end restart
+and refund verification remains pending.
+
+Remaining limitations:
+
+- `ReturnRepository` recalculates refunds when loading instead of
+  restoring the saved `refundAmount`. Values depend on reconstructed
+  sales and current product prices.
+- Sales reference catalog products rather than storing a historical
+  snapshot of each item's price.
+- `ReturnRepository` depends on services, contrary to the intended
+  strict layer direction.
+
+The sample accessory promotion expires on 2026-09-26. Use a promotion
+valid on the demonstration date when checking automatic discounts.
+
+## Verification
+
+The final integration scenario should include:
+
+1. A console and accessory sale with an active promotion and extended warranty.
+2. Verification of subtotal, discount, warranty cost and total.
+3. Accessory and console returns, including restored stock and warranty refund.
+4. Verification of monthly sales, returns and net balance.
+5. Application restart and verification of restored records and amounts.
+6. Loading older sale records that do not contain promotion fields.
+
+The checklist describes required verification, not a claim that every
+scenario has passed.
 
 ## Documentation
 
-- [TEAM.md](TEAM.md) — members, roles and committed activities
-- [docs/analysis.md](docs/analysis.md) — answers to the orienting questions
-- [docs/hierarchy-diagram.md](docs/hierarchy-diagram.md) — inheritance in the model layer
-- [docs/class-diagram.md](docs/class-diagram.md) — full class diagram of the four layers
-- [docs/return-analysis.md](docs/return-analysis.md) — answers to the return module orienting questions
-- [docs/return-class-diagram.md](docs/return-class-diagram.md) — class diagram of the return module
-- [docs/warranty-analysis.md](docs/warranty-analysis.md) — answers to the warranty module orienting questions
-- [docs/warranty-class-diagram.md](docs/warranty-class-diagram.md) — class diagram of the warranty module
-- [docs/accessory-analysis.md](docs/accessory-analysis.md) — answers to the accessory module orienting questions
-- [docs/accessory-class-diagram.md](docs/accessory-class-diagram.md) — class diagram of the accessory module
-- [docs/layers-diagram.md](docs/layers-diagram.md) — layer dependencies
-- [docs/ai-usage/](docs/ai-usage) — AI usage logs of each team member
+- [Team](TEAM.md)
+- [Initial analysis](docs/analysis.md)
+- [Initial hierarchy diagram](docs/hierarchy-diagram.md)
+- [Initial class diagram](docs/class-diagram.md)
+- [Accessory analysis](docs/accessory-analysis.md)
+- [Accessory class diagram](docs/accessory-class-diagram.md)
+- [Promotion analysis](docs/promotion-analysis.md)
+- [Promotion class diagram](docs/promotion-class-diagram.md)
+- [Warranty analysis](docs/warranty-analysis.md)
+- [Warranty class diagram](docs/warranty-class-diagram.md)
+- [Return analysis](docs/return-analysis.md)
+- [Return class diagram](docs/return-class-diagram.md)
+- [Monthly balance verification](docs/monthly-balance-verification.md)
+- [Integration analysis](docs/integration-analysis.md)
+- [Integrated class diagram](docs/integrated-class-diagram.md)
+- [Layers diagram](docs/layers-diagram.md)
+- [AI usage logs](docs/ai-usage/)
+
+The integrated diagrams describe the combined system. Earlier diagrams
+provide context for their original modules and may omit later adjustments.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).

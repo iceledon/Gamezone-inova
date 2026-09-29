@@ -161,4 +161,15 @@ public class AccessoryService {
         }
         return null;
     }
+        /**
+     * Increases the stock of an accessory when it is returned.
+     *
+     * @param accessoryId id of the returned accessory
+     * @param amount units to add back to inventory
+     */
+    public void restoreStock(String accessoryId, int amount) {
+        Accessory accessory = findById(accessoryId);
+        accessory.setQuantity(accessory.getQuantity() + amount);
+        repository.saveAll(accessories);
+    }
 }

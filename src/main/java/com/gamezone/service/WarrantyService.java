@@ -1,16 +1,17 @@
 package com.gamezone.service;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.gamezone.model.BasicWarranty;
 import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
+import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Business operations available for warranties.
@@ -25,23 +26,34 @@ public class WarrantyService {
     private final WarrantyRepository repository;
     private final List<Warranty> warranties;
 
-    /**
-     * Creates the service and loads the warranty history into memory, resolving the
-     * products and sales each stored warranty references through the given services.
-     * <p>
-     * {@code saleService} must already have its own sales loaded when this constructor
-     * runs (which is always true, since {@code SaleService} loads its history in its own
-     * constructor), so the warranty-to-sale references can be resolved on the first read.
+     /**
+     * Creates the service and loads existing warranties.
+     * Resolves sales through SaleRepository using the combined product
+     * and accessory catalog.
      *
-     * @param repository the repository used to read and write warranties
-     * @param productService the service that owns the product inventory
-     * @param saleService the service that owns the sales history
+     * @param repository repository used to read and write warranties
+     * @param saleRepository repository used to load existing sales
+     * @param productService service that provides products
+     * @param personService service that provides customers and sellers
+     * @param accessoryService service that provides accessories
      */
-    public WarrantyService(WarrantyRepository repository, ProductService productService,
-                           SaleService saleService) {
+    public WarrantyService(WarrantyRepository repository,
+                           SaleRepository saleRepository,
+                           ProductService productService,
+                           PersonService personService,
+                           AccessoryService accessoryService) {
         this.repository = repository;
+
+        List<Product> catalog = new ArrayList<>(productService.listAll());
+        catalog.addAll(accessoryService.listAllAccessories());
+
+        List<Sale> sales = saleRepository.load(
+                catalog,
+                personService.listCustomers(),
+                personService.listSellers());
+
         this.warranties = new ArrayList<>(
-                repository.loadAll(productService.listAll(), saleService.getAllSales()));
+                repository.loadAll(catalog, sales));
     }
 
     /**
@@ -139,5 +151,28 @@ public class WarrantyService {
      */
     private String generateWarrantyId() {
         return String.format("G%03d", warranties.size() + 1);
+    }
+        /**
+     * Cancels warranties for a returned product in a specific sale.
+     *
+     * @param productId id of the returned product
+     * @param saleId id of the original sale
+     * @return refundable cost of the cancelled warranties
+     */
+    public double cancelWarranties(String productId, String saleId) {
+        double refundable = 0.0;
+        List<Warranty> toRemove = new ArrayList<>();
+
+        for (Warranty warranty : warranties) {
+            if (warranty.getProduct().getId().equals(productId)
+                    && warranty.getSale().getId().equals(saleId)) {
+                refundable += warranty.getAdditionalCost();
+                toRemove.add(warranty);
+            }
+        }
+
+        warranties.removeAll(toRemove);
+        repository.saveAll(warranties);
+        return refundable;
     }
 }

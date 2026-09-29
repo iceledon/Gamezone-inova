@@ -1,11 +1,5 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Product;
-import com.gamezone.model.Return;
-import com.gamezone.model.Sale;
-import com.gamezone.service.ProductService;
-import com.gamezone.service.SaleService;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -15,6 +9,13 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gamezone.model.Product;
+import com.gamezone.model.Return;
+import com.gamezone.model.Sale;
+import com.gamezone.service.AccessoryService;
+import com.gamezone.service.ProductService;
+import com.gamezone.service.SaleService;
 
 /**
  * Guarda y lee las devoluciones del archivo data/returns.csv.
@@ -30,14 +31,16 @@ public class ReturnRepository {
 
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
 
     /**
      * @param saleService servicio para buscar la venta original
      * @param productService servicio para buscar los productos
      */
-    public ReturnRepository(SaleService saleService, ProductService productService) {
+        public ReturnRepository(SaleService saleService, ProductService productService, AccessoryService accessoryService) {
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
     }
 
     /**
@@ -102,7 +105,8 @@ public class ReturnRepository {
                 + oneReturn.getOriginalSale().getId() + SEPARATOR
                 + productIds + SEPARATOR
                 + oneReturn.getReason() + SEPARATOR
-                + oneReturn.getRefundAmount();
+                + oneReturn.getRefundAmount() + SEPARATOR
+                + oneReturn.getWarrantyRefund();
     }
 
     /**
@@ -117,17 +121,26 @@ public class ReturnRepository {
         LocalDate date = LocalDate.parse(fields[1]);
         Sale sale = saleService.findById(fields[2]);
         String reason = fields[4];
-
+        double warrantyRefund = fields.length > 6 ? Double.parseDouble(fields[6]) : 0.0;
         List<Product> found = new ArrayList<>();
         String[] ids = fields[3].split(PRODUCT_SEPARATOR);
-        for (int i = 0; i < ids.length; i++) {
-            List<Product> all = productService.listAll();
-            for (int j = 0; j < all.size(); j++) {
-                if (all.get(j).getId().equals(ids[i])) {
-                    found.add(all.get(j));
-                }
+               for (int i = 0; i < ids.length; i++) {
+            Product item = findInList(productService.listAll(), ids[i]);
+            if (item == null) {
+                item = findInList(accessoryService.listAllAccessories(), ids[i]);
+            }
+            if (item != null) {
+                found.add(item);
             }
         }
-        return new Return(id, date, sale, found, reason);
+        return new Return(id, date, sale, found, reason, warrantyRefund);
+    }
+        private Product findInList(List<? extends Product> items, String id) {
+        for (Product item : items) {
+            if (item.getId().equals(id)) {
+                return item;
+            }
+        }
+        return null;
     }
 }
