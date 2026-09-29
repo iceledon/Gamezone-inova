@@ -1,62 +1,132 @@
-# Layers Diagram — GameZone Inova
+# Layers Diagram - GameZone Inova
 
-The system is organized into four layers under the `com.gamezone` package. Arrows show the only
-dependency directions allowed; any arrow in the opposite direction is forbidden.
+The application is organized into four packages: `ui`, `service`,
+`persistence` and `model`.
+
+The intended direction is from user interaction to services, persistence
+and domain entities. The diagram also records the current exception:
+`ReturnRepository` uses services to resolve saved identifiers.
 
 ```mermaid
-flowchart TD
-    subgraph UI["ui — user interaction"]
+flowchart TB
+    subgraph UI["ui - user interaction"]
         ConsoleUI
     end
-    subgraph SERVICE["service — business rules"]
+
+    subgraph SERVICE["service - business rules"]
         ProductService
         PersonService
+        AccessoryService
+        PromotionService
         SaleService
+        WarrantyService
+        ReturnService
     end
-    subgraph PERSISTENCE["persistence — file input/output"]
+
+    subgraph PERSISTENCE["persistence - file access"]
         ProductRepository
         PersonRepository
+        AccessoryRepository
+        PromotionRepository
         SaleRepository
-    end
-    subgraph MODEL["model — domain entities"]
-        Product
-        VideoGame
-        Console
-        Person
-        Customer
-        Seller
-        Sale
+        WarrantyRepository
+        ReturnRepository
     end
 
-    UI --> SERVICE
-    UI -.->|read only| MODEL
-    SERVICE --> PERSISTENCE
-    SERVICE --> MODEL
-    PERSISTENCE --> MODEL
+    subgraph MODEL["model - domain entities"]
+        Products["Product, VideoGame, Console"]
+        People["Person, Customer, Seller"]
+        Accessories["Accessory, Controller, Cable, Memory"]
+        Promotions["Promotion, PercentageDiscount, CategoryDiscount, BulkPurchaseDiscount"]
+        Sale
+        Warranties["Warranty, BasicWarranty, ExtendedWarranty"]
+        Return
+    end
+
+    ConsoleUI --> ProductService
+    ConsoleUI --> PersonService
+    ConsoleUI --> AccessoryService
+    ConsoleUI --> PromotionService
+    ConsoleUI --> SaleService
+    ConsoleUI --> WarrantyService
+    ConsoleUI --> ReturnService
+
+    ProductService --> ProductRepository
+    PersonService --> PersonRepository
+    AccessoryService --> AccessoryRepository
+    PromotionService --> PromotionRepository
+    SaleService --> SaleRepository
+    WarrantyService --> WarrantyRepository
+    ReturnService --> ReturnRepository
+
+    SaleService --> ProductService
+    SaleService --> PersonService
+    SaleService --> AccessoryService
+    SaleService -->|select promotion| PromotionService
+    SaleService -->|assign warranties| WarrantyService
+
+    WarrantyService -->|load sales during construction| SaleRepository
+    WarrantyService --> ProductService
+    WarrantyService --> PersonService
+
+    ReturnService --> SaleService
+    ReturnService -->|restore stock| ProductService
+    ReturnService -->|restore stock| AccessoryService
+    ReturnService -->|cancel warranties| WarrantyService
+
+    ReturnRepository -.->|current reverse dependency| SaleService
+    ReturnRepository -.->|current reverse dependency| ProductService
+    ReturnRepository -.->|current reverse dependency| AccessoryService
+
+    ProductRepository --> Products
+    PersonRepository --> People
+    AccessoryRepository --> Accessories
+    PromotionRepository --> Promotions
+    SaleRepository --> Sale
+    WarrantyRepository --> Warranties
+    ReturnRepository --> Return
 ```
 
-## Responsibility of each layer
+## Responsibilities
 
-| Layer | Responsibility | Depends on |
-|---|---|---|
-| `ui` | Reads user input and prints results on the console, in Spanish. Never touches files. | `service`, and `model` for reading only |
-| `service` | Enforces the business rules (stock availability, at least one product per sale) and coordinates persistence. | `persistence`, `model` |
-| `persistence` | Reads and writes the plain-text files under `data/`. Knows nothing about business rules. | `model` |
-| `model` | Pure domain entities with their own state and behavior. | nothing |
+| Layer | Responsibility |
+|---|---|
+| `ui` | Reads input and displays results in Spanish through `ConsoleUI`. |
+| `service` | Validates operations and coordinates sales, promotions, warranties, stock and returns. |
+| `persistence` | Serializes and reconstructs records stored under `data/`. |
+| `model` | Holds domain state and calculates amounts, validity and descriptions. |
 
-## Why the direction matters
+The diagram emphasizes service coordination and repository connections.
+Services also use model objects, and the UI reads model objects returned
+by services to display results.
 
-Dependencies flow strictly inward: `ui → service → persistence → model`. The `model` layer depends
-on nothing, which keeps the domain stable and reusable — it can be tested without a file system and
-without a console. Reversing any arrow, for example letting `Product` write itself to a file, would
-couple the domain to a storage format and to the input mechanism, breaking the single
-responsibility principle and making every layer harder to replace or test on its own. The user
-interface is also forbidden from skipping a layer: `ConsoleUI` never instantiates a repository
-directly, it always goes through a service.
+## Integration dependencies
 
-The dotted arrow from `ui` to `model` is the one nuance of this diagram. `ConsoleUI` receives
-`Product`, `Customer`, `Seller` and `Sale` objects back from the services and reads them to print
-their data on screen, so it does depend on the domain classes. That dependency is read-only and
-still points inward, which is why it does not break the rule: the console never persists a domain
-object, never applies a business rule to it and never reaches a repository to get one — every
-object it prints came from a service call.
+`SaleService` selects a promotion before assigning console warranties.
+It coordinates both product and accessory inventories.
+
+`WarrantyService` loads sale references through `SaleRepository`,
+using products and people supplied by their services. It does not
+depend on `SaleService`.
+
+`ReturnService` restores stock through the appropriate inventory service
+and requests warranty cancellation for returned consoles.
+
+`Main`, outside these four packages, constructs and connects the
+repositories, services and console interface.
+
+## Existing architecture exception
+
+`ReturnRepository` depends on `SaleService`, `ProductService` and
+`AccessoryService` to resolve identifiers while loading returns.
+
+Consequently, the current implementation does not fully satisfy strict
+one-way layer dependencies. This is shown explicitly rather than hidden.
+
+A separate refactoring could pass the required domain collections or
+lookups into the repository, following the approach of `SaleRepository`.
+
+## Related documentation
+
+- [Integrated class diagram](integrated-class-diagram.md)
+- [Integration analysis](integration-analysis.md)
