@@ -1,8 +1,10 @@
 # Integration Analysis
 
-This document describes adjustments A1-A7 in the integrated system.
+This document describes adjustments A1-A7 and the subsequent persistence
+corrections in the integrated system.
+
 It records the implemented behavior and distinguishes code inspection
-from functional testing.
+and compilation from end-to-end testing.
 
 ## A1 - Accessory category discount
 
@@ -10,7 +12,7 @@ from functional testing.
 
 **Cause:** Category matching only handled videogames and consoles.
 
-**Solution:** `CategoryDiscount` now recognizes `ACCESSORY` through
+**Solution:** `CategoryDiscount` recognizes `ACCESSORY` through
 `instanceof Accessory`. `PromotionService.registerCategoryDiscount`
 accepts `VIDEOGAME`, `CONSOLE` and `ACCESSORY`, rejecting other values.
 
@@ -32,19 +34,25 @@ whose validity includes the demonstration date.
 **Cause:** Loading warranty references required sales obtained through
 another service, creating a circular service dependency.
 
-**Solution:** The `WarrantyService` constructor receives
-`SaleRepository`, `ProductService` and `PersonService`. It loads sales
-directly through the repository and uses them to reconstruct warranties.
+**Solution:** `WarrantyService` loads sales directly through
+`SaleRepository`, rather than obtaining them from `SaleService`.
+
+After the additional persistence correction, its constructor receives:
+
+- `WarrantyRepository`
+- `SaleRepository`
+- `ProductService`
+- `PersonService`
+- `AccessoryService`
+
+It combines products and accessories into one catalog, loads sales using
+that catalog and the registered people, and then reconstructs warranties.
 
 `Main` creates `WarrantyService` before `SaleService` and connects the
 warranty service through `setWarrantyService`.
 
 The setter remains, but `WarrantyService` no longer depends on
 `SaleService`.
-
-The constructor currently passes the product catalog to the sales
-loader. Reloading warranties associated with mixed product/accessory
-sales should therefore be included in integration verification.
 
 ## A3 - Unified sale registration order
 
@@ -122,6 +130,9 @@ After A7, the total also includes the warranty refund:
 total refund = sum of item refunds + warranty refund
 ```
 
+The additional persistence correction stores the sale discount so it
+can be restored when loading newly saved sales.
+
 ## A6 - Separate monthly sales, returns and net balance
 
 The required separation was already implemented:
@@ -181,14 +192,59 @@ loader expects a numeric value.
 The loader reconstructs the return and recalculates its total.
 It does not restore the stored `refundAmount` field directly.
 
+## Additional persistence corrections
+
+### Preserve promotion data in saved sales
+
+**Problem:** Reloaded sales lost their promotion name and discount.
+
+**Cause:** `SaleRepository` saved warranty costs but omitted
+`discountAmount` and `appliedPromotionName`.
+
+**Correction:** New sale records include both promotion fields:
+
+```text
+id;date;customerId;sellerId;productIds;extraCost;discountAmount;appliedPromotionName
+```
+
+When reading a record, `SaleRepository` restores the discount and
+promotion name if the corresponding fields are present and nonblank.
+
+A missing promotion name is written as an empty field.
+
+Older records remain readable. Missing discount amounts default to
+zero, and missing promotion names remain unset.
+
+Discounts that were never saved in older records cannot be recovered
+automatically. The loader does not recalculate historical promotions.
+
+### Load mixed sales during warranty initialization
+
+**Problem:** A saved sale containing an accessory could prevent startup.
+
+**Cause:** `WarrantyService` supplied only the product catalog to
+`SaleRepository`, whose loader rejects unresolved item identifiers.
+
+**Correction:** The warranty service constructor now combines:
+
+- `ProductService.listAll()`
+- `AccessoryService.listAllAccessories()`
+
+It uses this combined catalog to load sales and warranty references.
+
+`Main` supplies `AccessoryService` as the new constructor argument.
+
+This correction retains the direct dependency on `SaleRepository`
+and does not reintroduce a dependency on `SaleService`.
+
 ## Architecture observations
 
 The project retains the `ui`, `service`, `persistence` and `model`
 packages.
 
-Services coordinate promotions, sales, inventory, returns and
-warranties. Domain calculations remain in model classes, while
-file operations remain in repositories.
+Services coordinate promotions, sales, inventory, returns and warranties.
+Domain calculations remain in model classes, while file operations
+remain in repositories.
 
 There is an exception to the intended dependency direction:
 `ReturnRepository` imports and uses `SaleService`, `ProductService`
@@ -198,36 +254,48 @@ The current implementation therefore includes dependencies from
 persistence back to service. Diagrams must show this accurately;
 strict one-way dependencies would require a separate refactoring.
 
-## Confirmed persistence limitations
+`WarrantyService` uses `SaleRepository`, `ProductService`,
+`PersonService` and `AccessoryService` during construction.
+It retains its warranty repository and warranty collection.
 
-`SaleRepository` stores `extraCost` but does not serialize or restore
-`discountAmount` or `appliedPromotionName`. Reloaded sales therefore
-lose their promotion data, affecting sale totals and return calculations.
+## Remaining persistence limitations
 
-`WarrantyService` loads sales using only `ProductService.listAll()`.
-`SaleRepository` throws an exception when a stored item identifier is
-missing from that list. Saved sales containing accessories can therefore
-prevent startup.
+`ReturnRepository` reconstructs returns and recalculates refunds
+instead of restoring the saved `refundAmount`.
 
-`ReturnRepository` reconstructs returns and recalculates refunds instead
-of restoring the saved `refundAmount`, so lost sale discounts also affect
-reloaded return amounts.
+Sales reference catalog products rather than storing historical
+snapshots of their prices. Changes to catalog prices can therefore
+affect reconstructed sale totals and return calculations.
 
-These findings come from code inspection. Fixes and restart verification
-are needed before the final integrated release.
+Older sale records without promotion fields cannot provide discount
+information that was never stored.
 
-## Verification scope
+These limitations are distinct from the corrected omission of promotion
+fields in newly saved sales and the corrected mixed-catalog loading.
 
-This analysis is based on inspection of the integrated implementation.
-It does not, by itself, establish that every end-to-end scenario passes.
+## Verification status
 
-Final integration verification should cover:
+The persistence corrections compiled successfully with Java 17
+compatibility using `javac --release 17`.
 
-1. A sale containing a console and an accessory, with an active
+Compilation confirms that the updated sources are compatible at the
+compiler level. It does not establish runtime persistence correctness.
+
+End-to-end restart and refund verification remains pending.
+
+## Final integration verification checklist
+
+1. Register a sale containing a console and an accessory, with an active
    promotion and an extended warranty.
-2. The subtotal, promotion discount, warranty cost and final total.
-3. Accessory stock restoration after a return.
-4. Console warranty removal and inclusion of its refundable cost.
-5. Separate monthly sales, returns and net balance.
-6. Application restart and reloading of sales, warranties and returns,
-   including mixed sales and discounted refunds.
+2. Check the subtotal, promotion discount, warranty cost and final total.
+3. Restart the application and confirm that the mixed sale loads.
+4. Confirm that the promotion name, discount and warranty cost are restored.
+5. Return an accessory and check stock restoration and proportional refund.
+6. Return a console and check warranty removal and its refundable cost.
+7. Check monthly sales, returns and net balance.
+8. Restart again and inspect the saved return records and amounts.
+9. Load older sale records without promotion fields and verify that they
+   remain readable with default promotion values.
+
+This checklist describes pending verification and does not claim that
+every scenario has passed.
