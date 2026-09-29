@@ -44,12 +44,12 @@ public class Main {
             PersonService personService = new PersonService(personRepository);
             PromotionService promotionService = new PromotionService(promotionRepository);
             AccessoryService accessoryService = new AccessoryService(accessoryRepository);
-            WarrantyService warrantyService = new WarrantyService(
-        warrantyRepository,
-        saleRepository,
-        productService,
-        personService
-);
+                     WarrantyService warrantyService = new WarrantyService(
+                    warrantyRepository,
+                    saleRepository,
+                    productService,
+                    personService,
+                    accessoryService);
 
 SaleService saleService = new SaleService(
         saleRepository,

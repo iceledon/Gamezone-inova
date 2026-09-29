@@ -3,8 +3,7 @@
 Java console application for managing a video game store with products,
 accessories, customers, sellers, promotions, sales, warranties and returns.
 
-The application uses text files under `data/`. The current persistence
-limitations are documented below.
+The application stores data in text files under `data/`.
 
 ## Requirements
 
@@ -79,6 +78,9 @@ cost separately from the item subtotal used for discounts.
 sale total = item subtotal - promotion discount + warranty costs
 ```
 
+The saved sale includes its warranty costs, discount amount and applied
+promotion name.
+
 ## Integrated return flow
 
 Return registration checks that the original sale exists, that it is
@@ -95,6 +97,8 @@ item refund = item price * (1 - discount ratio)
 total refund = sum of item refunds + warranty refund
 ```
 
+When the original subtotal is zero or negative, the discount ratio is zero.
+
 Returning a console removes warranties matching its product and sale
 identifiers and adds their additional costs to the refund.
 
@@ -103,6 +107,8 @@ The monthly balance reports sales and returns separately, then calculates:
 ```text
 monthly net balance = monthly sales - monthly returns
 ```
+
+Sales are counted by sale date; returns are counted by return date.
 
 ## Integration adjustments
 
@@ -115,6 +121,9 @@ monthly net balance = monthly sales - monthly returns
 | A5 | Item refunds apply the original sale's proportional discount. |
 | A6 | Monthly sales, returns and net balance are exposed separately; existing behavior was reviewed. |
 | A7 | Console returns cancel matching warranties and include their refundable costs. |
+
+Additional persistence corrections save promotion information with each
+sale and include accessories when reconstructing sales for warranty loading.
 
 ## Architecture
 
@@ -136,6 +145,10 @@ An existing exception is `ReturnRepository`, which depends on
 `SaleService`, `ProductService` and `AccessoryService` to resolve identifiers.
 See [the layers diagram](docs/layers-diagram.md).
 
+`WarrantyService` receives `SaleRepository`, `ProductService`,
+`PersonService` and `AccessoryService` during construction. It combines
+products and accessories before loading sale and warranty references.
+
 ## Data files
 
 Most files use semicolons between fields. Accessories use commas.
@@ -145,7 +158,7 @@ Most files use semicolons between fields. Accessories use commas.
 | `data/products.txt` | `VIDEOGAME;id;title;price;quantity;platform;genre;ageRating` or `CONSOLE;id;title;price;quantity;brand;model;generation` |
 | `data/customers.txt` | `id;name;phone;email` |
 | `data/sellers.txt` | `id;name;phone;employeeCode;shift` |
-| `data/sales.txt` | `id;date;customerId;sellerId;productIds;extraCost` |
+| `data/sales.txt` | `id;date;customerId;sellerId;productIds;extraCost;discountAmount;appliedPromotionName` |
 | `data/returns.csv` | `id;date;saleId;productIds;reason;refundAmount;warrantyRefund` |
 | `data/warranties.csv` | `BASIC/EXTENDED;id;productId;saleId;startDate` |
 | `data/promotions.csv` | Formats listed below. |
@@ -171,27 +184,37 @@ MEMORY,id,title,price,quantity,capacityGb,memoryType,compatibleConsoleIds
 
 Compatible console identifiers are separated by `|`.
 
+Older sales without promotion fields remain readable. Missing discount
+amounts default to zero, and missing promotion names remain unset.
+
 Older return records without `warrantyRefund` load with a zero warranty
 refund. If the field is present, it must contain a numeric value.
 
-## Current integration limitations
+## Persistence corrections and remaining limitations
 
-The following issues are visible in the current implementation:
+`SaleRepository` now saves and restores `discountAmount` and
+`appliedPromotionName`, in addition to warranty costs.
 
-- `SaleRepository` saves warranty costs but does not save
-  `discountAmount` or `appliedPromotionName`. Reloaded sales lose their
-  promotion information, affecting totals and proportional refunds.
-- `WarrantyService` loads sales using only the product catalog.
-  Stored sales containing accessory identifiers cannot be resolved by
-  that loader and can prevent startup.
+Previously unsaved discounts cannot be recovered automatically from older
+records. The application does not recalculate historical promotions to
+replace missing information.
+
+`WarrantyService` now combines the product and accessory catalogs when
+loading sales and warranty references. This addresses unresolved accessory
+identifiers during warranty initialization.
+
+Compilation succeeded with Java 17 compatibility. End-to-end restart
+and refund verification remains pending.
+
+Remaining limitations:
+
 - `ReturnRepository` recalculates refunds when loading instead of
-  restoring the saved `refundAmount`. Reloaded values therefore depend
-  on the reconstructed sale and current product prices.
+  restoring the saved `refundAmount`. Values depend on reconstructed
+  sales and current product prices.
+- Sales reference catalog products rather than storing a historical
+  snapshot of each item's price.
 - `ReturnRepository` depends on services, contrary to the intended
   strict layer direction.
-
-These limitations must be addressed and verified before claiming complete
-end-to-end persistence correctness.
 
 The sample accessory promotion expires on 2026-09-26. Use a promotion
 valid on the demonstration date when checking automatic discounts.
@@ -204,7 +227,8 @@ The final integration scenario should include:
 2. Verification of subtotal, discount, warranty cost and total.
 3. Accessory and console returns, including restored stock and warranty refund.
 4. Verification of monthly sales, returns and net balance.
-5. Application restart and verification of the restored records and amounts.
+5. Application restart and verification of restored records and amounts.
+6. Loading older sale records that do not contain promotion fields.
 
 The checklist describes required verification, not a claim that every
 scenario has passed.

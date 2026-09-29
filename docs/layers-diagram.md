@@ -66,8 +66,9 @@ flowchart TB
     SaleService -->|assign warranties| WarrantyService
 
     WarrantyService -->|load sales during construction| SaleRepository
-    WarrantyService --> ProductService
-    WarrantyService --> PersonService
+    WarrantyService -->|product catalog| ProductService
+    WarrantyService -->|customers and sellers| PersonService
+    WarrantyService -->|accessory catalog| AccessoryService
 
     ReturnService --> SaleService
     ReturnService -->|restore stock| ProductService
@@ -100,17 +101,26 @@ The diagram emphasizes service coordination and repository connections.
 Services also use model objects, and the UI reads model objects returned
 by services to display results.
 
+Arrows show dependencies, including constructor-time use; they do not
+necessarily indicate retained fields.
+
 ## Integration dependencies
 
 `SaleService` selects a promotion before assigning console warranties.
 It coordinates both product and accessory inventories.
 
-`WarrantyService` loads sale references through `SaleRepository`,
-using products and people supplied by their services. It does not
-depend on `SaleService`.
+`WarrantyService` loads sale references through `SaleRepository`.
+During construction, it combines the product and accessory catalogs and
+obtains customers and sellers from `PersonService`.
+
+The combined catalog is used to reconstruct sales and warranty references.
+`WarrantyService` does not depend on `SaleService`.
 
 `ReturnService` restores stock through the appropriate inventory service
 and requests warranty cancellation for returned consoles.
+
+`SaleRepository` saves and restores the sale's warranty costs, discount
+amount and applied promotion name.
 
 `Main`, outside these four packages, constructs and connects the
 repositories, services and console interface.
