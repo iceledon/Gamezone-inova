@@ -26,31 +26,35 @@ public class WarrantyService {
     private final WarrantyRepository repository;
     private final List<Warranty> warranties;
 
-    /**
- * Creates the service and loads existing warranties.
- * Resolves sales directly through SaleRepository.
- *
- * @param repository repository used to read and write warranties
- * @param saleRepository repository used to load existing sales
- * @param productService service that provides the products
- * @param personService service that provides customers and sellers
- */
+     /**
+     * Creates the service and loads existing warranties.
+     * Resolves sales through SaleRepository using the combined product
+     * and accessory catalog.
+     *
+     * @param repository repository used to read and write warranties
+     * @param saleRepository repository used to load existing sales
+     * @param productService service that provides products
+     * @param personService service that provides customers and sellers
+     * @param accessoryService service that provides accessories
+     */
     public WarrantyService(WarrantyRepository repository,
-                       SaleRepository saleRepository,
-                       ProductService productService,
-                       PersonService personService) {
-    this.repository = repository;
+                           SaleRepository saleRepository,
+                           ProductService productService,
+                           PersonService personService,
+                           AccessoryService accessoryService) {
+        this.repository = repository;
 
-    List<Sale> sales = saleRepository.load(
-            productService.listAll(),
-            personService.listCustomers(),
-            personService.listSellers()
-    );
+        List<Product> catalog = new ArrayList<>(productService.listAll());
+        catalog.addAll(accessoryService.listAllAccessories());
 
-    this.warranties = new ArrayList<>(
-            repository.loadAll(productService.listAll(), sales)
-    );
-}
+        List<Sale> sales = saleRepository.load(
+                catalog,
+                personService.listCustomers(),
+                personService.listSellers());
+
+        this.warranties = new ArrayList<>(
+                repository.loadAll(catalog, sales));
+    }
 
     /**
      * Creates, persists and returns the automatic basic warranty for a product sold.
