@@ -7,9 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -38,6 +40,7 @@ public class SaleRepository {
      *
      * @param sales the complete list of sales to persist
      * @throws RuntimeException if the file cannot be written
+     * @throws PersistenceException if the file cannot be written
      */
     public void save(List<Sale> sales) {
         try {
@@ -48,8 +51,9 @@ public class SaleRepository {
                     writer.newLine();
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudo guardar el archivo de ventas.", e);
+               } catch (IOException e) {
+            throw new PersistenceException(
+                    "Error de escritura en el archivo '" + FILE_PATH + "'.", e);
         }
     }
 
@@ -62,6 +66,7 @@ public class SaleRepository {
      * @param sellers   the sellers currently registered
      * @return the list of stored sales, or an empty list if the file does not exist yet
      * @throws RuntimeException if the file cannot be read or a referenced id is missing
+     * @throws PersistenceException if the file cannot be read or contains corrupt data
      */
     public List<Sale> load(List<Product> products, List<Customer> customers, List<Seller> sellers) {
         List<Sale> sales = new ArrayList<>();
@@ -75,8 +80,15 @@ public class SaleRepository {
                     sales.add(fromLine(line, products, customers, sellers));
                 }
             }
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudo leer el archivo de ventas.", e);
+                } catch (IOException e) {
+            throw new PersistenceException(
+                    "Error de lectura en el archivo '" + FILE_PATH + "'.", e);
+        } catch (NumberFormatException
+                | ArrayIndexOutOfBoundsException
+                | DateTimeParseException e) {
+            throw new PersistenceException(
+                    "El archivo '" + FILE_PATH
+                            + "' contiene datos corruptos (operación: lectura).", e);
         }
         return sales;
     }
@@ -119,6 +131,7 @@ public class SaleRepository {
      * @param sellers   the sellers available to resolve the seller id
      * @return the reconstructed sale
      * @throws RuntimeException if any referenced id cannot be resolved
+     * @throws PersistenceException if a referenced customer, seller or product is missing
      */
     private Sale fromLine(String line, List<Product> products, List<Customer> customers, List<Seller> sellers) {
         String[] fields = line.split(SEPARATOR, -1);
@@ -138,7 +151,12 @@ public class SaleRepository {
             }
         }
         if (customer == null || seller == null) {
-            throw new RuntimeException("La venta " + id + " referencia un cliente o vendedor inexistente.");
+            throw new PersistenceException(
+        "El archivo '" + FILE_PATH + "' contiene la venta " + id
+                + " con un cliente o vendedor inexistente"
+                + " (operación: lectura).",
+        new IllegalArgumentException(
+                "Unresolved customer or seller reference in sale " + id));
         }
 
         List<Product> soldProducts = new ArrayList<>();
@@ -150,7 +168,12 @@ public class SaleRepository {
                 }
             }
             if (found == null) {
-                throw new RuntimeException("La venta " + id + " referencia el producto inexistente " + productId + ".");
+              throw new PersistenceException(
+        "El archivo '" + FILE_PATH + "' contiene la venta " + id
+                + " con el producto inexistente " + productId
+                + " (operación: lectura).",
+        new IllegalArgumentException(
+                "Unresolved product reference: " + productId));
             }
             soldProducts.add(found);
         }
