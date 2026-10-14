@@ -52,7 +52,8 @@ public class ReturnService {
      * @param reason motivo de la devolucion
      * @return la devolucion guardada
      */
-    publSale sale = saleService.getSaleById(saleId);
+        public Return registerReturn(String saleId, List<String> productIds, String reason) {
+        Sale sale = saleService.getSaleById(saleId);
     
         if (!sale.canBeReturned()) {
             throw new IllegalArgumentException("Ya paso el plazo de 30 dias para devolver productos de esta venta.");
