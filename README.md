@@ -259,3 +259,98 @@ provide context for their original modules and may omit later adjustments.
 ## License
 
 MIT - see [LICENSE](LICENSE).
+
+## Exception and validation layers - Requirement 6
+
+Requirement 6 introduces custom exceptions and dedicated validators
+to separate error detection from business operations and user feedback.
+
+### Custom exceptions
+
+The `com.gamezone.exceptions` package contains an exception hierarchy
+rooted in the abstract `GameZoneException` class.
+
+`GameZoneException` extends `RuntimeException` and provides an error
+code through `getErrorCode()`.
+
+The four specialized categories are:
+
+| Exception | Responsibility |
+|---|---|
+| `ResourceNotFoundException` | A required product, person or sale does not exist. |
+| `BusinessRuleException` | An operation violates a business rule. |
+| `InvalidDataException` | An input value has an invalid format, type or range. |
+| `PersistenceException` | Reading or writing stored data fails. |
+
+Persistence exceptions preserve the original cause for diagnosis.
+Technical details must not be displayed to the console user.
+
+### Dedicated validators
+
+The `com.gamezone.validation` package contains:
+
+- `ProductValidator`: product data, resource existence and stock availability.
+- `PersonValidator`: person data, resource existence and identifier uniqueness.
+- `SaleValidator`: sale data and resource existence.
+
+Services invoke validators before changing application state.
+
+Validators receive values, model objects or already loaded collections.
+They do not invoke services or repositories and do not read or write files.
+
+The intended dependency paths are:
+
+```text
+ui -> service -> validation -> model
+ui -> service -> persistence -> model
+```
+
+The exceptions package is transversal.
+
+### Console error handling
+
+The existing `ConsoleUI` class implements the `ConsoleMenu` responsibility
+described in Requirement 6.
+
+It preserves the existing menus and displays differentiated Spanish messages:
+
+| Category | Message prefix |
+|---|---|
+| Missing resource | `No se encontro el recurso solicitado:` |
+| Business rule | `No se puede completar la operacion:` |
+| Invalid input | `Los datos ingresados no son validos:` |
+| Persistence failure | `Ocurrio un problema al acceder a los datos del sistema.` |
+
+Numeric and date input helpers translate parsing failures into
+`InvalidDataException`. Decimal input also rejects non-finite values.
+
+Menu operation guards allow recoverable failures to return control
+to the console instead of terminating the application.
+
+Compatibility handlers remain for existing modules that still use
+legacy exceptions. Unexpected failures receive a safe generic message.
+
+### Startup protection
+
+`Main` handles `PersistenceException` during initial data loading.
+It displays a safe Spanish message and exits with a nonzero status
+when initialization cannot complete.
+
+### Design documentation
+
+- [Exception analysis](docs/exception-analysis.md)
+- [Exception and validation class diagram](docs/exception-class-diagram.md)
+
+### Verification status
+
+Compilation and application startup have been verified.
+
+A sale attempt with a nonexistent customer displayed the differentiated
+resource-not-found message and allowed navigation to continue.
+
+Numeric input, date input, business-rule errors, persistence failures
+and full regression verification must be recorded separately with
+their actual results.
+
+The presence of a handler does not, by itself, demonstrate that every
+service or repository path already produces the expected exception type.
