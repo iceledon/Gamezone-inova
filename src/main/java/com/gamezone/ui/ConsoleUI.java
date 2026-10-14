@@ -105,19 +105,23 @@ public class ConsoleUI {
             System.out.println("7. Gestion de accesorios");
             System.out.println("8. Salir");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> showProductMenu();
-                case "2" -> showPersonMenu();
-                case "3" -> showSaleMenu();
-                case "4" -> showReturnMenu();
-                case "5" -> showWarrantyMenu();
-                case "6" -> showPromotionMenu();
-                case "7" -> showAccessoryMenu();
-                case "8" -> {
-                    running = false;
-                    System.out.println("Gracias por usar GameZone Inova.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> showProductMenu();
+                    case "2" -> showPersonMenu();
+                    case "3" -> showSaleMenu();
+                    case "4" -> showReturnMenu();
+                    case "5" -> showWarrantyMenu();
+                    case "6" -> showPromotionMenu();
+                    case "7" -> showAccessoryMenu();
+                    case "8" -> {
+                        running = false;
+                        System.out.println("Gracias por usar GameZone Inova.");
+                    }
+                    default -> System.out.println("Opcion invalida.");
                 }
-                default -> System.out.println("Opcion invalida.");
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -135,12 +139,16 @@ public class ConsoleUI {
             System.out.println("3. Listar productos");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerVideoGame();
-                case "2" -> registerConsole();
-                case "3" -> listProducts();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerVideoGame();
+                    case "2" -> registerConsole();
+                    case "3" -> listProducts();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -212,12 +220,16 @@ public class ConsoleUI {
             System.out.println("3. Listar vendedores");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerCustomer();
-                case "2" -> listCustomers();
-                case "3" -> listSellers();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerCustomer();
+                    case "2" -> listCustomers();
+                    case "3" -> listSellers();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -286,13 +298,17 @@ public class ConsoleUI {
             System.out.println("4. Historial por vendedor");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerSale();
-                case "2" -> showAllSales();
-                case "3" -> showSalesByCustomer();
-                case "4" -> showSalesBySeller();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerSale();
+                    case "2" -> showAllSales();
+                    case "3" -> showSalesByCustomer();
+                    case "4" -> showSalesBySeller();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -432,50 +448,58 @@ private void printSales(List<Sale> sales, String emptyMessage) {
     }
 
     /**
-     * Prints a prompt and reads a whole number.
+     * Reads a whole number from the console.
      *
      * @param prompt the text shown to the user
-     * @return the number typed by the user
-     * @throws IllegalArgumentException if what the user typed is not a whole number
+     * @return the entered integer
+     * @throws InvalidDataException if the input is not a valid integer
      */
     private int askInt(String prompt) {
         String value = ask(prompt);
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Se esperaba un numero entero y se recibio " + value + ".");
+            throw new InvalidDataException("numero entero",
+                    "se esperaba un numero entero valido.");
         }
     }
 
     /**
-     * Prints a prompt and reads a decimal number.
+     * Reads a decimal number from the console.
      *
      * @param prompt the text shown to the user
-     * @return the number typed by the user
-     * @throws IllegalArgumentException if what the user typed is not a number
+     * @return the entered decimal number
+     * @throws InvalidDataException if the input is not a finite number
      */
     private double askDouble(String prompt) {
         String value = ask(prompt);
         try {
-            return Double.parseDouble(value);
+            double number = Double.parseDouble(value);
+            if (!Double.isFinite(number)) {
+                throw new InvalidDataException("numero",
+                        "debe ser un numero decimal finito.");
+            }
+            return number;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Se esperaba un numero y se recibio " + value + ".");
+            throw new InvalidDataException("numero",
+                    "se esperaba un numero decimal valido.");
         }
     }
 
     /**
-     * Prints a prompt and reads a date in ISO format (yyyy-MM-dd).
+     * Reads a date in ISO format.
      *
      * @param prompt the text shown to the user
-     * @return the date typed by the user
-     * @throws IllegalArgumentException if what the user typed is not a valid date
+     * @return the entered date
+     * @throws InvalidDataException if the input is not a valid ISO date
      */
     private LocalDate askDate(String prompt) {
         String value = ask(prompt);
         try {
             return LocalDate.parse(value);
         } catch (java.time.format.DateTimeParseException e) {
-            throw new IllegalArgumentException("Se esperaba una fecha en formato aaaa-mm-dd y se recibio " + value + ".");
+            throw new InvalidDataException("fecha",
+                    "se esperaba una fecha valida en formato aaaa-mm-dd.");
         }
     }
 
@@ -494,14 +518,18 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.println("5. Balance mensual");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerReturn();
-                case "2" -> showAllReturns();
-                case "3" -> showReturnsByCustomer();
-                case "4" -> showReturnsBySale();
-                case "5" -> showMonthlyBalance();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerReturn();
+                    case "2" -> showAllReturns();
+                    case "3" -> showReturnsByCustomer();
+                    case "4" -> showReturnsBySale();
+                    case "5" -> showMonthlyBalance();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -608,13 +636,17 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.println("4. Listar garantias proximas a vencer");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> consultWarranty();
-                case "2" -> listAllWarranties();
-                case "3" -> listActiveWarranties();
-                case "4" -> listWarrantiesExpiringSoon();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> consultWarranty();
+                    case "2" -> listAllWarranties();
+                    case "3" -> listActiveWarranties();
+                    case "4" -> listWarrantiesExpiringSoon();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -688,14 +720,18 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.println("5. Listar promociones vigentes");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerPercentageDiscount();
-                case "2" -> registerCategoryDiscount();
-                case "3" -> registerBulkPurchaseDiscount();
-                case "4" -> listAllPromotions();
-                case "5" -> listActivePromotions();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerPercentageDiscount();
+                    case "2" -> registerCategoryDiscount();
+                    case "3" -> registerBulkPurchaseDiscount();
+                    case "4" -> listAllPromotions();
+                    case "5" -> listActivePromotions();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
@@ -821,15 +857,19 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.println("6. Consultar accesorios compatibles con una consola");
             System.out.println("0. Volver");
             System.out.print("Seleccione una opcion: ");
-            switch (scanner.nextLine().trim()) {
-                case "1" -> registerController();
-                case "2" -> registerCable();
-                case "3" -> registerMemory();
-                case "4" -> listAllAccessories();
-                case "5" -> listAccessoriesByType();
-                case "6" -> listCompatibleAccessories();
-                case "0" -> back = true;
-                default -> System.out.println("Opcion invalida.");
+            try {
+                switch (scanner.nextLine().trim()) {
+                    case "1" -> registerController();
+                    case "2" -> registerCable();
+                    case "3" -> registerMemory();
+                    case "4" -> listAllAccessories();
+                    case "5" -> listAccessoriesByType();
+                    case "6" -> listCompatibleAccessories();
+                    case "0" -> back = true;
+                    default -> System.out.println("Opcion invalida.");
+                }
+            } catch (RuntimeException e) {
+                showError(e);
             }
         }
     }
