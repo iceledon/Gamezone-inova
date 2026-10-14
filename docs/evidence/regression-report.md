@@ -93,3 +93,25 @@ data for the executed regression scenario.
 Remaining error scenarios and integrated module checks must be
 completed and documented before claiming full Requirement 6
 verification.
+## Numeric and date input verification
+
+Both scenarios were executed interactively.
+
+| Scenario | Result |
+|---|---|
+| Enter `abc` at the video game price prompt | Invalid-data message displayed; product submenu remained usable |
+| Enter `2026-99-99` at the promotion start-date prompt | Invalid-data message displayed; promotion submenu remained usable |
+
+The user returned to the main menu after each failure and exited normally.
+No stack trace was displayed.
+
+Observed messages:
+
+- "Los datos ingresados no son validos: El campo numero se esperaba un numero decimal valido.."
+- "Los datos ingresados no son validos: El campo fecha se esperaba una fecha valida en formato aaaa-mm-dd.."
+
+The messages contain duplicated final punctuation, which remains a
+presentation detail to correct.
+
+These checks verify error feedback and continued navigation. Persisted
+data was not compared separately during these interactive executions.
