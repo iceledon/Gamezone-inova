@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.BulkPurchaseDiscount;
@@ -157,7 +160,7 @@ public class ConsoleUI {
             productService.registerVideoGame(id, title, price, quantity, platform, genre, ageRating);
             System.out.println("Videojuego registrado correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar el videojuego: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -176,7 +179,7 @@ public class ConsoleUI {
             productService.registerConsole(id, title, price, quantity, brand, model, generation);
             System.out.println("Consola registrada correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la consola: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -231,7 +234,7 @@ public class ConsoleUI {
             personService.registerCustomer(new Customer(id, name, phone, email));
             System.out.println("Cliente registrado correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar el cliente: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -335,9 +338,8 @@ public class ConsoleUI {
         System.out.println("Venta registrada correctamente.");
         printSale(sale);
     } catch (RuntimeException e) {
-        System.out.println(
-                "No se pudo registrar la venta: " + e.getMessage());
-    }
+            showError(e);
+        }
 }
 
 /**
@@ -520,7 +522,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.println("Devolucion registrada correctamente.");
             System.out.println(newReturn.generateReturnReceipt());
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la devolucion: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -584,7 +586,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             System.out.printf("  Total devoluciones: $%.2f%n", totalReturns);
             System.out.printf("  Balance neto:       $%.2f%n", balance);
         } catch (RuntimeException e) {
-            System.out.println("No se pudo calcular el balance: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -711,7 +713,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             promotionService.registerPercentageDiscount(id, name, startDate, endDate, percentage);
             System.out.println("Promocion registrada correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -729,7 +731,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             promotionService.registerCategoryDiscount(id, name, startDate, endDate, percentage, targetCategory);
             System.out.println("Promocion registrada correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -747,7 +749,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             promotionService.registerBulkPurchaseDiscount(id, name, startDate, endDate, minimumQuantity, percentage);
             System.out.println("Promocion registrada correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la promocion: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -845,7 +847,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             accessoryService.registerController(id, title, price, quantity, connectionType);
             System.out.println("Control registrado correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar el control: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -863,7 +865,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             accessoryService.registerCable(id, title, price, quantity, lengthMeters, connectorType);
             System.out.println("Cable registrado correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar el cable: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -881,7 +883,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             accessoryService.registerMemory(id, title, price, quantity, capacityGb, memoryType);
             System.out.println("Memoria registrada correctamente.");
         } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la memoria: " + e.getMessage());
+            showError(e);
         }
     }
 
@@ -930,6 +932,68 @@ private void printSales(List<Sale> sales, String emptyMessage) {
         for (Accessory accessory : accessories) {
             System.out.printf("  [%s] %s | Precio: $%.2f | Stock: %d%n",
                     accessory.getId(), accessory.getDescription(), accessory.getPrice(), accessory.getQuantity());
+        }
+    }
+        /**
+     * Displays a Spanish message according to the failure category.
+     *
+     * @param error the failure raised by an operation
+     */
+    private void showError(RuntimeException error) {
+        try {
+            throw error;
+
+        } catch (ResourceNotFoundException e) {
+            System.out.println(
+                    "No se encontro el recurso solicitado: " + e.getMessage()
+            );
+
+        } catch (BusinessRuleException e) {
+            System.out.println(
+                    "No se puede completar la operacion: " + e.getMessage()
+            );
+
+        } catch (InvalidDataException e) {
+            System.out.println(
+                    "Los datos ingresados no son validos: " + e.getMessage()
+            );
+
+        } catch (PersistenceException e) {
+            System.out.println(
+                    "Ocurrio un problema al acceder a los datos del sistema. "
+                    + "Contacte al administrador."
+            );
+
+        } catch (NumberFormatException e) {
+            System.out.println(
+                    "Los datos ingresados no son validos: "
+                    + "se esperaba un valor numerico."
+            );
+
+        } catch (java.time.format.DateTimeParseException e) {
+            System.out.println(
+                    "Los datos ingresados no son validos: "
+                    + "se esperaba una fecha en formato aaaa-mm-dd."
+            );
+
+        } catch (NoSuchElementException e) {
+            System.out.println(
+                    "No se encontro el recurso solicitado. "
+                    + "Revise el identificador ingresado."
+            );
+
+        } catch (IllegalArgumentException e) {
+            // Supports existing modules that still use legacy exceptions.
+            System.out.println(
+                    "No se puede completar la operacion. "
+                    + "Revise los datos y las reglas del modulo."
+            );
+
+        } catch (RuntimeException e) {
+            System.out.println(
+                    "Ocurrio un error inesperado. "
+                    + "Intente nuevamente o contacte al administrador."
+            );
         }
     }
 }
