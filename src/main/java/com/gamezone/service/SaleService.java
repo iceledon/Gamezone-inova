@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.ExtendedWarranty;
@@ -16,6 +17,9 @@ import com.gamezone.model.Promotion;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.validation.ProductValidator;
+import com.gamezone.validation.SaleValidator;
+
 
 /**
  * Business operations available for sales.
@@ -92,49 +96,39 @@ public class SaleService {
      *                                       receive an extended warranty; null or
      *                                       empty means no extended warranty is applied
      * @return the registered sale
+     * @throws com.gamezone.exceptions.BusinessRuleException if no products are requested or stock is insufficient
+     * @throws ResourceNotFoundException if a customer, seller or item does not exist
+     * @throws com.gamezone.exceptions.PersistenceException if the operation cannot be persisted
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds,
                              List<String> productIdsWithExtendedWarranty) {
-        if (productIds == null || productIds.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "La venta debe contener al menos un producto.");
-        }
+             SaleValidator.validateSaleProducts(productIds);
 
-        Customer customer = personService.findCustomerById(customerId);
-        if (customer == null) {
-            throw new IllegalArgumentException(
-                    "No existe un cliente con la identificacion " + customerId + ".");
-        }
-
-        Seller seller = personService.findSellerById(sellerId);
-        if (seller == null) {
-            throw new IllegalArgumentException(
-                    "No existe un vendedor con la identificacion " + sellerId + ".");
-        }
+       Customer customer = personService.getCustomerById(customerId);
+       Seller seller = personService.getSellerById(sellerId);  
 
         List<Product> soldProducts = new ArrayList<>();
         for (String productId : productIds) {
             try {
                 soldProducts.add(findItemById(productId));
-            } catch (NoSuchElementException e) {
-                throw new IllegalArgumentException(
-                        "No existe un producto ni un accesorio con el codigo "
-                                + productId + ".");
+            } catch (NoSuchElementException | ResourceNotFoundException e) {
+                throw new ResourceNotFoundException(
+                        "un producto o accesorio", productId);
             }
         }
 
-        Map<String, Integer> requestedUnits = countUnitsByProduct(soldProducts);
+        SaleValidator.validateSaleData(customer, seller, soldProducts);
+
+        Map<String, Integer> requestedUnits =
+                countUnitsByProduct(soldProducts);
+
         for (Map.Entry<String, Integer> entry : requestedUnits.entrySet()) {
             Product product = findItemById(entry.getKey());
-            if (product.getQuantity() < entry.getValue()) {
-                throw new IllegalArgumentException(String.format(
-                        "Stock insuficiente para %s. Disponible: %d, solicitado: %d.",
-                        product.getTitle(), product.getQuantity(), entry.getValue()));
-            }
+            ProductValidator.validateStockAvailability(
+                    product, entry.getValue());
         }
-
-        Sale sale = new Sale(
-                generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
+               Sale sale = new Sale(
+        generateSaleId(), LocalDate.now(), customer, seller, soldProducts);
 
         // Apply the best active promotion before adding warranty costs.
         Promotion bestPromotion = promotionService.findBestPromotionFor(sale);
@@ -179,6 +173,9 @@ public class SaleService {
      * @param productIds the ids of the products or accessories being sold,
      *                   one entry per unit
      * @return the registered sale
+     * @throws com.gamezone.exceptions.BusinessRuleException if no products are requested or stock is insufficient
+     * @throws ResourceNotFoundException if a customer, seller or item does not exist
+     * @throws com.gamezone.exceptions.PersistenceException if the operation cannot be persisted
      */
     public Sale registerSale(String customerId, String sellerId,
                              List<String> productIds) {
@@ -243,6 +240,18 @@ public class SaleService {
         }
         return null;
     }
+    /**
+ * Finds a sale that must exist.
+ *
+ * @param saleId identifier of the sale
+ * @return the matching sale
+ * @throws ResourceNotFoundException if the sale does not exist
+ */
+public Sale getSaleById(String saleId) {
+    Sale sale = findById(saleId);
+    SaleValidator.validateSaleExists(sale, saleId);
+    return sale;
+}
 
     /**
      * Looks up an item sold in the store by id, checking the product catalog
@@ -251,15 +260,16 @@ public class SaleService {
      *
      * @param id the id of the product or accessory to find
      * @return the matching product or accessory
-     * @throws NoSuchElementException if neither catalog has an item with that id
+     * @throws ResourceNotFoundException if the accessory lookup uses typed exceptions and neither catalog contains the id
+     * @throws NoSuchElementException if the accessory lookup uses the legacy exception and neither catalog contains the id
      */
     private Product findItemById(String id) {
-        try {
-            return productService.findById(id);
-        } catch (NoSuchElementException e) {
-            return accessoryService.findById(id);
-        }
+    try {
+        return productService.findById(id);
+    } catch (ResourceNotFoundException e) {
+        return accessoryService.findById(id);
     }
+}
 
     /**
      * Decreases the stock of a sold item through the service that owns it,
@@ -269,12 +279,12 @@ public class SaleService {
      * @param amount the number of units to remove from inventory
      */
     private void updateStockOf(String id, int amount) {
-        try {
-            productService.updateStock(id, amount);
-        } catch (NoSuchElementException e) {
-            accessoryService.updateStock(id, amount);
-        }
+    try {
+        productService.updateStock(id, amount);
+    } catch (ResourceNotFoundException e) {
+        accessoryService.updateStock(id, amount);
     }
+}
 
     /**
      * Counts how many units of each product a sale requests, since the same

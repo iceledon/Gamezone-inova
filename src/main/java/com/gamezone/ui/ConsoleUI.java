@@ -1,5 +1,12 @@
 package com.gamezone.ui;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
@@ -19,12 +26,6 @@ import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import com.gamezone.service.WarrantyService;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
 
 /**
  * Console user interface of the application.
@@ -298,96 +299,112 @@ public class ConsoleUI {
      * every console sold before sending the sale to the service layer. Each item can be
      * a regular product or an accessory, resolved through {@link #findAnyItemById(String)}.
      */
-    private void registerSale() {
-        try {
-            String customerId = ask("Identificacion del cliente: ");
-            String sellerId = ask("Identificacion del vendedor: ");
-            int units = askInt("Cantidad de items a vender (productos o accesorios): ");
-            List<String> productIds = new ArrayList<>();
-            List<String> productIdsWithExtendedWarranty = new ArrayList<>();
-            for (int i = 1; i <= units; i++) {
-                String productId = ask("Codigo del producto o accesorio " + i + ": ");
-                productIds.add(productId);
-                Product product = findAnyItemById(productId);
-                if (product instanceof Console) {
-                    String answer = ask("Desea agregar garantia extendida a la consola "
-                            + product.getTitle() + "? (S/N): ");
-                    if (answer.equalsIgnoreCase("S")) {
-                        productIdsWithExtendedWarranty.add(productId);
-                    }
+   private void registerSale() {
+    try {
+        String customerId = ask("Identificacion del cliente: ");
+        String sellerId = ask("Identificacion del vendedor: ");
+        int units = askInt(
+                "Cantidad de items a vender (productos o accesorios): ");
+
+        List<String> productIds = new ArrayList<>();
+        List<String> productIdsWithExtendedWarranty = new ArrayList<>();
+
+        for (int i = 1; i <= units; i++) {
+            String productId = ask(
+                    "Codigo del producto o accesorio " + i + ": ");
+            productIds.add(productId);
+
+            Product product = findAnyItemById(productId);
+            if (product instanceof Console) {
+                String answer = ask(
+                        "Desea garantia extendida para esta consola? (s/n): ");
+
+                if (answer.equalsIgnoreCase("s")
+                        || answer.equalsIgnoreCase("si")) {
+                    productIdsWithExtendedWarranty.add(productId);
                 }
             }
-            Sale sale = saleService.registerSale(customerId, sellerId, productIds,
-                    productIdsWithExtendedWarranty);
-            System.out.println("Venta registrada correctamente.");
-            printSale(sale);
-        } catch (RuntimeException e) {
-            System.out.println("No se pudo registrar la venta: " + e.getMessage());
         }
-    }
 
-    /**
-     * Looks up a sold item by id in either catalog, only to decide whether to offer an
-     * extended warranty before the sale is actually registered. Returns null if the id
-     * does not match anything yet; {@link SaleService#registerSale} is the one that gives
-     * the real "item not found" error once the sale is actually submitted.
-     *
-     * @param id the id typed by the user
-     * @return the matching product or accessory, or null if none was found
-     */
-    private Product findAnyItemById(String id) {
+        Sale sale = saleService.registerSale(
+                customerId,
+                sellerId,
+                productIds,
+                productIdsWithExtendedWarranty);
+
+        System.out.println("Venta registrada correctamente.");
+        printSale(sale);
+    } catch (RuntimeException e) {
+        System.out.println(
+                "No se pudo registrar la venta: " + e.getMessage());
+    }
+}
+
+/**
+ * Looks up an item in both catalogs to offer an extended warranty.
+ *
+ * @param id the product or accessory identifier
+ * @return the matching item, or null if neither catalog contains it
+ */
+private Product findAnyItemById(String id) {
+    try {
+        return productService.findById(id);
+    } catch (ResourceNotFoundException e) {
+        if (accessoryService == null) {
+            return null;
+        }
+
         try {
-            return productService.findById(id);
-        } catch (NoSuchElementException e) {
-            if (accessoryService == null) {
-                return null;
-            }
-            try {
-                return accessoryService.findById(id);
-            } catch (NoSuchElementException e2) {
-                return null;
-            }
+            return accessoryService.findById(id);
+        } catch (NoSuchElementException e2) {
+            return null;
         }
     }
+}
+/**
+ * Prints the complete sales history.
+ */
+private void showAllSales() {
+    printSales(
+            saleService.getAllSales(),
+            "No hay ventas registradas.");
+}
 
-    /**
-     * Prints the complete sales history.
-     */
-    private void showAllSales() {
-        printSales(saleService.getAllSales(), "No hay ventas registradas.");
+/**
+ * Prints the sales history of one customer.
+ */
+private void showSalesByCustomer() {
+    String customerId = ask("Identificacion del cliente: ");
+    printSales(
+            saleService.getSalesByCustomer(customerId),
+            "Este cliente no tiene compras registradas.");
+}
+
+/**
+ * Prints the sales history of one seller.
+ */
+private void showSalesBySeller() {
+    String sellerId = ask("Identificacion del vendedor: ");
+    printSales(
+            saleService.getSalesBySeller(sellerId),
+            "Este vendedor no tiene ventas registradas.");
+}
+/**
+ * Prints sales, or a message when the list is empty.
+ *
+ * @param sales the sales to print
+ * @param emptyMessage the message shown when there are no sales
+ */
+private void printSales(List<Sale> sales, String emptyMessage) {
+    if (sales.isEmpty()) {
+        System.out.println(emptyMessage);
+        return;
     }
 
-    /**
-     * Prints the sales history of one customer.
-     */
-    private void showSalesByCustomer() {
-        String customerId = ask("Identificacion del cliente: ");
-        printSales(saleService.getSalesByCustomer(customerId), "Este cliente no tiene compras registradas.");
+    for (Sale sale : sales) {
+        printSale(sale);
     }
-
-    /**
-     * Prints the sales history of one seller.
-     */
-    private void showSalesBySeller() {
-        String sellerId = ask("Identificacion del vendedor: ");
-        printSales(saleService.getSalesBySeller(sellerId), "Este vendedor no tiene ventas registradas.");
-    }
-
-    /**
-     * Prints a list of sales, or a message when the list is empty.
-     *
-     * @param sales        the sales to print
-     * @param emptyMessage the message shown when there is nothing to print
-     */
-    private void printSales(List<Sale> sales, String emptyMessage) {
-        if (sales.isEmpty()) {
-            System.out.println(emptyMessage);
-            return;
-        }
-        for (Sale sale : sales) {
-            printSale(sale);
-        }
-    }
+}
 
     /**
      * Prints the receipt of a single sale, delegating the formatting to

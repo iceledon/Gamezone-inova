@@ -1,13 +1,17 @@
 package com.gamezone.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.PersistenceException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
 import com.gamezone.persistence.ProductRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import com.gamezone.validation.ProductValidator;
 
 /**
  * Business rules for managing products.
@@ -18,7 +22,10 @@ public class ProductService {
     private final List<Product> products;
 
     /**
+     * Loads the inventory using the given repository.
+     *
      * @param repository repository used to persist products
+     * @throws PersistenceException if the inventory cannot be loaded
      */
     public ProductService(ProductRepository repository) {
         this.repository = repository;
@@ -26,44 +33,67 @@ public class ProductService {
     }
 
     /**
-     * Registers a new video game and persists the updated inventory.
+     * Registers a video game and persists the updated inventory.
      *
-     * @param id        unique identifier of the product
-     * @param title     name of the product
-     * @param price     unit price of the product
-     * @param quantity  units currently available in inventory
-     * @param platform  platform the game was developed for
-     * @param genre     genre of the game
+     * @param id unique identifier of the product
+     * @param title name of the product
+     * @param price unit price of the product
+     * @param quantity units currently available in inventory
+     * @param platform platform the game was developed for
+     * @param genre genre of the game
      * @param ageRating recommended age rating of the game
+     * @throws BusinessRuleException if the product id already exists
+     * @throws InvalidDataException if the common product data is invalid
+     * @throws PersistenceException if the inventory cannot be saved
      */
-    public void registerVideoGame(String id, String title, double price, int quantity,
-                                   String platform, String genre, String ageRating) {
+    public void registerVideoGame(
+            String id, String title, double price, int quantity,
+            String platform, String genre, String ageRating) {
+
         rejectIfIdExists(id);
-        products.add(new VideoGame(id, title, price, quantity, platform, genre, ageRating));
+        ProductValidator.validateProductData(id, title, price, quantity);
+
+        products.add(
+                new VideoGame(
+                        id, title, price, quantity,
+                        platform, genre, ageRating));
+
         repository.save(products);
     }
 
     /**
-     * Registers a new console and persists the updated inventory.
+     * Registers a console and persists the updated inventory.
      *
-     * @param id         unique identifier of the product
-     * @param title      name of the product
-     * @param price      unit price of the product
-     * @param quantity   units currently available in inventory
-     * @param brand      manufacturer of the console
-     * @param model      model name of the console
+     * @param id unique identifier of the product
+     * @param title name of the product
+     * @param price unit price of the product
+     * @param quantity units currently available in inventory
+     * @param brand manufacturer of the console
+     * @param model model name of the console
      * @param generation generation number of the console
+     * @throws BusinessRuleException if the product id already exists
+     * @throws InvalidDataException if the common product data is invalid
+     * @throws PersistenceException if the inventory cannot be saved
      */
-    public void registerConsole(String id, String title, double price, int quantity,
-                                 String brand, String model, int generation) {
+    public void registerConsole(
+            String id, String title, double price, int quantity,
+            String brand, String model, int generation) {
+
         rejectIfIdExists(id);
-        products.add(new Console(id, title, price, quantity, brand, model, generation));
+        ProductValidator.validateProductData(id, title, price, quantity);
+
+        products.add(
+                new Console(
+                        id, title, price, quantity,
+                        brand, model, generation));
+
         repository.save(products);
     }
 
     private void rejectIfIdExists(String id) {
         if (find(id) != null) {
-            throw new IllegalArgumentException("Product id already exists: " + id);
+            throw new BusinessRuleException(
+                    "Ya existe un producto con el identificador " + id + ".");
         }
     }
 
@@ -77,6 +107,8 @@ public class ProductService {
     }
 
     /**
+     * Returns a copy of the inventory list.
+     *
      * @return every product currently registered
      */
     public List<Product> listAll() {
@@ -84,41 +116,47 @@ public class ProductService {
     }
 
     /**
+     * Finds a product that must exist.
+     *
      * @param id unique identifier of the product to find
      * @return the product with the given id
-     * @throws NoSuchElementException if no product has that id
+     * @throws ResourceNotFoundException if no product has that id
      */
     public Product findById(String id) {
         Product product = find(id);
-        if (product == null) {
-            throw new NoSuchElementException("Product not found: " + id);
-        }
+        ProductValidator.validateProductExists(product, id);
         return product;
     }
 
     /**
-     * Decreases the stock of the given product and persists the change.
+     * Decreases the product stock and persists the change.
      *
      * @param productId unique identifier of the product
-     * @param amount    units to remove from inventory
+     * @param amount units to remove from inventory
+     * @throws ResourceNotFoundException if the product does not exist
+     * @throws BusinessRuleException if the stock is insufficient
+     * @throws PersistenceException if the inventory cannot be saved
      */
     public void updateStock(String productId, int amount) {
         Product product = findById(productId);
+        ProductValidator.validateStockAvailability(product, amount);
+
         product.decreaseStock(amount);
         repository.save(products);
     }
 
     /**
-     * Aumenta el stock de un producto cuando se devuelve, porque ese producto ya quedo
-     * disponible otra vez para venderse. Es lo contrario de updateStock, pero reutiliza
-     * el mismo setter de Product en vez de tocar el campo directamente.
+     * Restores returned units to the inventory and persists the change.
      *
-     * @param productId id del producto que se devuelve
-     * @param amount    cuantas unidades hay que devolver al inventario
+     * @param productId identifier of the returned product
+     * @param amount units to restore to the inventory
+     * @throws ResourceNotFoundException if the product does not exist
+     * @throws PersistenceException if the inventory cannot be saved
      */
     public void restoreStock(String productId, int amount) {
         Product product = findById(productId);
         int newQuantity = product.getQuantity() + amount;
+
         product.setQuantity(newQuantity);
         repository.save(products);
     }
