@@ -1,0 +1,41 @@
+1
+1
+R6VGBASE
+Juego prueba R6
+100
+5
+PC
+Aventura
+E
+2
+R6CNBASE
+Consola prueba R6
+500
+2
+Nintendo
+Modelo R6
+1
+3
+0
+2
+1
+R6CBASE
+Cliente prueba R6
+3001112233
+r6@example.com
+2
+3
+0
+3
+1
+R6CBASE
+S001
+1
+R6VGBASE
+2
+3
+R6CBASE
+4
+S001
+0
+8
