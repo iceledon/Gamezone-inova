@@ -34,6 +34,7 @@ public class ProductService {
 
     /**
      * Registers a video game and persists the updated inventory.
+     * The in-memory inventory changes only after saving succeeds.
      *
      * @param id unique identifier of the product
      * @param title name of the product
@@ -53,16 +54,27 @@ public class ProductService {
         rejectIfIdExists(id);
         ProductValidator.validateProductData(id, title, price, quantity);
 
-        products.add(
-                new VideoGame(
-                        id, title, price, quantity,
-                        platform, genre, ageRating));
+        Product product = new VideoGame(
+                id,
+                title,
+                price,
+                quantity,
+                platform,
+                genre,
+                ageRating
+        );
 
-        repository.save(products);
+        List<Product> updatedProducts = new ArrayList<>(products);
+        updatedProducts.add(product);
+
+        repository.save(updatedProducts);
+
+        products.add(product);
     }
 
     /**
      * Registers a console and persists the updated inventory.
+     * The in-memory inventory changes only after saving succeeds.
      *
      * @param id unique identifier of the product
      * @param title name of the product
@@ -82,18 +94,29 @@ public class ProductService {
         rejectIfIdExists(id);
         ProductValidator.validateProductData(id, title, price, quantity);
 
-        products.add(
-                new Console(
-                        id, title, price, quantity,
-                        brand, model, generation));
+        Product product = new Console(
+                id,
+                title,
+                price,
+                quantity,
+                brand,
+                model,
+                generation
+        );
 
-        repository.save(products);
+        List<Product> updatedProducts = new ArrayList<>(products);
+        updatedProducts.add(product);
+
+        repository.save(updatedProducts);
+
+        products.add(product);
     }
 
     private void rejectIfIdExists(String id) {
         if (find(id) != null) {
             throw new BusinessRuleException(
-                    "Ya existe un producto con el identificador " + id + ".");
+                    "Ya existe un producto con el identificador " + id + "."
+            );
         }
     }
 
