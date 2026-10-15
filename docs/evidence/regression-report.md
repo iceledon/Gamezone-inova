@@ -76,7 +76,7 @@ has not yet been saved in this evidence directory.
 
 - Duplicate customer identifier.
 - Sale without products.
-- Persistence failure during an operation.
+- Persistence failures in operations other than video game registration.
 
 - State preservation after rejected operations.
 - Additional integrated operations involving accessories,
@@ -159,6 +159,49 @@ saved in these output files.
 Both tests used copies of the data. The project's original data
 directory was not modified by their setup.
 
-Persistence failures during an ongoing operation, additional
+Persistence failures in other operations, additional
 integrated scenarios and remaining state-preservation checks
 require separate verification.
+
+## Persistence failure during product registration
+
+A video game registration was attempted using an isolated data copy
+with products.txt set to read-only.
+
+The initial test exposed an inconsistency: the rejected product
+remained in memory although the file was unchanged.
+
+ProductService registration was corrected to save the proposed
+inventory before adding the new product to the in-memory list.
+
+The repeated video game test produced:
+
+- Exit code: 0.
+- Expected persistence message displayed: True.
+- Products file unchanged: True.
+- Rejected product appears in subsequent inventory listing: False.
+
+The menu remained usable and the application exited normally.
+
+Evidence:
+
+- persistence-write-stdout.txt
+- persistence-write-stderr.txt
+- persistence-write-result.txt
+
+The original project data was not modified.
+
+The same registration strategy was applied to consoles, but the
+console failure scenario has not yet been tested separately.
+
+This result does not establish atomic file writes or state preservation
+for other operations such as sales or stock updates.
+
+## Verification after the registration correction
+
+The ten-operation comparison documented earlier was executed before
+this ProductService correction.
+
+Repeating the valid-operation regression on the corrected revision
+remains pending. The earlier evidence has been preserved and must
+not be presented as a test of the later correction.
