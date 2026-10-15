@@ -34,15 +34,15 @@ Classes and methods audited, organized by module and requirement (section 4 of R
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
-| 1 | Information Expert | TODO | TODO |
-| 2 | Creator | TODO | TODO |
-| 3 | Controller | TODO | TODO |
-| 4 | Low Coupling | TODO | TODO |
-| 5 | High Cohesion | TODO | TODO |
-| 6 | Polymorphism | TODO | TODO |
-| 7 | Pure Fabrication | TODO | TODO |
-| 8 | Indirection | TODO | TODO |
-| 9 | Protected Variations | TODO | TODO |
+| 1 | Information Expert | violation | V-01 |
+| 2 | Creator | correct | - |
+| 3 | Controller | correct | - |
+| 4 | Low Coupling | correct | - (the coupling problem in `Return` is registered once, as V-01) |
+| 5 | High Cohesion | correct | - |
+| 6 | Polymorphism | violation | V-02 |
+| 7 | Pure Fabrication | correct | - |
+| 8 | Indirection | correct | - |
+| 9 | Protected Variations | violation | V-03 |
 
 Verdict values: `violation`, `correct`, `not applicable`.
 
@@ -181,3 +181,16 @@ Where it is correct:
 | Consequence | If the store changes its return policy (for example, 15 or 45 days), the number must be found inside the method, and the message "Ya paso el plazo de 30 dias" in `ReturnService` is a second place with the same value. Because the method reads the system clock, it is not possible to check the rule for a given date (for example, to show in the oral defense that a 31-day-old sale is rejected) without changing the computer date. |
 | Proposed solution | Keep the period in a named constant (`RETURN_PERIOD_DAYS = 30`) and add `canBeReturned(LocalDate date)` with the rule; the current `canBeReturned()` calls it with `LocalDate.now()`, so `ReturnService` and the user see exactly the same behavior. Pattern applied: Protected Variations. |
 | Other member's code | Yes, possibly: `Sale` is the Technical Leader's class, and the git history shows `canBeReturned` was committed by Developer 2. The text "30 dias" in `ReturnService` is Developer 2's and is not changed (the user message must stay the same). The Technical Leader decides the owner in the consolidation. |
+
+## 12. Findings reported to the Technical Leader
+
+Problems found during this audit whose origin is in another member's code (not audited here, sent to the consolidation).
+
+| Class / method | Owner | Short description |
+|---|---|---|
+| `Sale.canBeReturned` | Developer 2 (git history) / Developer 1 (PDF table) | The PDF assigns this method to Developer 1, but commit `45c8cf2` ("feat(model): add canBeReturned method to Sale") is by Developer 2. Audited here (V-03) as the PDF says; please confirm the owner of the correction. |
+| `ProductService.restoreStock` | Technical Leader | Information Expert: it does `product.setQuantity(product.getQuantity() + amount)` instead of asking `Product` to increase its own stock (the opposite of `Product.decreaseStock`). A fix would add `increaseStock(int)` to `Product` (Developer 1's class): boundary finding. |
+| `AccessoryService.restoreStock` | Developer 2 | Same problem as above (line 172: `accessory.setQuantity(accessory.getQuantity() + amount)`). Could reuse the same `Product.increaseStock(int)`. |
+| `SaleService.registerSale` (line 149), `ReturnService.registerReturn` (lines 83 and 92), `ConsoleUI.registerSale` (line 312) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. |
+| `PromotionService.isValidTargetCategory` (lines 160-163) | Developer 2 | Repeats the category strings `"VIDEOGAME"`, `"CONSOLE"`, `"ACCESSORY"`. Related to V-02. |
+| `Return` (`warrantyRefund` field, constructor parameter and receipt line) | Developer 2 (git history) | Added by Developer 2 in the warranty-refund integration; the JavaDoc of `Return` is in Spanish, which goes against the "comments in English" rule. Not a GRASP issue; noted for the Phase 2 change in `Return`. |
