@@ -213,8 +213,6 @@ The original project data was not modified.
 
 ## 10. Remaining verification
 
-- Duplicate customer identifier: record the actual execution result.
-- Sale without products: record the actual execution result.
 - Persistence failure during console registration.
 - Persistence failures in other operations.
 - State preservation for other rejected or failed operations.
@@ -248,3 +246,25 @@ longer remained in memory and that the product file was unchanged.
 These results support the tested scenarios. They do not establish
 complete coverage of every integrated operation or guarantee
 transactional persistence across multiple files.
+## Duplicate customer and empty sale verification
+
+Both scenarios were executed interactively.
+
+### Duplicate customer
+
+Registering customer C001 again displayed:
+
+> No se puede completar la operacion: Ya existe una persona con el identificador C001.
+
+The people submenu remained usable.
+
+### Empty sale
+
+Attempting a sale with customer C001, seller S001 and zero items displayed:
+
+> No se puede completar la operacion: La venta debe contener al menos un producto.
+
+The sales submenu remained usable.
+
+These checks confirm differentiated business-rule messages and
+continued navigation. Persisted data was not compared separately.
