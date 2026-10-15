@@ -140,3 +140,44 @@ Considered but not a violation: `ProductRepository.toLine` and `fromLine` use `i
 | Consequence | When the store adds a new product type (the owner plans to grow the catalog), `CategoryDiscount` must be edited to add one more `if`. If someone forgets, products of the new type are never discounted and nothing warns about it. |
 | Proposed solution | Add a polymorphic method `getCategory()` to `Product` (abstract), implemented in `VideoGame` (`"VIDEOGAME"`), `Console` (`"CONSOLE"`) and `Accessory` (`"ACCESSORY"`, inherited by `Cable`, `Controller`, `Memory`). `matchesTargetCategory` becomes `targetCategory.equals(product.getCategory())`. Same results for every existing category. Pattern applied: Polymorphism (it also protects `CategoryDiscount` from new product types, see section 11). |
 | Other member's code | No. All the classes changed (`Product`, `VideoGame`, `Console`, `Accessory`, `CategoryDiscount`) are Developer 1's. |
+
+## 9. Pure Fabrication
+
+> Where does a responsibility go when it does not belong to any domain class?
+
+**Verdict:** correct
+
+`ProductRepository` is a Pure Fabrication: a "product repository" does not exist in the store's real world. It was created to hold the file access (`Files.write`, `Files.readAllLines`) and the text format, so that `Product`, `VideoGame` and `Console` do not have any file logic and stay cohesive. `ProductService` is also an invented class that groups the product use cases.
+
+## 10. Indirection
+
+> How are two components that must collaborate decoupled?
+
+**Verdict:** correct
+
+`ProductService` is an intermediate object between `ConsoleUI` and `ProductRepository`. The UI never knows that products are saved in a text file. Other modules also go through `ProductService` to use products: `SaleService.updateStockOf` calls `productService.updateStock` (`SaleService` line 273) and `ReturnService` calls `productService.restoreStock` (`ReturnService` line 95), instead of reading or writing `data/products.txt` themselves.
+
+## 11. Protected Variations
+
+> How is the system protected from foreseeable changes?
+
+**Verdict:** violation
+
+Where it is correct:
+
+- The abstract classes `Product`, `Promotion` and `Warranty` are stable interfaces: a new kind of promotion or warranty is added as a new subclass, and `SaleService` and `ConsoleUI` keep working with the base type.
+- `ProductRepository` hides the file format behind `save` and `load`; if the format changes, only the repository changes.
+- The variation "new product type" in `CategoryDiscount` is covered by V-02 (same code, registered once).
+
+### V-03
+
+| Field | Content |
+|---|---|
+| ID | V-03 |
+| Pattern | Protected Variations |
+| Module | Returns (Req. 3) |
+| Evidence | `Sale.canBeReturned()`, lines 162-169: `LocalDate limitDate = this.date.plusDays(30); LocalDate today = LocalDate.now(); if (today.isAfter(limitDate)) { return false; } return true;` |
+| Explanation | Two points that will change are written directly inside the method: the return period (the magic number `30`) and the current date (`LocalDate.now()`, read from the system clock). Nothing protects the rest of the code from those changes. |
+| Consequence | If the store changes its return policy (for example, 15 or 45 days), the number must be found inside the method, and the message "Ya paso el plazo de 30 dias" in `ReturnService` is a second place with the same value. Because the method reads the system clock, it is not possible to check the rule for a given date (for example, to show in the oral defense that a 31-day-old sale is rejected) without changing the computer date. |
+| Proposed solution | Keep the period in a named constant (`RETURN_PERIOD_DAYS = 30`) and add `canBeReturned(LocalDate date)` with the rule; the current `canBeReturned()` calls it with `LocalDate.now()`, so `ReturnService` and the user see exactly the same behavior. Pattern applied: Protected Variations. |
+| Other member's code | Yes, possibly: `Sale` is the Technical Leader's class, and the git history shows `canBeReturned` was committed by Developer 2. The text "30 dias" in `ReturnService` is Developer 2's and is not changed (the user message must stay the same). The Technical Leader decides the owner in the consolidation. |
