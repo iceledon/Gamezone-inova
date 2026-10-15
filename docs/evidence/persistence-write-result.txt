@@ -1,0 +1,4 @@
+﻿Exit code: 0
+Expected persistence message displayed: True
+Products file unchanged: True
+Rejected product appears in subsequent inventory listing: False
