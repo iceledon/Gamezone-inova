@@ -71,13 +71,13 @@ has not yet been saved in this evidence directory.
 
 ## Pending verification
 
-- Invalid numeric input.
-- Invalid date input.
-- Insufficient stock.
+
+
+
 - Duplicate customer identifier.
 - Sale without products.
 - Persistence failure during an operation.
-- Persistence failure during startup.
+
 - State preservation after rejected operations.
 - Additional integrated operations involving accessories,
   promotions, warranties and returns.
@@ -115,3 +115,50 @@ presentation detail to correct.
 
 These checks verify error feedback and continued navigation. Persisted
 data was not compared separately during these interactive executions.
+
+## Stock and startup persistence verification
+
+### Insufficient stock
+
+An isolated copy of the data was configured with one unit of VG001.
+A sale requested two units of that same product.
+
+The application displayed:
+
+"No se puede completar la operacion: Stock insuficiente para The Legend of Zelda Tears of the Kingdom. Disponible: 1, solicitado: 2."
+
+The application allowed navigation to continue and exited normally.
+
+Evidence: stock-error.txt.
+
+The saved transcript confirms rejection and continued navigation.
+The file-hash comparison result was printed separately by the test
+script and is not included in this transcript.
+
+### Corrupt product data during startup
+
+An isolated products.txt contained a nonnumeric price.
+
+The application displayed only:
+
+"Ocurrio un problema al acceder a los datos del sistema. Contacte al administrador."
+
+No technical exception trace appeared in the saved output.
+The standard output file was empty.
+
+Evidence:
+
+- persistence-startup-stdout.txt
+- persistence-startup-stderr.txt
+
+The process exit code was checked by the test script but was not
+saved in these output files.
+
+### Scope
+
+Both tests used copies of the data. The project's original data
+directory was not modified by their setup.
+
+Persistence failures during an ongoing operation, additional
+integrated scenarios and remaining state-preservation checks
+require separate verification.
