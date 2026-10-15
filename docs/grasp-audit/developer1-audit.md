@@ -91,3 +91,25 @@ Where it is correct:
 **Verdict:** correct
 
 My code does not receive events from the user directly; `ConsoleUI` (Technical Leader) does. For the product use cases, `ProductService` is the first object after the UI that receives the system operations: `ConsoleUI` calls `productService.registerVideoGame` (`ConsoleUI` line 156), `registerConsole` (line 175), `listAll` (line 186) and `findById` (line 340). `ProductService` coordinates the operation (checks duplicate ids, creates the object, asks the repository to save) and the UI never talks to `ProductRepository`. This is a use-case controller.
+
+## 6. Low Coupling
+
+> How are dependencies between classes reduced?
+
+**Verdict:** correct
+
+- `ProductService` depends only on `ProductRepository` and the model classes. Other services (`SaleService`, `ReturnService`, `WarrantyService`) use the product catalog through `ProductService` (`listAll`, `findById`, `updateStock`), not through the repository or the file.
+- `ProductRepository` depends only on the model classes it reads and writes.
+- `Promotion.calculateDiscount(Sale)` and `Warranty` (fields `product` and `sale`) depend on `Sale` and `Product` only because they need them to do their job (calculate a discount, print a certificate).
+- The only unnecessary coupling found (`Return` reading the internal discount data of `Sale`) is the same code fragment as V-01. It is registered once, under Information Expert, because fixing that pattern also removes the coupling.
+
+## 7. High Cohesion
+
+> How are classes kept focused and understandable?
+
+**Verdict:** correct
+
+- `ProductService` has only product use cases: register, list, find and update stock.
+- `ProductRepository` has only persistence of products: write and read `data/products.txt` and convert a product to a line and back.
+- Each model class keeps its own data and the rules about that data: `Accessory` (compatible consoles), `Promotion` (validity dates and discount), `Warranty` (coverage period and cost), `Return` (refund).
+- `Return.generateReturnReceipt()` and `Warranty.generateWarrantyCertificate()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes, so they stay with their information expert. The console only prints the returned text.
