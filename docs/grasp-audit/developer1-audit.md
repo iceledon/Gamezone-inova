@@ -113,3 +113,30 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 - `ProductRepository` has only persistence of products: write and read `data/products.txt` and convert a product to a line and back.
 - Each model class keeps its own data and the rules about that data: `Accessory` (compatible consoles), `Promotion` (validity dates and discount), `Warranty` (coverage period and cost), `Return` (refund).
 - `Return.generateReturnReceipt()` and `Warranty.generateWarrantyCertificate()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes, so they stay with their information expert. The console only prints the returned text.
+
+## 8. Polymorphism
+
+> How are behavior variants handled without conditionals on the type?
+
+**Verdict:** violation
+
+Where it is correct:
+
+- `Product.getDescription()` is abstract and each subclass (`VideoGame`, `Console`, `Cable`, `Controller`, `Memory`) gives its own version. `ConsoleUI` prints any product with `product.getDescription()` without asking its type.
+- `Promotion.calculateDiscount(Sale)` is abstract; each type of promotion calculates its own discount, and `SaleService` calls it without knowing the type.
+- `Warranty` declares `getDurationInMonths()`, `getWarrantyType()` and `getAdditionalCost()` as abstract, so `BasicWarranty` and `ExtendedWarranty` change the behavior without any `if` on the type.
+
+Considered but not a violation: `ProductRepository.toLine` and `fromLine` use `instanceof` and the `"VIDEOGAME"` / `"CONSOLE"` type field. The text format of the file is a persistence detail; moving it to `Product` would put file format knowledge in the model layer. The repository is a Pure Fabrication created to keep this outside the domain, so the type check stays there.
+
+### V-02
+
+| Field | Content |
+|---|---|
+| ID | V-02 |
+| Pattern | Polymorphism |
+| Module | Promotions (Req. 2) |
+| Evidence | `CategoryDiscount.matchesTargetCategory(Product)`, lines 79-90: `if ("VIDEOGAME".equals(targetCategory)) { return product instanceof VideoGame; } if ("CONSOLE".equals(targetCategory)) { return product instanceof Console; } if ("ACCESSORY".equals(targetCategory)) { return product instanceof Accessory; } return false;` |
+| Explanation | The category of a product is a variation that depends on the product type, but it is decided with a chain of `if` + `instanceof` in another class. Each product subclass should answer "what is your category" itself. |
+| Consequence | When the store adds a new product type (the owner plans to grow the catalog), `CategoryDiscount` must be edited to add one more `if`. If someone forgets, products of the new type are never discounted and nothing warns about it. |
+| Proposed solution | Add a polymorphic method `getCategory()` to `Product` (abstract), implemented in `VideoGame` (`"VIDEOGAME"`), `Console` (`"CONSOLE"`) and `Accessory` (`"ACCESSORY"`, inherited by `Cable`, `Controller`, `Memory`). `matchesTargetCategory` becomes `targetCategory.equals(product.getCategory())`. Same results for every existing category. Pattern applied: Polymorphism (it also protects `CategoryDiscount` from new product types, see section 11). |
+| Other member's code | No. All the classes changed (`Product`, `VideoGame`, `Console`, `Accessory`, `CategoryDiscount`) are Developer 1's. |
