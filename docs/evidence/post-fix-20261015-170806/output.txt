@@ -1,0 +1,208 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Cantidad en stock: Plataforma: Genero: Clasificacion por edad: Videojuego registrado correctamente.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Cantidad en stock: Marca: Modelo: Generacion: Consola registrada correctamente.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Productos en inventario:
+  [VG001] The Legend of Zelda Tears of the Kingdom - Platform: Nintendo Switch, Genre: Aventura, Age Rating: E10+ | Precio: $259900,00 | Stock: 4
+  [CN001] Nintendo Switch OLED - Brand: Nintendo, Model: OLED, Generation: 2 | Precio: $1499900,00 | Stock: 2
+  [R6VGBASE] Juego prueba R6 - Platform: PC, Genre: Aventura, Age Rating: E | Precio: $100,00 | Stock: 5
+  [R6CNBASE] Consola prueba R6 - Brand: Nintendo, Model: Modelo R6, Generation: 1 | Precio: $500,00 | Stock: 2
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Identificacion: Nombre completo: Telefono: Correo electronico: Cliente registrado correctamente.
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Clientes registrados:
+  [C001] Juan Rodriguez | Cliente | Telefono: 3101234567 | Correo: juan.rodriguez@example.com
+  [R6CBASE] Cliente prueba R6 | Cliente | Telefono: 3001112233 | Correo: r6@example.com
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Vendedores registrados:
+  [S001] Carlos Perez | Vendedor | Codigo: EMP001 | Turno: Manana
+  [S002] Ana Gomez | Vendedor | Codigo: EMP002 | Turno: Tarde
+  [S003] Luis Martinez | Vendedor | Codigo: EMP003 | Turno: Noche
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del cliente: Identificacion del vendedor: Cantidad de items a vender (productos o accesorios): Codigo del producto o accesorio 1: Venta registrada correctamente.
+
+Recibo de venta V003 | Fecha: 2026-10-15
+  Cliente:  [R6CBASE] Cliente prueba R6
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R6VGBASE] Juego prueba R6 ($100.0)
+  Subtotal: $100,00
+  Total: $100,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+Recibo de venta V001 | Fecha: 2026-09-08
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [CN001] Nintendo Switch OLED ($1499900.0)
+  Subtotal: $1759800,00
+  Total: $1759800,00
+
+Recibo de venta V002 | Fecha: 2026-09-15
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $409800,00
+  Total: $409800,00
+
+Recibo de venta V003 | Fecha: 2026-10-15
+  Cliente:  [R6CBASE] Cliente prueba R6
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R6VGBASE] Juego prueba R6 ($100.0)
+  Subtotal: $100,00
+  Total: $100,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del cliente: 
+Recibo de venta V003 | Fecha: 2026-10-15
+  Cliente:  [R6CBASE] Cliente prueba R6
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R6VGBASE] Juego prueba R6 ($100.0)
+  Subtotal: $100,00
+  Total: $100,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del vendedor: 
+Recibo de venta V001 | Fecha: 2026-09-08
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [CN001] Nintendo Switch OLED ($1499900.0)
+  Subtotal: $1759800,00
+  Total: $1759800,00
+
+Recibo de venta V002 | Fecha: 2026-09-15
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $409800,00
+  Total: $409800,00
+
+Recibo de venta V003 | Fecha: 2026-10-15
+  Cliente:  [R6CBASE] Cliente prueba R6
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R6VGBASE] Juego prueba R6 ($100.0)
+  Subtotal: $100,00
+  Total: $100,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

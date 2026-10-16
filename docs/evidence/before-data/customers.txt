@@ -1,0 +1,2 @@
+C001;Juan Rodriguez;3101234567;juan.rodriguez@example.com
+R6CBASE;Cliente prueba R6;3001112233;r6@example.com

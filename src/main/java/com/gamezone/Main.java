@@ -1,5 +1,6 @@
 package com.gamezone;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.persistence.AccessoryRepository;
 import com.gamezone.persistence.PersonRepository;
 import com.gamezone.persistence.ProductRepository;
@@ -18,18 +19,16 @@ import com.gamezone.ui.ConsoleUI;
 
 /**
  * Application entry point for GameZone Inova.
- * <p>
- * Builds the object graph from the inside out — repositories first, then the services
- * that use them, then the console interface — and launches the menu. Each service loads
- * its own data when it is created, so the application starts with the state left by the
- * previous run.
+ *
+ * Builds repositories, services and the console interface.
+ * Startup failures are reported without exposing technical details.
  */
 public class Main {
 
     /**
-     * Wires the four layers together and starts the console interface.
+     * Initializes the application and starts the console interface.
      *
-     * @param args command-line arguments (not used)
+     * @param args command-line arguments, not used
      */
     public static void main(String[] args) {
         try {
@@ -40,35 +39,74 @@ public class Main {
             PromotionRepository promotionRepository = new PromotionRepository();
             AccessoryRepository accessoryRepository = new AccessoryRepository();
 
-            ProductService productService = new ProductService(productRepository);
-            PersonService personService = new PersonService(personRepository);
-            PromotionService promotionService = new PromotionService(promotionRepository);
-            AccessoryService accessoryService = new AccessoryService(accessoryRepository);
-                     WarrantyService warrantyService = new WarrantyService(
+            ProductService productService =
+                    new ProductService(productRepository);
+
+            PersonService personService =
+                    new PersonService(personRepository);
+
+            PromotionService promotionService =
+                    new PromotionService(promotionRepository);
+
+            AccessoryService accessoryService =
+                    new AccessoryService(accessoryRepository);
+
+            WarrantyService warrantyService = new WarrantyService(
                     warrantyRepository,
                     saleRepository,
                     productService,
                     personService,
-                    accessoryService);
+                    accessoryService
+            );
 
-SaleService saleService = new SaleService(
-        saleRepository,
-        productService,
-        personService,
-        promotionService,
-        accessoryService
-);
+            SaleService saleService = new SaleService(
+                    saleRepository,
+                    productService,
+                    personService,
+                    promotionService,
+                    accessoryService
+            );
 
-saleService.setWarrantyService(warrantyService);
+            saleService.setWarrantyService(warrantyService);
 
-          ReturnRepository returnRepository = new ReturnRepository(saleService, productService , accessoryService);
-          ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService, warrantyService);
+            ReturnRepository returnRepository = new ReturnRepository(
+                    saleService,
+                    productService,
+                    accessoryService
+            );
 
-            ConsoleUI consoleUI = new ConsoleUI(productService, personService, saleService, returnService,
-                    warrantyService, promotionService, accessoryService);
+            ReturnService returnService = new ReturnService(
+                    returnRepository,
+                    saleService,
+                    productService,
+                    accessoryService,
+                    warrantyService
+            );
+
+            ConsoleUI consoleUI = new ConsoleUI(
+                    productService,
+                    personService,
+                    saleService,
+                    returnService,
+                    warrantyService,
+                    promotionService,
+                    accessoryService
+            );
+
             consoleUI.start();
+
+        } catch (PersistenceException e) {
+            System.err.println(
+                    "Ocurrio un problema al acceder a los datos del sistema. "
+                    + "Contacte al administrador."
+            );
+            System.exit(1);
+
         } catch (RuntimeException e) {
-            System.err.println("Error fatal: " + e.getMessage());
+            System.err.println(
+                    "No se pudo iniciar o continuar el sistema. "
+                    + "Contacte al administrador."
+            );
             System.exit(1);
         }
     }

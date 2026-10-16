@@ -1,15 +1,15 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Console;
-import com.gamezone.model.Product;
-import com.gamezone.model.VideoGame;
-
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.gamezone.exceptions.PersistenceException;
+import com.gamezone.model.Console;
+import com.gamezone.model.Product;
+import com.gamezone.model.VideoGame;
 
 /**
  * Saves and loads products from a text file.
@@ -19,10 +19,11 @@ public class ProductRepository {
     private static final String FILE_PATH = "data/products.txt";
     private static final String SEPARATOR = ";";
 
-    /**
+      /**
      * Saves the given products to the data file, replacing its current content.
      *
      * @param products products to persist
+     * @throws PersistenceException if the data file cannot be written
      */
     public void save(List<Product> products) {
         List<String> lines = new ArrayList<>();
@@ -31,29 +32,41 @@ public class ProductRepository {
         }
         try {
             Files.write(Path.of(FILE_PATH), lines);
-        } catch (IOException e) {
-            throw new UncheckedIOException("Error writing products file", e);
+               } catch (IOException e) {
+            throw new PersistenceException(
+                    "Error de escritura en el archivo '" + FILE_PATH + "'.", e);
         }
     }
 
-    /**
-     * @return the products currently stored in the data file, or an empty list if it does not exist yet
+       /**
+     * Loads products from the data file.
+     *
+     * @return stored products, or an empty list if the file does not exist
+     * @throws PersistenceException if the file cannot be read or contains corrupt data
      */
-    public List<Product> load() {
-        Path path = Path.of(FILE_PATH);
-        List<Product> products = new ArrayList<>();
-        if (!Files.exists(path)) {
-            return products;
-        }
-        try {
-            for (String line : Files.readAllLines(path)) {
-                products.add(fromLine(line));
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Error reading products file", e);
-        }
+  public List<Product> load() {
+    Path path = Path.of(FILE_PATH);
+    List<Product> products = new ArrayList<>();
+
+    if (!Files.exists(path)) {
         return products;
     }
+
+    try {
+        for (String line : Files.readAllLines(path)) {
+            products.add(fromLine(line));
+        }
+    } catch (IOException e) {
+        throw new PersistenceException(
+                "Error de lectura en el archivo '" + FILE_PATH + "'.", e);
+    } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+        throw new PersistenceException(
+                "El archivo '" + FILE_PATH
+                        + "' contiene datos corruptos (operación: lectura).", e);
+    }
+
+    return products;
+}
 
     private String toLine(Product product) {
         if (product instanceof VideoGame videoGame) {
@@ -67,7 +80,9 @@ public class ProductRepository {
                     + console.getBrand() + SEPARATOR + console.getModel() + SEPARATOR
                     + console.getGeneration();
         }
-        throw new IllegalArgumentException("Unknown product type: " + product.getClass());
+      throw new IllegalArgumentException(
+        "Unknown product type: "
+                + (product == null ? "null" : product.getClass().getName()));
     }
 
     private Product fromLine(String line) {
@@ -83,6 +98,10 @@ public class ProductRepository {
         } else if (type.equals("CONSOLE")) {
             return new Console(id, title, price, quantity, fields[5], fields[6], Integer.parseInt(fields[7]));
         }
-        throw new IllegalArgumentException("Unknown product type: " + type);
-    }
+     throw new PersistenceException(
+        "El archivo '" + FILE_PATH
+                + "' contiene un tipo de producto desconocido: "
+                + type + " (operación: lectura).",
+        new IllegalArgumentException("Unknown product type: " + type));
+}
 }
