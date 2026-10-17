@@ -796,3 +796,24 @@ I/O handlers preserve the cause but expose generic RuntimeException.
 Missing references and unknown record types also produce
 RuntimeException; parsing failures are not wrapped.
 Include these observations in the exception-usage review.
+
+## 10. Exception and validator usage
+
+| Module | Observed usage |
+| --- | --- |
+| People | PersonService delegates data, uniqueness and existence checks to PersonValidator. PersonRepository wraps I/O failures in PersistenceException and preserves the cause. |
+| Accessories | AccessoryService uses IllegalArgumentException and NoSuchElementException. AccessoryRepository wraps I/O failures in UncheckedIOException. No dedicated validator calls appear in the reviewed service. |
+| Promotions | PromotionService performs identifier and category checks directly, using IllegalArgumentException. PromotionRepository wraps I/O failures in RuntimeException. |
+| Returns | ReturnService requires an existing sale through SaleService.getSaleById(), delegates eligibility to Sale.canBeReturned(), and uses IllegalArgumentException for eligibility and membership failures. ReturnRepository wraps I/O failures in RuntimeException. |
+| Warranties | WarrantyService contains no explicit validator calls. WarrantyRepository uses RuntimeException for I/O failures, missing references and unknown types. |
+
+The reviewed modules expose different exception types. This is an
+integration observation, not automatically a separate GRASP violation.
+
+Coordinate with Isa to verify how ConsoleUI and Main handle these
+exceptions. Coordinate validator contracts with Jaime. Do not replace
+exception types during the audit: changes could alter visible messages
+and error handling.
+
+Validator and exception definitions belong to Jaime's audit.
+This section assesses their usage within Nicoll's assigned modules.
