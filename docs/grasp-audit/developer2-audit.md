@@ -95,6 +95,23 @@ The service obtains the information needed for these operations
 through its collections and collaborators. Candidate V-03 separately
 assesses whether monthly reporting should belong to another class.
 
+### Warranties module
+
+Verdict: correct for the reviewed searches and calculation delegation.
+
+Evidence:
+- WarrantyService.findWarrantyByProduct() searches its collection
+  using both product and sale identifiers.
+- listActiveWarranties() delegates validity checks to warranty.isActive(today).
+- listWarrantiesExpiringSoon() obtains each end date through
+  warranty.getEndDate() and applies inclusive date limits.
+- cancelWarranties() obtains each matching warranty's additional
+  cost through warranty.getAdditionalCost().
+
+The service owns the collection needed for searching and filtering.
+Warranty objects provide their coverage information and costs.
+The repository resolves stored references against supplied collections.
+
 ## 2. Creator
 ### People module
 
@@ -154,6 +171,22 @@ Evidence:
 The service coordinates the initialization data and records the new return.
 The repository reconstructs stored objects; its dependency on services
 for resolving references is assessed separately in V-02.
+
+### Warranties module
+
+Verdict: correct for warranty creation and reconstruction.
+
+Evidence:
+- WarrantyService.assignBasicWarranty() creates a BasicWarranty.
+- assignExtendedWarranty() creates an ExtendedWarranty.
+- Both methods receive the product, sale and start date, generate
+  an identifier and add the warranty to the service collection.
+- WarrantyRepository.fromLine() reconstructs the concrete warranty
+  using stored fields and references resolved from the supplied lists.
+
+The service has the initialization data and records newly assigned
+warranties. The repository has the information needed to reconstruct
+stored warranties.
 
 ## 3. Controller
 ### People module
@@ -219,6 +252,22 @@ displaying results or accessing files directly.
 
 This verdict concerns responsibility assignment. It does not establish
 complete validation coverage or atomicity across persistence operations.
+
+### Warranties module
+
+Verdict: correct for warranty assignment and cancellation coordination.
+
+Evidence: WarrantyService.assignBasicWarranty(),
+assignExtendedWarranty() and cancelWarranties().
+
+The assignment methods create the requested warranty, add it to
+the collection and delegate saving to WarrantyRepository.
+
+cancelWarranties() identifies warranties matching the product and sale,
+sums their additional costs, removes the matches and delegates saving.
+
+These methods coordinate warranty operations without reading console
+input, displaying results or accessing files directly.
 
 ## 4. Low Coupling
 ### People module
@@ -298,6 +347,26 @@ behavior, warranty-refund defaults and the existing file format.
 Ownership: Nicoll owns ReturnRepository and ReturnService.
 Coordinate construction and loading changes with Isa, who owns Main.
 
+### Warranties module
+
+Verdict: correct for the repository dependency direction.
+Startup coordination requires discussion with Isa.
+
+Evidence:
+- WarrantyRepository.loadAll(List<Product>, List<Sale>) receives
+  the entities needed to resolve stored references.
+- fromLine(), findProduct() and findSale() use those lists
+  without depending on service classes.
+- WarrantyService receives WarrantyRepository through its constructor.
+
+The repository depends on model classes and file APIs.
+Unlike ReturnRepository in V-02, it does not call services
+to reconstruct stored entities.
+
+WarrantyService's constructor also loads sales through SaleRepository
+using data obtained from three services. Review this loading
+coordination with Isa before deciding whether a correction is needed.
+
 ## 5. High Cohesion
 ### People module
 
@@ -373,6 +442,22 @@ sales dated in the selected month minus refunds dated in that month.
 Ownership: Nicoll. Coordinate affected callers with Isa.
 The team must confirm whether separation improves this design
 before treating the candidate as a required correction.
+
+### Warranties module
+
+Verdict: correct for the reviewed operational responsibility groups.
+Constructor loading coordination remains a discussion point.
+
+Evidence:
+- WarrantyService groups warranty assignment, lookup, active and
+  expiration filtering, and cancellation.
+- WarrantyRepository.saveAll(), loadAll(), toLine() and fromLine()
+  group warranty persistence and record conversion.
+
+Operational methods focus on managing warranties, while file handling
+remains in the repository. The constructor's additional sale-loading
+responsibility must be discussed with Isa, as noted under Low Coupling.
+No separate violation is confirmed for that coordination yet.
 
 ## 6. Polymorphism
 
@@ -453,6 +538,25 @@ improve this routing. File access and service coordination must remain
 outside the model. Coordinate model boundaries with Jaime and sales
 integration with Isa before proposing a correction.
 
+### Warranties module
+
+Assessment: service operations use the common Warranty contract.
+Confirm subtype-specific implementations with Jaime's model audit.
+
+Evidence:
+- listActiveWarranties() calls warranty.isActive(today).
+- listWarrantiesExpiringSoon() calls warranty.getEndDate().
+- cancelWarranties() calls warranty.getAdditionalCost().
+
+These operations use Warranty references without subtype checks
+to select coverage or cost calculations. The model audit must identify
+which implementations are inherited and which vary by subtype.
+
+WarrantyRepository.toLine() uses instanceof ExtendedWarranty
+to choose the stored discriminator. This persistence decision
+requires separate assessment and does not by itself confirm
+a violation of Polymorphism.
+
 ## 7. Pure Fabrication
 ### People module
 
@@ -509,6 +613,21 @@ the return-registration method.
 
 The repository's dependency on service classes is a separate
 coupling issue recorded in V-02. This verdict does not dismiss it.
+
+### Warranties module
+
+Verdict: correct for assigning file persistence to a technical class.
+
+Evidence: WarrantyRepository.saveAll(), loadAll(), toLine()
+and fromLine().
+
+WarrantyRepository groups file access, record conversion and
+stored-reference resolution. File paths, separators, encoding
+and Java file APIs remain within the persistence layer.
+
+WarrantyService delegates loading and saving through repository
+methods, keeping these technical details out of its assignment,
+consultation and cancellation operations.
 
 ## 8. Indirection
 ### People module
@@ -567,6 +686,21 @@ The repository provides an intermediary for persistence operations.
 However, its use of service-layer collaborators weakens this boundary.
 See V-02 under Low Coupling for the proposed correction and ownership.
 This is the same finding, not an additional violation.
+
+### Warranties module
+
+Verdict: correct for separating warranty operations from file access.
+
+Evidence: WarrantyService receives WarrantyRepository through
+its constructor, loads warranties using repository.loadAll(catalog, sales)
+and delegates saving to repository.saveAll(warranties).
+
+WarrantyRepository acts as an intermediary between the service
+and data/warranties.csv. Its loading method receives model collections
+for reference resolution without calling service-layer collaborators.
+
+The service's operational methods do not handle record parsing,
+delimiters, encoding, readers or writers.
 
 ## 9. Protected Variations
 ### People module
@@ -642,3 +776,23 @@ can affect reconstruction; this consequence is recorded in V-02.
 
 The exception-usage review must also cover generic RuntimeException,
 unwrapped parsing failures and the existing handling of missing references.
+
+### Warranties module
+
+Assessment: persistence details are isolated, and service operations
+use the common Warranty contract.
+
+Evidence:
+- WarrantyRepository encapsulates paths, encoding, separators
+  and record conversion.
+- loadAll() receives product and sale collections for reference resolution.
+- WarrantyService queries coverage and costs through Warranty methods.
+
+Changes to file handling can remain within the repository when its
+public contract is preserved. Confirm subtype-specific variation
+protection with Jaime's model audit.
+
+I/O handlers preserve the cause but expose generic RuntimeException.
+Missing references and unknown record types also produce
+RuntimeException; parsing failures are not wrapped.
+Include these observations in the exception-usage review.
