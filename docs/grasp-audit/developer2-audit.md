@@ -21,8 +21,15 @@ Compilation using javac --release 17 completed with exit code 0.
 Maven verification remains pending because mvn was unavailable.
 
 ## Audit status
-In progress. No functional code changes have been made for this audit.
-Pattern verdicts and findings will be recorded after reviewing the evidence.
+Draft prepared for peer review. No functional code changes have
+been made for this audit.
+
+The nine pattern sections contain module assessments and evidence.
+V-01 and V-03 are candidates pending team confirmation.
+V-02 records a persistence-to-service dependency pending peer validation.
+
+Final verdicts, cross-owner decisions and the regression strategy
+require discussion with Isa and Jaime before closing Phase 1.
 
 ## 1. Information Expert
 ### People module
@@ -60,22 +67,19 @@ The type-classification candidate V-01 is recorded under Polymorphism.
 
 ### Promotions module
 
-Verdict: correct for discount calculation delegation.
+Verdict: correct for selecting the best active promotion.
 
-Evidence: PromotionService.findBestPromotionFor(Sale) calls
-promotion.calculateDiscount(sale) through a Promotion reference.
+Evidence:
+- PromotionService.listActivePromotions() obtains the current date
+  and delegates validity checks to promotion.isActive(today).
+- findBestPromotionFor(Sale) evaluates active promotions,
+  obtains each discount through promotion.calculateDiscount(sale)
+  and selects the highest positive amount.
 
-The service delegates each discount calculation to the actual
-promotion object, then compares the returned amounts. It does not
-use subtype checks to choose the discount calculation algorithm.
-
-Only active promotions are evaluated. The initial best discount
-is zero, and the strict greater-than comparison preserves the
-first promotion encountered when positive discounts are equal.
-
-PromotionRepository.toLine() and fromLine() distinguish record
-types for persistence. These conversion responsibilities are
-separate from the discount calculation assessed here.
+PromotionService owns the collection needed to compare promotions.
+Each promotion provides its validity and discount behavior.
+PromotionRepository owns the record format interpreted by toLine()
+and fromLine().
 
 ### Returns module
 
