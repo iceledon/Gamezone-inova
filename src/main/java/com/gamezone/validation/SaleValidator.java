@@ -18,18 +18,27 @@ public final class SaleValidator {
     private SaleValidator() {
     }
 
-  /**
- * Checks that a sale requests at least one product.
- *
- * @param products requested products or product identifiers
- * @throws BusinessRuleException if the list is null or empty
- */
-public static void validateSaleProducts(List<?> products) {
-    if (products == null || products.isEmpty()) {
-        throw new BusinessRuleException(
-                "La venta debe contener al menos un producto.");
+     /**
+     * Verifica que la venta tenga productos y no contenga elementos nulos.
+     *
+     * @param products productos o identificadores solicitados
+     * @throws BusinessRuleException si la lista es nula o está vacía
+     * @throws InvalidDataException si algún elemento es nulo
+     */
+    public static void validateSaleProducts(List<?> products) {
+        if (products == null || products.isEmpty()) {
+            throw new BusinessRuleException(
+                    "La venta debe contener al menos un producto.");
+        }
+
+        for (Object product : products) {
+            if (product == null) {
+                throw new InvalidDataException(
+                        "productos",
+                        "no se permiten elementos nulos en la venta");
+            }
+        }
     }
-}
     public static void validateSaleData(Customer customer, Seller seller, List<? extends Product> products) {
        validateSaleProducts(products);
         if (customer == null) {
