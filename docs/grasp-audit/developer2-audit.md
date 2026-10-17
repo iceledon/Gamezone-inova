@@ -77,6 +77,24 @@ PromotionRepository.toLine() and fromLine() distinguish record
 types for persistence. These conversion responsibilities are
 separate from the discount calculation assessed here.
 
+### Returns module
+
+Verdict: correct for the reviewed eligibility delegation and aggregations.
+
+Evidence:
+- ReturnService.registerReturn() delegates return-period eligibility
+  to sale.canBeReturned() and searches sale.getProducts() for
+  the requested product identifiers.
+- calculateMonthlySales() filters sales by date and obtains each
+  amount through sale.calculateTotal().
+- calculateMonthlyReturns() filters returns by date and obtains
+  each amount through return.getRefundAmount().
+- generateMonthlyBalance() subtracts monthly refunds from monthly sales.
+
+The service obtains the information needed for these operations
+through its collections and collaborators. Candidate V-03 separately
+assesses whether monthly reporting should belong to another class.
+
 ## 2. Creator
 ### People module
 
@@ -121,6 +139,21 @@ Evidence:
 The service receives the initialization data and adds each promotion
 to its collection. The repository has the stored data needed
 to reconstruct each concrete promotion.
+
+### Returns module
+
+Verdict: correct for return creation and reconstruction.
+
+Evidence:
+- ReturnService.registerReturn() creates a Return using the identifier,
+  current date, original sale, selected products, reason and warranty refund.
+  It then adds the object to its returns collection.
+- ReturnRepository.fromLine(String) reconstructs a Return using stored
+  fields and resolved references.
+
+The service coordinates the initialization data and records the new return.
+The repository reconstructs stored objects; its dependency on services
+for resolving references is assessed separately in V-02.
 
 ## 3. Controller
 ### People module
@@ -169,6 +202,23 @@ the accepted target category.
 The service coordinates registration without reading console input,
 displaying results or accessing files directly. This assessment
 does not establish that all input validations are complete.
+
+### Returns module
+
+Verdict: correct for coordinating the return-registration operation.
+
+Evidence: ReturnService.registerReturn(String, List<String>, String).
+
+The method obtains the original sale, checks return eligibility
+and product membership, requests warranty cancellation for consoles,
+creates the return, restores stock through the appropriate service
+and delegates saving to ReturnRepository.
+
+It coordinates collaborators without reading console input,
+displaying results or accessing files directly.
+
+This verdict concerns responsibility assignment. It does not establish
+complete validation coverage or atomicity across persistence operations.
 
 ## 4. Low Coupling
 ### People module
@@ -221,6 +271,33 @@ and on Sale as calculation input. These collaborations support
 its assigned responsibilities. File formats and file access remain
 inside the repository.
 
+### Returns module — finding V-02
+
+Status: pending team validation.
+Primary pattern: Low Coupling.
+Related pattern: Indirection.
+Module: Returns / R3.
+Evidence: ReturnRepository constructor, service fields and
+fromLine(String).
+
+ReturnRepository imports and stores SaleService, ProductService
+and AccessoryService. fromLine() uses these services to resolve
+stored sale and product identifiers.
+
+Consequence: persistence depends on the service layer. Changes
+to service lookup contracts can require repository changes,
+and isolated repository verification requires service collaborators.
+
+Proposed solution: provide the already-loaded sales, products
+and accessories as load parameters. Resolve identifiers against
+those collections without depending on service classes.
+
+Preserve record order, product-first lookup, missing-reference
+behavior, warranty-refund defaults and the existing file format.
+
+Ownership: Nicoll owns ReturnRepository and ReturnService.
+Coordinate construction and loading changes with Isa, who owns Main.
+
 ## 5. High Cohesion
 ### People module
 
@@ -266,6 +343,36 @@ Evidence:
 The service manages the promotion catalog and selection policy.
 The repository handles persistence. Neither class handles console
 interaction, and discount algorithms are delegated to the model.
+
+### Returns module — candidate finding V-03
+
+Status: pending team confirmation.
+Primary pattern: High Cohesion.
+Module: Returns / R3.
+
+Evidence:
+- ReturnService.registerReturn() coordinates return registration.
+- viewAllReturns(), viewReturnsByCustomer() and viewReturnsBySale()
+  query registered returns.
+- calculateMonthlySales(), calculateMonthlyReturns() and
+  generateMonthlyBalance() provide financial reporting.
+
+The class combines return operations with monthly reporting,
+including aggregation of sales obtained from SaleService.
+
+Potential consequence: changes to financial reports can require
+modifying the same class that coordinates returns.
+
+Proposed solution: evaluate moving monthly calculations into a
+dedicated reporting service. Preserve existing public entry points
+through delegation where needed.
+
+Preserve month/year filtering, operation order and the calculation:
+sales dated in the selected month minus refunds dated in that month.
+
+Ownership: Nicoll. Coordinate affected callers with Isa.
+The team must confirm whether separation improves this design
+before treating the candidate as a required correction.
 
 ## 6. Polymorphism
 
@@ -328,6 +435,24 @@ also distinguish accessory types. Their serialization and object
 reconstruction responsibilities must be assessed separately.
 CSV handling must remain in the persistence layer.
 
+### Returns module
+
+Assessment: explicit type decisions require boundary review;
+no additional violation is confirmed from these checks alone.
+
+Evidence: ReturnService.registerReturn() checks instanceof Console
+before cancelling warranties and instanceof Accessory before choosing
+the service responsible for stock restoration.
+
+These checks route operations to different collaborators. They do not
+select alternative implementations of a method currently declared
+by Product.
+
+The team must assess whether a common collaborator contract would
+improve this routing. File access and service coordination must remain
+outside the model. Coordinate model boundaries with Jaime and sales
+integration with Isa before proposing a correction.
+
 ## 7. Pure Fabrication
 ### People module
 
@@ -370,6 +495,21 @@ PromotionService coordinates catalog operations and best-promotion
 selection, allowing individual promotion classes to concentrate
 on their own discount behavior.
 
+### Returns module
+
+Verdict: correct for assigning file persistence to a technical class.
+
+Evidence: ReturnRepository.saveAll(), loadAll(), toLine()
+and fromLine().
+
+ReturnRepository groups return-file access and record conversion.
+ReturnService delegates saving to repository.saveAll(returns),
+keeping file paths, separators and writer operations out of
+the return-registration method.
+
+The repository's dependency on service classes is a separate
+coupling issue recorded in V-02. This verdict does not dismiss it.
+
 ## 8. Indirection
 ### People module
 
@@ -411,6 +551,22 @@ and delegates saving to repository.saveAll(promotions).
 PromotionRepository acts as an intermediary between the service
 and data/promotions.csv. The service does not handle readers,
 writers, delimiters, encoding or record parsing directly.
+
+### Returns module
+
+Assessment: the repository separates file access, but reference
+resolution introduces the dependency recorded in V-02.
+
+Evidence:
+- ReturnService delegates loading and saving to ReturnRepository.
+- ReturnRepository encapsulates readers, writers and record conversion.
+- ReturnRepository.fromLine() calls SaleService, ProductService
+  and AccessoryService to resolve stored identifiers.
+
+The repository provides an intermediary for persistence operations.
+However, its use of service-layer collaborators weakens this boundary.
+See V-02 under Low Coupling for the proposed correction and ownership.
+This is the same finding, not an additional violation.
 
 ## 9. Protected Variations
 ### People module
@@ -467,3 +623,22 @@ still requires reviewing registration and persistence.
 Repository I/O handlers preserve the original cause but expose
 generic RuntimeException. Parsing failures are not wrapped there.
 These observations must also be covered by the exception-usage review.
+
+### Returns module
+
+Assessment: record-format details are isolated, but service lookup
+dependencies remain exposed through the boundary described in V-02.
+
+Evidence:
+- ReturnRepository encapsulates paths, separators, encoding and
+  record conversion.
+- fromLine() resolves identifiers through service collaborators.
+- I/O handlers wrap IOException in RuntimeException and preserve
+  the original cause.
+
+File-format changes can remain within the repository when its
+public contract is preserved. Changes to service lookup contracts
+can affect reconstruction; this consequence is recorded in V-02.
+
+The exception-usage review must also cover generic RuntimeException,
+unwrapped parsing failures and the existing handling of missing references.
