@@ -58,6 +58,25 @@ information needed to interpret stored records.
 
 The type-classification candidate V-01 is recorded under Polymorphism.
 
+### Promotions module
+
+Verdict: correct for discount calculation delegation.
+
+Evidence: PromotionService.findBestPromotionFor(Sale) calls
+promotion.calculateDiscount(sale) through a Promotion reference.
+
+The service delegates each discount calculation to the actual
+promotion object, then compares the returned amounts. It does not
+use subtype checks to choose the discount calculation algorithm.
+
+Only active promotions are evaluated. The initial best discount
+is zero, and the strict greater-than comparison preserves the
+first promotion encountered when positive discounts are equal.
+
+PromotionRepository.toLine() and fromLine() distinguish record
+types for persistence. These conversion responsibilities are
+separate from the discount calculation assessed here.
+
 ## 2. Creator
 ### People module
 
@@ -86,6 +105,22 @@ Evidence:
 The service has the registration data and adds each new accessory
 to its inventory collection. The repository has the initialization
 data required to reconstruct stored accessories.
+
+### Promotions module
+
+Verdict: correct for promotion creation and reconstruction.
+
+Evidence:
+- PromotionService.registerPercentageDiscount() creates
+  a PercentageDiscount.
+- registerCategoryDiscount() creates a CategoryDiscount.
+- registerBulkPurchaseDiscount() creates a BulkPurchaseDiscount.
+- PromotionRepository.fromLine(String) reconstructs these objects
+  using the discriminator and fields read from the stored record.
+
+The service receives the initialization data and adds each promotion
+to its collection. The repository has the stored data needed
+to reconstruct each concrete promotion.
 
 ## 3. Controller
 ### People module
@@ -118,6 +153,22 @@ model methods and delegate persistence to the repository.
 These methods coordinate operations without reading console input,
 displaying results or accessing files directly. This assessment
 does not establish that all input and business validations are complete.
+
+### Promotions module
+
+Verdict: correct for promotion registration coordination.
+
+Evidence: PromotionService.registerPercentageDiscount(),
+registerCategoryDiscount() and registerBulkPurchaseDiscount().
+
+These methods check identifier uniqueness, create the requested
+promotion, add it to the collection and delegate saving to
+PromotionRepository. registerCategoryDiscount() also checks
+the accepted target category.
+
+The service coordinates registration without reading console input,
+displaying results or accessing files directly. This assessment
+does not establish that all input validations are complete.
 
 ## 4. Low Coupling
 ### People module
@@ -154,6 +205,22 @@ The classification dependency requires reviewing the service when
 new accessory types are introduced. This is a related consequence
 of V-01, not a separate finding.
 
+### Promotions module
+
+Verdict: correct for the reviewed dependency boundaries.
+
+Evidence:
+- PromotionService receives PromotionRepository through its constructor.
+- findBestPromotionFor(Sale) uses Promotion.calculateDiscount(Sale)
+  without selecting a calculation algorithm by subtype.
+- PromotionRepository depends on model classes and file APIs,
+  without depending on services or the user interface.
+
+The service depends on concrete promotion classes for registration
+and on Sale as calculation input. These collaborations support
+its assigned responsibilities. File formats and file access remain
+inside the repository.
+
 ## 5. High Cohesion
 ### People module
 
@@ -186,6 +253,20 @@ concentrates file handling. Neither class handles console interaction.
 The classification method typeOf() is assessed separately in
 candidate V-01 under Polymorphism.
 
+### Promotions module
+
+Verdict: correct for the reviewed responsibility groups.
+
+Evidence:
+- PromotionService groups promotion registration, listing,
+  active-date filtering, identifier lookup and best-discount selection.
+- PromotionRepository.saveAll(), loadAll(), toLine() and fromLine()
+  group file access and promotion record conversion.
+
+The service manages the promotion catalog and selection policy.
+The repository handles persistence. Neither class handles console
+interaction, and discount algorithms are delegated to the model.
+
 ## 6. Polymorphism
 
 ### People module
@@ -200,6 +281,25 @@ Evidence:
 Both subclasses implement the same operation with behavior specific
 to their role. A call through a Person reference selects the
 implementation of the actual object.
+
+### Promotions module
+
+Verdict: correct for discount calculation delegation.
+
+Evidence: PromotionService.findBestPromotionFor(Sale) calls
+promotion.calculateDiscount(sale) through a Promotion reference.
+
+The service delegates each discount calculation to the actual
+promotion object, then compares the returned amounts. It does not
+use subtype checks to choose the discount calculation algorithm.
+
+Only active promotions are evaluated. The initial best discount
+is zero, and the strict greater-than comparison preserves the
+first promotion encountered when positive discounts are equal.
+
+PromotionRepository.toLine() and fromLine() distinguish record
+types for persistence. These conversion responsibilities are
+separate from the discount calculation assessed here.
 
 ### Accessories module — candidate finding V-01
 
@@ -255,6 +355,21 @@ This separation keeps CSV paths, separators and file APIs within
 the persistence layer. Any proposed correction for subtype handling
 must preserve this boundary.
 
+### Promotions module
+
+Verdict: correct for assigning persistence to a technical class.
+
+Evidence: PromotionRepository.saveAll(), loadAll(), toLine()
+and fromLine().
+
+PromotionRepository groups file access and record conversion,
+keeping file paths, separators and encoding details out of
+the promotion entities and PromotionService.
+
+PromotionService coordinates catalog operations and best-promotion
+selection, allowing individual promotion classes to concentrate
+on their own discount behavior.
+
 ## 8. Indirection
 ### People module
 
@@ -284,6 +399,18 @@ Evidence:
 AccessoryRepository acts as an intermediary between the service
 and the CSV file. AccessoryService does not handle CSV delimiters,
 record parsing or Java file APIs directly.
+
+### Promotions module
+
+Verdict: correct for separating catalog operations from file access.
+
+Evidence: PromotionService receives PromotionRepository through
+its constructor, loads the catalog using repository.loadAll()
+and delegates saving to repository.saveAll(promotions).
+
+PromotionRepository acts as an intermediary between the service
+and data/promotions.csv. The service does not handle readers,
+writers, delimiters, encoding or record parsing directly.
 
 ## 9. Protected Variations
 ### People module
@@ -321,3 +448,22 @@ requires reviewing the classification described in V-01.
 The use of UncheckedIOException, IllegalArgumentException and
 NoSuchElementException must also be recorded in the exception-usage
 review. Replacing them could change externally observed error handling.
+
+### Promotions module
+
+Verdict: correct for isolating discount algorithms during selection
+and separating file-format details from the service.
+
+Evidence:
+- PromotionService.findBestPromotionFor(Sale) calls
+  promotion.calculateDiscount(sale) through the common Promotion type.
+- PromotionRepository encapsulates paths, encoding, separators
+  and record conversion.
+
+Changes to individual discount algorithms do not require subtype
+conditions in the selection loop. Adding a new promotion type
+still requires reviewing registration and persistence.
+
+Repository I/O handlers preserve the original cause but expose
+generic RuntimeException. Parsing failures are not wrapped there.
+These observations must also be covered by the exception-usage review.
