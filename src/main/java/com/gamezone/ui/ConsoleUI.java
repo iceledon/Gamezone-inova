@@ -460,7 +460,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             throw new InvalidDataException("numero entero",
-                    "se esperaba un numero entero valido.");
+                    "debe contener un numero entero valido");
         }
     }
 
@@ -477,12 +477,12 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             double number = Double.parseDouble(value);
             if (!Double.isFinite(number)) {
                 throw new InvalidDataException("numero",
-                        "debe ser un numero decimal finito.");
+                        "debe contener un numero decimal finito");
             }
             return number;
         } catch (NumberFormatException e) {
             throw new InvalidDataException("numero",
-                    "se esperaba un numero decimal valido.");
+                    "debe contener un numero decimal valido");
         }
     }
 
@@ -499,7 +499,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
             return LocalDate.parse(value);
         } catch (java.time.format.DateTimeParseException e) {
             throw new InvalidDataException("fecha",
-                    "se esperaba una fecha valida en formato aaaa-mm-dd.");
+                    "debe contener una fecha valida en formato aaaa-mm-dd");
         }
     }
 
