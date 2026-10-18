@@ -32,6 +32,37 @@ Method ownership must also be checked against Git history.
 Methods contributed by other team members will be identified
 separately before assigning audit responsibility.
 
+### Working allocation for shared code
+
+The technical lead confirmed the following working allocation.
+Peer review of this allocation remains pending.
+
+| Contributor | Responsibility |
+|---|---|
+| Isabel | Assess her contributions to Sale, SaleRepository, SaleService, ConsoleUI, Main and ProductService.restoreStock |
+| Jaime | Assess his model, product, promotion, warranty, exception and validator contributions |
+| Nicoll | Assess her service and repository contributions, including typed validation and exception integration |
+
+Shared methods are reviewed by contribution rather than attributed
+exclusively to the owner of the containing class.
+
+For Sale calculations, Isabel and Jaime will designate one primary
+assessment and reference it from the other report. The existing
+authorship evidence is retained.
+
+Cross-owner findings will identify each affected contribution and
+will be consolidated into a single finding when they describe
+the same design problem.
+
+Reference commit:
+701255d4209e070146c32ee5a663b08d3b4b0bb4
+
+Reports based on earlier revisions must identify and review relevant
+differences before their conclusions are consolidated.
+
+This allocation does not represent approval of the individual
+reports or confirmation of their pending verdicts.
+
 ### Ownership evidence from Git history
 
 The following observations come from recent file history.
