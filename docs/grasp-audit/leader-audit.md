@@ -86,7 +86,9 @@ The constructor copies the supplied product list. getProducts returns
 an unmodifiable view, but the contained Product objects remain mutable.
 
 These observations describe the code. Pattern verdicts and method
-ownership require separate assessment.## Descriptive observations: SaleRepository
+ownership require separate assessment.
+
+## Descriptive observations: SaleRepository
 
 SaleRepository stores and reconstructs sales using data/sales.txt.
 
@@ -499,6 +501,9 @@ Sources:
 
 The presence of an intermediary alone does not prove good design.
 Its responsibilities and dependencies must justify the separation.
+
+
+
 ## 9. Protected Variations
 
 ### Promotion calculation
