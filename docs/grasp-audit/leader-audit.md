@@ -467,11 +467,75 @@ must support that separation.
 
 ## 8. Indirection
 
-Assessment and evidence pending.
+### Separation between console interaction and persistence
 
+Assessment: correct for the reviewed sale-operation path.
+The final verdict for the complete scope remains pending.
+
+ConsoleUI invokes SaleService instead of accessing SaleRepository
+or the sales file directly.
+
+SaleService coordinates the sale operation and delegates file
+persistence to SaleRepository.
+
+This introduces intermediaries with defined responsibilities:
+
+ConsoleUI -> SaleService -> SaleRepository
+
+The interface does not need to know the file path, record delimiters
+or parsing details to register a sale.
+
+Evidence:
+
+- ConsoleUI.registerSale invokes saleService.registerSale.
+- SaleService.registerSale invokes repository.save.
+- SaleRepository owns file access and record conversion.
+
+Sources:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+
+The presence of an intermediary alone does not prove good design.
+Its responsibilities and dependencies must justify the separation.
 ## 9. Protected Variations
 
-Assessment and evidence pending.
+### Promotion calculation
+
+Assessment: protection is present for variation in discount formulas.
+Other foreseeable changes require separate assessment.
+
+SaleService invokes calculateDiscount through a Promotion reference.
+Different promotion implementations can provide their own formula
+without placing each formula inside SaleService.
+
+This protects sale coordination from changes to the calculation
+implemented by an existing promotion subtype.
+
+Evidence:
+
+- SaleService.registerSale uses a Promotion reference.
+- The discount is obtained through bestPromotion.calculateDiscount(sale).
+
+Source:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
+
+### Limits of the observed protection
+
+This does not establish that adding a promotion type requires
+no changes anywhere in the system. Registration and persistence
+may still require adaptations.
+
+SaleService explicitly coordinates product and accessory catalogs
+and identifies consoles when assigning warranties.
+
+The team must assess how foreseeable catalog or warranty changes
+would affect those responsibilities before assigning the final
+Protected Variations verdict.
+
+No definitive violation ID is assigned to these observations yet.
 
 ## Boundary reports
 
