@@ -394,11 +394,76 @@ authorize refactoring.
 
 ## 6. Polymorphism
 
-Assessment and evidence pending.
+### Delegation to model behavior
+
+Assessment: correct for the reviewed polymorphic calls.
+The final verdict for the complete scope remains pending.
+
+SaleService.registerSale receives the selected promotion as a
+Promotion reference and invokes calculateDiscount(sale).
+
+The service does not implement a separate discount formula for
+each promotion subclass.
+
+ConsoleUI.printAccessories invokes getDescription() through
+Accessory references. The concrete description is provided by
+the corresponding product subtype.
+
+Evidence:
+
+- SaleService.registerSale: bestPromotion.calculateDiscount(sale).
+- ConsoleUI.printAccessories: accessory.getDescription().
+
+Sources:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+
+### Type-dependent behavior requiring discussion
+
+SaleService.registerSale explicitly checks whether a product is
+a Console before assigning warranties.
+
+This is a concrete point for evaluating type-dependent behavior.
+The presence of instanceof alone does not establish a violation.
+
+The team must determine whether this is necessary coordination
+under the existing requirements or behavior that should be
+assigned to a stable abstraction.
+
+No definitive violation ID is assigned to this observation yet.
 
 ## 7. Pure Fabrication
 
-Assessment and evidence pending.
+### Dedicated sale persistence
+
+Assessment: correct for the reviewed separation of file persistence.
+
+SaleRepository is a technical collaborator that concentrates
+file access and conversion between Sale objects and stored records.
+
+This keeps the file path, delimiters, UTF-8 handling and parsing
+outside Sale and ConsoleUI.
+
+Sale provides sale information without knowing the sales file
+format. ConsoleUI invokes services rather than writing sales
+records directly.
+
+Evidence:
+
+- SaleRepository.save and load perform file access.
+- SaleRepository.toLine and fromLine handle the record format.
+- Sale contains no file-access operations.
+
+Sources:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/model/Sale.java
+
+This assessment concerns the responsibility separated into
+SaleRepository. A class is not justified merely because it is
+named Repository or Service; its responsibilities and dependencies
+must support that separation.
 
 ## 8. Indirection
 
