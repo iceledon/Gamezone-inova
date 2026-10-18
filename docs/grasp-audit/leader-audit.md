@@ -212,11 +212,71 @@ Its construction responsibilities must be assessed separately from
 the creation of domain objects during business operations.
 ## 1. Information Expert
 
-Assessment and evidence pending.
+### Sale calculations
+
+Assessment: correct for the reviewed sale calculations.
+The assessment of the remaining responsibilities is pending.
+
+Sale knows which products belong to the sale and stores its
+discountAmount and extraCost.
+
+calculateSubtotal iterates over the sale's product list and obtains
+each unit price from Product. Product owns its price; Sale knows
+which units must be included in this particular subtotal.
+
+calculateTotal combines that subtotal with the sale's additional
+cost and discount:
+
+calculateSubtotal() + extraCost - discountAmount
+
+These calculations use information available to Sale through
+its own state and associated products. Reading a product price
+does not, by itself, demonstrate misplaced responsibility.
+
+Evidence:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/model/Sale.java#L138-L154
+
+The methods contain contributions from Isabel and Jaime.
+Their assessment must be coordinated and referenced between
+the individual reports to avoid duplicate findings.
+
+This assessment does not cover receipt formatting, stock restoration
+or all responsibilities in SaleService.
 
 ## 2. Creator
 
-Assessment and evidence pending.
+### Creation of Sale objects
+
+Assessment: correct for the reviewed Sale creation paths.
+Other creation responsibilities remain pending.
+
+SaleService.registerSale obtains the customer, seller and sold
+products, generates the identifier and supplies the current date.
+It therefore has the initialization data required to create Sale.
+
+After creating the sale, SaleService coordinates its registration
+and adds it to the sales collection managed by the service.
+
+SaleRepository.fromLine creates Sale while reconstructing a stored
+record. It has the parsed identifier and date and resolves the
+customer, seller and products using the supplied collections.
+
+These are different creation contexts: registering a new sale
+and reconstructing an existing sale.
+
+Evidence:
+
+- SaleService.registerSale: new Sale followed by sales.add.
+- SaleRepository.fromLine: parsed fields and resolved references
+  supplied to the Sale constructor.
+
+Source files at the audited commit:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+
+The assessment does not claim that every creation responsibility
+in the leader's scope has been reviewed.
 
 ## 3. Controller
 
