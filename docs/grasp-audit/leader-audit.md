@@ -243,7 +243,76 @@ application entry point, including persistence failures during loading.
 Main does not implement sale calculations or file serialization.
 Its construction responsibilities must be assessed separately from
 the creation of domain objects during business operations.
+
+## Descriptive observations: ProductService.restoreStock
+
+The method finds an existing product, reads its quantity, adds
+the supplied amount, changes the product quantity and saves
+the inventory through ProductRepository.
+
+Evidence:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/ProductService.java#L179-L185
+
+Responsibilities observed:
+
+- ProductService locates the product in its inventory.
+- Product owns the quantity value and exposes its getter and setter.
+- ProductService performs the addition outside Product.
+- ProductRepository performs persistence.
+
+Questions for the pattern assessment:
+
+- Does increasing quantity belong in Product, which owns that state,
+  or is the current distribution justified?
+- Does the service appropriately coordinate lookup and persistence?
+- Would moving the addition into Product preserve existing behavior?
+
+The placement of the quantity calculation requires an explicit
+Information Expert assessment. No violation is confirmed solely
+because the implementation uses a getter and setter.
+
+The method changes the product before saving. Any failure-state
+issue must be distinguished from a design finding and recorded
+separately if it is outside the GRASP refactor scope.
+
 ## 1. Information Expert
+
+### Local finding L-V01: stock-increase responsibility
+
+Verdict: violation identified by the technical lead.
+Peer validation and consolidated ID assignment are pending.
+
+| Field | Content |
+|---|---|
+| Local ID | L-V01 |
+| Pattern | Information Expert |
+| Module | Stock restoration used by returns |
+| Evidence | ProductService.restoreStock, lines 179–185 of the audited commit |
+| Explanation | Product owns quantity, but ProductService reads it, calculates the increased value and writes it back. The state-changing calculation is performed outside the object that owns the required information. |
+| Consequence | Callers that need to increase stock must reproduce the calculation and know how to update Product. A change to the stock-increase rule may require changes in those callers. |
+| Proposed solution | Give Product an operation for increasing its quantity. ProductService should locate the product, delegate the increase and persist the inventory. |
+| Other developer's code | Yes. ProductService.restoreStock belongs to Isabel; Product belongs to Jaime's scope. |
+| Review status | Pending peer review and consolidation |
+
+Evidence:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/ProductService.java#L179-L185
+
+Proposed coordination:
+
+1. Jaime reviews the Product-side responsibility and, if the finding
+   is confirmed, provides the stock-increase operation.
+2. Isabel updates restoreStock to delegate to that operation.
+3. The producer change must be available before its consumer changes.
+
+The correction must preserve existing behavior, including the effect
+of supplied amounts and existing setter rules. It must not introduce
+new validation or different user messages as an undocumented change.
+
+The current sale-calculation assessments remain separate examples
+within this pattern; they do not invalidate this finding.
+
+L-V01 is a local identifier. The consolidated audit will assign
+the definitive team identifier and resolve any duplicate reports.
 
 ### Sale calculations
 
@@ -575,7 +644,13 @@ No definitive violation ID is assigned to these observations yet.
 
 ## Boundary reports
 
-Pending review and team discussion.
+L-V01 crosses the responsibilities of Isabel and Jaime.
+
+Isabel reports the quantity calculation in ProductService.restoreStock.
+Jaime must review the proposed operation in Product.
+
+The finding is awaiting peer validation. No correction is authorized
+until the consolidated audit records the agreed solution and order.
 
 ## Out-of-scope functional findings
 
