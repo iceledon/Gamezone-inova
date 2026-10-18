@@ -309,11 +309,88 @@ remaining responsibilities and agreement on shared ownership.
 
 ## 4. Low Coupling
 
-Assessment and evidence pending.
+### Persistence dependencies
+
+Assessment: correct for the reviewed dependency direction in
+SaleRepository. The remaining dependencies require separate assessment.
+
+SaleRepository depends on model classes, PersistenceException and
+Java file-handling utilities.
+
+Its load method receives product, customer and seller collections
+as parameters. It does not invoke services to obtain these objects.
+
+This keeps sale reconstruction independent of service implementations
+and avoids a persistence-to-service dependency in this repository.
+
+Evidence:
+
+- SaleRepository imports.
+- SaleRepository.load(products, customers, sellers).
+- SaleRepository.fromLine.
+
+Source:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+
+### Dependencies requiring further discussion
+
+SaleService depends on concrete services for products, people,
+promotions, accessories and warranties.
+
+Its findItemById and updateStockOf methods explicitly coordinate
+the product and accessory catalogs.
+
+ConsoleUI also knows several concrete service and model types.
+
+The number of dependencies alone does not prove a violation.
+The team must assess which dependencies are necessary and whether
+a foreseeable change propagates unnecessarily across classes.
+
+No definitive violation ID is assigned to these observations yet.
 
 ## 5. High Cohesion
 
-Assessment and evidence pending.
+### Sale persistence
+
+Assessment: correct for the reviewed SaleRepository responsibilities.
+The final verdict for the complete scope remains pending.
+
+SaleRepository.save, load, toLine and fromLine all support the same
+purpose: storing and reconstructing sales in the existing text format.
+
+File access, record conversion and stored-reference resolution
+contribute to this persistence responsibility.
+
+The repository does not read user input, select promotions,
+assign warranties or update stock.
+
+Evidence:
+
+- SaleRepository.save.
+- SaleRepository.load.
+- SaleRepository.toLine.
+- SaleRepository.fromLine.
+
+Source:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+
+### Other responsibilities to assess
+
+SaleService coordinates several steps within sale registration.
+The review must distinguish necessary use-case orchestration from
+specialized responsibilities that could belong to its collaborators.
+
+ConsoleUI contains interaction methods for seven functional areas.
+Its size alone does not establish a violation; the review must
+identify concrete responsibilities and reasons for change.
+
+Sale.generateReceipt combines sale data with receipt presentation.
+The team must consider the original requirement and actual change
+scenarios before deciding whether this is an accepted responsibility
+or a design finding.
+
+These observations are not confirmed violations and do not yet
+authorize refactoring.
 
 ## 6. Polymorphism
 
