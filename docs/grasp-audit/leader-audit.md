@@ -66,6 +66,150 @@ https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d
 
 This confirms method ownership; it does not establish a GRASP verdict.
 
+## Descriptive observations: Sale
+
+Sale stores its identifier, date, customer, seller, product list,
+additional warranty cost, promotion name and discount amount.
+
+| Method | Responsibility | Information used |
+|---|---|---|
+| calculateSubtotal | Sum the price of each listed unit | Sale's product list and Product.getPrice |
+| calculateTotal | Add additional costs and subtract the discount | Subtotal, extraCost and discountAmount |
+| addExtraCost | Accumulate an additional amount | extraCost and the supplied amount |
+| canBeReturned | Check the 30-day return deadline | Sale date and current date |
+| generateReceipt | Build the receipt text | Sale data and customer, seller and product information |
+
+Sale depends on model objects, Java collections and LocalDate.
+It does not access files or invoke services or repositories.
+
+The constructor copies the supplied product list. getProducts returns
+an unmodifiable view, but the contained Product objects remain mutable.
+
+These observations describe the code. Pattern verdicts and method
+ownership require separate assessment.## Descriptive observations: SaleRepository
+
+SaleRepository stores and reconstructs sales using data/sales.txt.
+
+| Method | Responsibility | Information used |
+|---|---|---|
+| save | Write the sales collection using UTF-8 | Supplied sales and repository file configuration |
+| load | Read stored records and reconstruct sales | File contents and supplied product, customer and seller collections |
+| toLine | Serialize a sale into the existing text format | Sale data and identifiers of associated objects |
+| fromLine | Parse a record and create a Sale | Stored fields and supplied collections used to resolve references |
+
+The repository depends on model classes, PersistenceException and
+Java file-handling utilities. It does not invoke services or the UI.
+
+Missing customer, seller or product references produce
+PersistenceException. File-access failures and selected parsing
+failures are also translated into PersistenceException with a cause.
+
+Older records without promotion fields retain the default values
+for those fields.
+
+The repository does not select promotions, calculate new discounts
+or update inventory.
+
+These observations describe the implementation. They do not, by
+themselves, establish verdicts for all nine GRASP patterns.
+
+## Descriptive observations: SaleService
+
+SaleService receives sale operations and coordinates their execution.
+It does not read console input, print receipts or directly access files.
+
+The main registerSale method:
+
+1. Validates the requested identifiers.
+2. Resolves the customer, seller and sold items.
+3. Validates sale data and stock availability.
+4. Creates the Sale.
+5. Applies the selected promotion before warranty costs.
+6. Assigns console warranties.
+7. Updates inventory through the corresponding services.
+8. Adds the sale to its collection and invokes repository.save.
+
+Delegated responsibilities include:
+
+| Responsibility | Collaborator |
+|---|---|
+| Person lookup | PersonService |
+| Sale validation | SaleValidator |
+| Stock validation | ProductValidator |
+| Promotion selection | PromotionService |
+| Discount calculation | Promotion |
+| Warranty assignment | WarrantyService |
+| Inventory updates | ProductService and AccessoryService |
+| File persistence | SaleRepository |
+
+SaleService directly counts requested units, generates sale identifiers,
+filters its sales collection and coordinates the operation sequence.
+
+It explicitly checks whether a sold product is a Console before
+requesting warranties.
+
+Item lookup and stock updates first use ProductService and fall back
+to AccessoryService when a ResourceNotFoundException is raised.
+
+The service receives five collaborators through its constructor and
+receives WarrantyService later through a setter.
+
+These are descriptive observations. Final GRASP verdicts require
+justification and coordination with the authors of shared methods.
+
+### Shared ownership of Sale calculations
+
+At audited commit `701255d4209e070146c32ee5a663b08d3b4b0bb4`:
+
+- calculateSubtotal, lines 138–144, contains contributions from
+  Isabel's commit f6a7832f and Jaime's commit a77d0688.
+- calculateTotal, lines 152–154, contains contributions from
+  both developers. Its current expression is attributed by blame
+  to merge commit 7edc23a4.
+
+Git blame identifies the last changes to individual lines.
+It does not establish exclusive conceptual ownership of a method.
+
+The calculations are therefore recorded as shared contributions.
+The team must agree who documents their assessment and reference
+that assessment from the other report to avoid duplicate findings.
+
+Evidence:
+
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/model/Sale.java#L138-L154
+
+
+
+## Descriptive observations: ConsoleUI
+
+ConsoleUI reads keyboard input, displays menus, invokes services
+and presents results or error messages.
+
+It receives seven service collaborators through its main constructor.
+It does not directly depend on repository classes.
+
+The input helpers parse integers, decimal numbers and dates.
+showError translates exception categories into Spanish messages.
+
+The class contains interaction methods for products, people, sales,
+returns, warranties, promotions and accessories.
+
+These observations do not establish a High Cohesion or Low Coupling
+verdict solely from the number of methods or collaborators.
+
+## Descriptive observations: Main
+
+Main constructs repositories, then services and finally ConsoleUI.
+
+It supplies the required collaborators and connects WarrantyService
+to SaleService through setWarrantyService.
+
+It starts the interface and handles failures that escape to the
+application entry point, including persistence failures during loading.
+
+Main does not implement sale calculations or file serialization.
+Its construction responsibilities must be assessed separately from
+the creation of domain objects during business operations.
 ## 1. Information Expert
 
 Assessment and evidence pending.
@@ -76,7 +220,32 @@ Assessment and evidence pending.
 
 ## 3. Controller
 
-Assessment and evidence pending.
+### Sale registration flow
+
+ConsoleUI receives the user's input and invokes SaleService.
+
+SaleService.registerSale coordinates the operation: it resolves
+participants and items, invokes validators, requests promotion
+selection and warranty assignment, updates inventory through
+services and delegates sale persistence to SaleRepository.
+
+The service does not read keyboard input or print console messages.
+ConsoleUI does not directly write the sales file.
+
+This describes the separation between user interaction and
+sale-operation coordination.
+
+Evidence:
+
+- ConsoleUI.registerSale
+- SaleService.registerSale
+- SaleRepository.save
+
+Audited commit:
+701255d4209e070146c32ee5a663b08d3b4b0bb4
+
+The final Controller verdict remains pending review of the
+remaining responsibilities and agreement on shared ownership.
 
 ## 4. Low Coupling
 
