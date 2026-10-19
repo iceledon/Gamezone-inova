@@ -37,8 +37,14 @@ Classes and methods audited, organized by module and requirement (section 4 of R
 | Returns (Req. 3) | `Sale` (only this method) | `canBeReturned` (assigned to Developer 1 by the PDF; the git history shows it was committed by Developer 2, see section 12) |
 | Warranties (Req. 4) | `Warranty` | constructor, getters, `isActive`, `generateWarrantyCertificate`, `getDurationInMonths` / `getWarrantyType` / `getAdditionalCost` (abstract) |
 | Warranties (Req. 4) | `BasicWarranty`, `ExtendedWarranty` | constructors, `getDurationInMonths`, `getWarrantyType`, `getAdditionalCost` |
-| Exceptions and validations (Req. 6) | `GameZoneException`, `InvalidDataException`, `ResourceNotFoundException`, `BusinessRuleException`, `PersistenceException` | Pending: not in `develop` yet |
-| Exceptions and validations (Req. 6) | `ProductValidator`, `PersonValidator`, `SaleValidator` | Pending: not in `develop` yet |
+| Exceptions and validations (Req. 6) | `GameZoneException` | constructors, `getErrorCode` |
+| Exceptions and validations (Req. 6) | `InvalidDataException`, `ResourceNotFoundException`, `BusinessRuleException`, `PersistenceException` | constructors |
+| Exceptions and validations (Req. 6) | `ProductValidator` | `validateProductData`, `validateStockAvailability`, `validateProductExists`, `requireText` |
+| Exceptions and validations (Req. 6) | `PersonValidator` | `validatePersonData`, `validatePersonExists`, `validateUniquePerson`, `hasValidEmailFormat`, `requireText` |
+| Exceptions and validations (Req. 6) | `SaleValidator` | `validateSaleData`, `validateSaleExists` (`validateSaleProducts` was added by Developer 2 in PR #33 and is assessed by Developer 2) |
+
+How the other services use these exceptions and validators is assessed by their owners
+(`docs/grasp-audit/developer2-audit.md`, section 10, and `docs/grasp-audit/leader-audit.md`).
 
 ## 2. Verdict summary
 
@@ -71,6 +77,13 @@ Where it is correct:
 - `Sale.canBeReturned()` uses the sale `date`, which `Sale` owns.
 - `Sale` stores `appliedPromotionName` and `discountAmount`: the discount belongs to one sale, so the sale keeps it. `Promotion.calculateDiscount(Sale)` calculates the amount and `SaleService` stores the result in the sale.
 - `Sale.generateReceipt()` (lines 178-198) builds the receipt from data that the sale owns or reaches through its own associations: `id`, `date`, `customer`, `seller`, `products`, `extraCost`, `discountAmount`, `appliedPromotionName`, and its own `calculateSubtotal()` and `calculateTotal()`.
+- `InvalidDataException` and `ResourceNotFoundException` build their own Spanish message from the data they receive (field and problem, resource type and id), so the message format is defined in one place.
+
+Considered but not a violation: `ProductValidator.validateStockAvailability(Product, int)` (lines 43-49) reads `product.getQuantity()` outside `Product` to decide if there is enough stock. It was not registered as a violation because:
+
+- It only reads the stock and compares it; it does not change `Product`. The responsibility it has is "apply the business rule and report the error", not "manage the quantity".
+- Requirement 6 asks to keep the validation rules in validator classes, so services do not repeat them and the model does not create user messages. The team decided the same in Workshop 1: `Product.decreaseStock` does not validate, and the stock rule lives outside the model.
+- This is different from `ProductService.restoreStock` (section 12): there the service calculates the new quantity and writes it back to `Product`, which changes the state of the object outside its owner.
 
 ### V-01
 
@@ -109,6 +122,7 @@ Status: allocation proposed to the Technical Leader in PR #31, pending her confi
 - `ProductRepository.fromLine` creates `VideoGame` and `Console` (lines 97 and 99) when it loads the file. It is the only class that has the initializing data at that moment (the text line).
 - `Accessory` creates its own `ArrayList` for `compatibleConsoleIds` in its constructor, because it is the owner of that list.
 - My model classes (`Promotion`, `Return`, `Warranty` hierarchies) do not create other domain objects. They are created by `PromotionService`, `ReturnService` and `WarrantyService` (Developer 2), which keep their lists.
+- The validators create `InvalidDataException`, `ResourceNotFoundException` and `BusinessRuleException` (for example, `ProductValidator` lines 29, 45 and 60). The validator is the class that detects the problem and has the initializing data (the field, the id, the available and requested stock). `ProductRepository` creates `PersistenceException` (lines 36, 60, 63 and 101) because it is the class that detects the failure: the file cannot be read or written, or a line has corrupt data or an unknown product type. When there is an original exception (for example, an `IOException`), it is kept as the cause.
 
 ## 5. Controller
 
@@ -125,7 +139,9 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 **Verdict:** correct
 
 - `ProductService` depends on `ProductRepository`, the model classes, `ProductValidator` and the exception classes. The validator and the exceptions are small, stable classes without state that only depend on the model, so they do not tie `ProductService` to other modules. Other services (`SaleService`, `ReturnService`, `WarrantyService`) use the product catalog through `ProductService` (`listAll`, `findById`, `updateStock`), not through the repository or the file.
-- `ProductRepository` depends only on the model classes it reads and writes.
+- `ProductRepository` depends only on the model classes it reads and writes and on `PersistenceException`.
+- The validators depend only on the model classes they check and on the exception classes. The exception classes do not depend on any other class of the project. `GameZoneException` extends `RuntimeException`, so services and repositories do not need `throws` clauses, and a new exception does not force changes in the method signatures of other layers.
+- The services call the validators through static methods, so they depend on the concrete validator class. This is accepted here because the validators have no state and their rules are stable; whether they should be behind an abstraction is a Dependency Inversion question for Requirement 8 (SOLID), not a GRASP violation.
 - `Promotion.calculateDiscount(Sale)` and `Warranty` (fields `product` and `sale`) depend on `Sale` and `Product` only because they need them to do their job (calculate a discount, print a certificate).
 - The only unnecessary coupling found (`Return` reading the internal discount data of `Sale`) is the same code fragment as V-01. It is registered once, under Information Expert, because fixing that pattern also removes the coupling.
 
@@ -138,6 +154,8 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 - `ProductService` has only product use cases: register, list, find and update stock.
 - `ProductRepository` has only persistence of products: write and read `data/products.txt` and convert a product to a line and back.
 - Each model class keeps its own data and the rules about that data: `Accessory` (compatible consoles), `Promotion` (validity dates and discount), `Warranty` (coverage period and cost), `Return` (refund).
+- Each validator has only the rules of one entity (`ProductValidator` for products, `PersonValidator` for people, `SaleValidator` for sales), and each exception class represents one category of error (invalid data, resource not found, business rule, persistence).
+- Noted, not a GRASP violation: the private method `requireText` is the same in `ProductValidator` (lines 64-68) and `PersonValidator` (lines 71-75). It is a small duplication of code, not a responsibility in the wrong class. Also, `ProductService` checks duplicate ids in its own `rejectIfIdExists` (lines 115-121), while `PersonService` uses `PersonValidator.validateUniquePerson`. Both work, but the style is not the same.
 - `Return.generateReturnReceipt()`, `Warranty.generateWarrantyCertificate()` and `Sale.generateReceipt()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes (for `Sale.generateReceipt()`, see `docs/promotion-analysis.md`, section 4), so they stay with their information expert. The console only prints the returned text (`ConsoleUI` line 436 for the sale receipt). If the system needed other output formats (for example, a PDF receipt), this would become a cohesion issue and the formatting could move to a separate class; that change is not in the current requirements.
 
 ## 8. Polymorphism
@@ -151,6 +169,7 @@ Where it is correct:
 - `Product.getDescription()` is abstract and each subclass (`VideoGame`, `Console`, `Cable`, `Controller`, `Memory`) gives its own version. `ConsoleUI` prints any product with `product.getDescription()` without asking its type.
 - `Promotion.calculateDiscount(Sale)` is abstract; each type of promotion calculates its own discount, and `SaleService` calls it without knowing the type.
 - `Warranty` declares `getDurationInMonths()`, `getWarrantyType()` and `getAdditionalCost()` as abstract, so `BasicWarranty` and `ExtendedWarranty` change the behavior without any `if` on the type.
+- The exception hierarchy: every custom exception extends `GameZoneException`, and each subclass fixes its own error code and message format in its constructor. The services only throw the right subtype; the code that handles the error (`ConsoleUI.showError`, Technical Leader) catches each subtype in its own `catch` block, which is the normal Java way to select behavior by exception type. Observation: `getErrorCode()` is not used by any class at the audited commit, because the UI selects the message by exception type.
 
 Considered but not a violation: `ProductRepository.toLine` and `fromLine` use `instanceof` and the `"VIDEOGAME"` / `"CONSOLE"` type field. The text format of the file is a persistence detail; moving it to `Product` would put file format knowledge in the model layer. The repository is a Pure Fabrication created to keep this outside the domain, so the type check stays there.
 
@@ -175,6 +194,8 @@ Considered but not a violation: `ProductRepository.toLine` and `fromLine` use `i
 
 `ProductRepository` is a Pure Fabrication: a "product repository" does not exist in the store's real world. It was created to hold the file access (`Files.write`, `Files.readAllLines`) and the text format, so that `Product`, `VideoGame` and `Console` do not have any file logic and stay cohesive. `ProductService` is also an invented class that groups the product use cases.
 
+`ProductValidator`, `PersonValidator` and `SaleValidator` are also Pure Fabrications. They hold the validation rules so that the model classes do not create user messages and the services do not repeat the same checks. They have a private constructor and only static methods, because they do not keep any state.
+
 ## 10. Indirection
 
 > How are two components that must collaborate decoupled?
@@ -193,6 +214,9 @@ Where it is correct:
 
 - The abstract classes `Product`, `Promotion` and `Warranty` are stable interfaces: a new kind of promotion or warranty is added as a new subclass, and `SaleService` and `ConsoleUI` keep working with the base type.
 - `ProductRepository` hides the file format behind `save` and `load`; if the format changes, only the repository changes.
+- `PersistenceException` protects the upper layers from file-access details: `ProductRepository` catches the `IOException` and throws `PersistenceException` with the original cause (lines 35-36 and 59-63). The UI only knows "the data could not be read or written", not the `java.io` exception, so changing how data is stored does not change how the UI handles the error.
+- The message format of invalid data and missing resources is defined once, in the constructors of `InvalidDataException` and `ResourceNotFoundException`. Changing that format changes one class, not every place that throws the error.
+- Limit of this protection: it only works in the modules that use the hierarchy. `docs/grasp-audit/developer2-audit.md` (sections 9 and 10) already records that the accessory, promotion, return and warranty modules use other exception types. That observation is not repeated here.
 - The variation "new product type" in `CategoryDiscount` is covered by V-02 (same code, registered once).
 
 ### V-03
