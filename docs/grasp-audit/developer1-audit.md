@@ -1,12 +1,21 @@
 # GRASP Audit - Developer 1
 
 **Author:** Jaime Granados (Developer 1)
-**Audited branch / commit:** `develop` @ `d423eb8`
+**Audited branch / commit:** `develop` @ `701255d4209e070146c32ee5a663b08d3b4b0bb4`
+(team reference commit, merge of PR #33)
 
-> Note: Requirement 6 (`feature/exception-handling`) is not merged into `develop` at this
-> commit, so the `exceptions` and `validation` packages do not exist yet in the audited code.
-> Their rows in the scope are marked as pending. They will be audited, and the commit above
-> updated, after the Requirement 6 merge.
+### Baseline update
+
+The first version of this audit used `develop` @ `d423eb8`, before Requirement 6 was merged.
+The differences between `d423eb8` and `701255d` were reviewed:
+
+- `Product`, `VideoGame`, `Console`, `Accessory` and its subclasses, `Promotion` and its
+  subclasses, `Return`, `Warranty` and its subclasses, `Sale`, `AccessoryService` and
+  `PromotionService` did not change. The evidence of V-01, V-02 and V-03 is still valid.
+- `ProductService`, `ProductRepository`, `SaleService`, `ReturnService` and `ConsoleUI`
+  changed (typed exceptions and validators). The line numbers cited from these classes were
+  updated, and the Low Coupling justification was rewritten (section 6).
+- The `exceptions` and `validation` packages were added by Requirement 6.
 
 ## 1. Scope
 
@@ -79,8 +88,8 @@ Where it is correct:
 
 **Verdict:** correct
 
-- `ProductService.registerVideoGame` and `registerConsole` create `VideoGame` and `Console` objects (lines 42 and 60). `ProductService` keeps the list of products (`products`) and has all the data needed to create them, so it fulfills two Creator criteria: it contains the objects and it has their initializing data.
-- `ProductRepository.fromLine` creates `VideoGame` and `Console` (lines 82 and 84) when it loads the file. It is the only class that has the initializing data at that moment (the text line).
+- `ProductService.registerVideoGame` and `registerConsole` create `VideoGame` and `Console` objects (lines 57 and 97). `ProductService` keeps the list of products (`products`) and has all the data needed to create them, so it fulfills two Creator criteria: it contains the objects and it has their initializing data.
+- `ProductRepository.fromLine` creates `VideoGame` and `Console` (lines 97 and 99) when it loads the file. It is the only class that has the initializing data at that moment (the text line).
 - `Accessory` creates its own `ArrayList` for `compatibleConsoleIds` in its constructor, because it is the owner of that list.
 - My model classes (`Promotion`, `Return`, `Warranty` hierarchies) do not create other domain objects. They are created by `PromotionService`, `ReturnService` and `WarrantyService` (Developer 2), which keep their lists.
 
@@ -90,7 +99,7 @@ Where it is correct:
 
 **Verdict:** correct
 
-My code does not receive events from the user directly; `ConsoleUI` (Technical Leader) does. For the product use cases, `ProductService` is the first object after the UI that receives the system operations: `ConsoleUI` calls `productService.registerVideoGame` (`ConsoleUI` line 156), `registerConsole` (line 175), `listAll` (line 186) and `findById` (line 340). `ProductService` coordinates the operation (checks duplicate ids, creates the object, asks the repository to save) and the UI never talks to `ProductRepository`. This is a use-case controller.
+My code does not receive events from the user directly; `ConsoleUI` (Technical Leader) does. For the product use cases, `ProductService` is the first object after the UI that receives the system operations: `ConsoleUI` calls `productService.registerVideoGame` (`ConsoleUI` line 168), `registerConsole` (line 187), `listAll` (line 198) and `findById` (line 369). `ProductService` coordinates the operation (checks duplicate ids, creates the object, asks the repository to save) and the UI never talks to `ProductRepository`. This is a use-case controller.
 
 ## 6. Low Coupling
 
@@ -98,7 +107,7 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 
 **Verdict:** correct
 
-- `ProductService` depends only on `ProductRepository` and the model classes. Other services (`SaleService`, `ReturnService`, `WarrantyService`) use the product catalog through `ProductService` (`listAll`, `findById`, `updateStock`), not through the repository or the file.
+- `ProductService` depends on `ProductRepository`, the model classes, `ProductValidator` and the exception classes. The validator and the exceptions are small, stable classes without state that only depend on the model, so they do not tie `ProductService` to other modules. Other services (`SaleService`, `ReturnService`, `WarrantyService`) use the product catalog through `ProductService` (`listAll`, `findById`, `updateStock`), not through the repository or the file.
 - `ProductRepository` depends only on the model classes it reads and writes.
 - `Promotion.calculateDiscount(Sale)` and `Warranty` (fields `product` and `sale`) depend on `Sale` and `Product` only because they need them to do their job (calculate a discount, print a certificate).
 - The only unnecessary coupling found (`Return` reading the internal discount data of `Sale`) is the same code fragment as V-01. It is registered once, under Information Expert, because fixing that pattern also removes the coupling.
@@ -155,7 +164,7 @@ Considered but not a violation: `ProductRepository.toLine` and `fromLine` use `i
 
 **Verdict:** correct
 
-`ProductService` is an intermediate object between `ConsoleUI` and `ProductRepository`. The UI never knows that products are saved in a text file. Other modules also go through `ProductService` to use products: `SaleService.updateStockOf` calls `productService.updateStock` (`SaleService` line 273) and `ReturnService` calls `productService.restoreStock` (`ReturnService` line 95), instead of reading or writing `data/products.txt` themselves.
+`ProductService` is an intermediate object between `ConsoleUI` and `ProductRepository`. The UI never knows that products are saved in a text file. Other modules also go through `ProductService` to use products: `SaleService.updateStockOf` calls `productService.updateStock` (`SaleService` line 283) and `ReturnService` calls `productService.restoreStock` (`ReturnService` line 93), instead of reading or writing `data/products.txt` themselves.
 
 ## 11. Protected Variations
 
@@ -191,6 +200,6 @@ Problems found during this audit whose origin is in another member's code (not a
 | `Sale.canBeReturned` | Developer 2 (git history) / Developer 1 (PDF table) | The PDF assigns this method to Developer 1, but commit `45c8cf2` ("feat(model): add canBeReturned method to Sale") is by Developer 2. Audited here (V-03) as the PDF says; please confirm the owner of the correction. |
 | `ProductService.restoreStock` | Technical Leader | Information Expert: it does `product.setQuantity(product.getQuantity() + amount)` instead of asking `Product` to increase its own stock (the opposite of `Product.decreaseStock`). A fix would add `increaseStock(int)` to `Product` (Developer 1's class): boundary finding. |
 | `AccessoryService.restoreStock` | Developer 2 | Same problem as above (line 172: `accessory.setQuantity(accessory.getQuantity() + amount)`). Could reuse the same `Product.increaseStock(int)`. |
-| `SaleService.registerSale` (line 149), `ReturnService.registerReturn` (lines 83 and 92), `ConsoleUI.registerSale` (line 312) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. |
+| `SaleService.registerSale` (line 143), `ReturnService.registerReturn` (lines 81 and 90), `ConsoleUI.registerSale` (line 337) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. |
 | `PromotionService.isValidTargetCategory` (lines 160-163) | Developer 2 | Repeats the category strings `"VIDEOGAME"`, `"CONSOLE"`, `"ACCESSORY"`. Related to V-02. |
 | `Return` (`warrantyRefund` field, constructor parameter and receipt line) | Developer 2 (git history) | Added by Developer 2 in the warranty-refund integration; the JavaDoc of `Return` is in Spanish, which goes against the "comments in English" rule. Not a GRASP issue; noted for the Phase 2 change in `Return`. |
