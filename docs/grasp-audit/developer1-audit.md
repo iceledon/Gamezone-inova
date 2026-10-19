@@ -32,6 +32,7 @@ Classes and methods audited, organized by module and requirement (section 4 of R
 | Accessories (Req. 1) | `Cable`, `Controller`, `Memory` | constructors, getters/setters, `getDescription` |
 | Promotions (Req. 2) | `Promotion` | constructor, getters/setters, `isActive`, `calculateDiscount` (abstract) |
 | Promotions (Req. 2) | `PercentageDiscount`, `CategoryDiscount`, `BulkPurchaseDiscount` | constructors, getters/setters, `calculateDiscount`, `CategoryDiscount.matchesTargetCategory` |
+| Promotions (Req. 2) | `Sale` (only these members) | `getAppliedPromotionName` / `setAppliedPromotionName`, `getDiscountAmount` / `setDiscountAmount`, `generateReceipt` (added by Developer 1, commits `09d5c3e` and `0575ed7`). `calculateSubtotal` and `calculateTotal` are shared with the Technical Leader: see "Shared assessments" in section 3 |
 | Returns (Req. 3) | `Return` | constructor, getters, `calculateRefundAmount`, `discountRatio`, `generateReturnReceipt` |
 | Returns (Req. 3) | `Sale` (only this method) | `canBeReturned` (assigned to Developer 1 by the PDF; the git history shows it was committed by Developer 2, see section 12) |
 | Warranties (Req. 4) | `Warranty` | constructor, getters, `isActive`, `generateWarrantyCertificate`, `getDurationInMonths` / `getWarrantyType` / `getAdditionalCost` (abstract) |
@@ -68,6 +69,8 @@ Where it is correct:
 - `Promotion.isActive(LocalDate)` and `Warranty.isActive(LocalDate)` use `startDate` and `endDate`, which each class owns.
 - `Warranty.generateWarrantyCertificate()` and `Return.generateReturnReceipt()` build their text from their own fields.
 - `Sale.canBeReturned()` uses the sale `date`, which `Sale` owns.
+- `Sale` stores `appliedPromotionName` and `discountAmount`: the discount belongs to one sale, so the sale keeps it. `Promotion.calculateDiscount(Sale)` calculates the amount and `SaleService` stores the result in the sale.
+- `Sale.generateReceipt()` (lines 178-198) builds the receipt from data that the sale owns or reaches through its own associations: `id`, `date`, `customer`, `seller`, `products`, `extraCost`, `discountAmount`, `appliedPromotionName`, and its own `calculateSubtotal()` and `calculateTotal()`.
 
 ### V-01
 
@@ -81,6 +84,20 @@ Where it is correct:
 | Consequence | `Return` depends on how `Sale` stores and calculates its discount. If the way the discount is applied changes (for example, the discount is limited to some products, or the extended warranty cost becomes part of the discount base), `Return` must change too, even though the rule belongs to `Sale`. Any other class that needs the same ratio would have to copy this code. |
 | Proposed solution | Move the calculation to `Sale` as a public method `calculateDiscountRatio()` (same logic, same result), and make `Return` call `originalSale.calculateDiscountRatio()`. Pattern applied: Information Expert, which also lowers the coupling of `Return` to the internal data of `Sale`. |
 | Other member's code | Yes: `Sale` is the Technical Leader's class. The discount fields in `Sale` were added by Developer 1 in Req. 2 (git history), so the Technical Leader decides in the consolidation who adds the new method. |
+
+### Shared assessments
+
+`Sale.calculateSubtotal()` (lines 138-144) and `Sale.calculateTotal()` (lines 152-154) have
+contributions from the Technical Leader (commit `f6a7832`) and from Developer 1 (commit
+`a77d068`, which made the promotions use the subtotal). To avoid duplicate findings, the primary
+assessment of these two methods is the one in `docs/grasp-audit/leader-audit.md`
+(section 1, "Sale calculations", verdict: correct). This audit does not assess them again and
+agrees with that verdict.
+
+`Sale.generateReceipt()` and the discount fields of `Sale` were added by Developer 1, so this
+audit is their primary assessment (sections 3 and 7).
+
+Status: allocation proposed to the Technical Leader in PR #31, pending her confirmation.
 
 ## 4. Creator
 
@@ -121,7 +138,7 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 - `ProductService` has only product use cases: register, list, find and update stock.
 - `ProductRepository` has only persistence of products: write and read `data/products.txt` and convert a product to a line and back.
 - Each model class keeps its own data and the rules about that data: `Accessory` (compatible consoles), `Promotion` (validity dates and discount), `Warranty` (coverage period and cost), `Return` (refund).
-- `Return.generateReturnReceipt()` and `Warranty.generateWarrantyCertificate()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes, so they stay with their information expert. The console only prints the returned text.
+- `Return.generateReturnReceipt()`, `Warranty.generateWarrantyCertificate()` and `Sale.generateReceipt()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes (for `Sale.generateReceipt()`, see `docs/promotion-analysis.md`, section 4), so they stay with their information expert. The console only prints the returned text (`ConsoleUI` line 436 for the sale receipt). If the system needed other output formats (for example, a PDF receipt), this would become a cohesion issue and the formatting could move to a separate class; that change is not in the current requirements.
 
 ## 8. Polymorphism
 
