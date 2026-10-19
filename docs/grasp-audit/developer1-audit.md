@@ -239,8 +239,31 @@ Problems found during this audit whose origin is in another member's code (not a
 | Class / method | Owner | Short description |
 |---|---|---|
 | `Sale.canBeReturned` | Developer 2 (git history) / Developer 1 (PDF table) | The PDF assigns this method to Developer 1, but commit `45c8cf2` ("feat(model): add canBeReturned method to Sale") is by Developer 2. Audited here (V-03) as the PDF says; please confirm the owner of the correction. |
-| `ProductService.restoreStock` | Technical Leader | Information Expert: it does `product.setQuantity(product.getQuantity() + amount)` instead of asking `Product` to increase its own stock (the opposite of `Product.decreaseStock`). A fix would add `increaseStock(int)` to `Product` (Developer 1's class): boundary finding. |
-| `AccessoryService.restoreStock` | Developer 2 | Same problem as above (line 172: `accessory.setQuantity(accessory.getQuantity() + amount)`). Could reuse the same `Product.increaseStock(int)`. |
+| `ProductService.restoreStock` (lines 179-185) | Technical Leader | Information Expert: it does `product.setQuantity(product.getQuantity() + amount)` instead of asking `Product` to increase its own stock (the opposite of `Product.decreaseStock`). Same finding as L-V01 in `leader-audit.md`: see "Boundary finding L-V01" below. |
+| `AccessoryService.restoreStock` (lines 170-174) | Developer 2 (commit `b9e12fb`) | Same problem as above (line 172: `accessory.setQuantity(accessory.getQuantity() + amount)`). Proposed to be part of the same consolidated finding as L-V01. |
 | `SaleService.registerSale` (line 143), `ReturnService.registerReturn` (lines 81 and 90), `ConsoleUI.registerSale` (line 337) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. |
 | `PromotionService.isValidTargetCategory` (lines 160-163) | Developer 2 | Repeats the category strings `"VIDEOGAME"`, `"CONSOLE"`, `"ACCESSORY"`. Related to V-02. |
 | `Return` (`warrantyRefund` field, constructor parameter and receipt line) | Developer 2 (git history) | Added by Developer 2 in the warranty-refund integration; the JavaDoc of `Return` is in Spanish, which goes against the "comments in English" rule. Not a GRASP issue; noted for the Phase 2 change in `Return`. |
+| `SaleValidator.validateSaleProducts` (lines 21-41) | Developer 2 (PR #33) | The JavaDoc is in Spanish and there is no blank line before `validateSaleData`. Not a GRASP issue; noted so the style can be fixed if the class is changed in Phase 2. |
+
+### Boundary finding L-V01 (Technical Leader and Developer 1)
+
+The Technical Leader registered L-V01 (Information Expert) in `docs/grasp-audit/leader-audit.md`
+for `ProductService.restoreStock`. Developer 1 confirms the finding: it describes the same
+problem as the `ProductService.restoreStock` row above, so it must be consolidated as **one**
+finding, not two.
+
+- **Product side (Developer 1):** `Product` owns `quantity` and already has
+  `decreaseStock(int)`. The missing operation is `increaseStock(int amount)`, which only adds
+  the amount, with the same style as `decreaseStock` (no new validation and no new messages).
+  `Accessory` extends `Product`, so `Cable`, `Controller` and `Memory` inherit it.
+- **Proposed scope of the consolidated finding:** `ProductService.restoreStock` (Technical
+  Leader) and `AccessoryService.restoreStock` (Developer 2). Both repeat the same calculation and
+  can delegate to `increaseStock`.
+- **Order for Phase 2:** first Developer 1 adds `Product.increaseStock(int)` (producer), then
+  each owner changes their `restoreStock` to call it (consumers). The behavior seen by the user
+  must not change.
+- The definitive ID is assigned in the consolidated audit.
+
+Status: confirmed by Developer 1; inclusion of `AccessoryService.restoreStock` pending agreement
+with the Technical Leader and Developer 2.
