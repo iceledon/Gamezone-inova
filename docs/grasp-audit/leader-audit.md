@@ -230,6 +230,62 @@ returns, warranties, promotions and accessories.
 These observations do not establish a High Cohesion or Low Coupling
 verdict solely from the number of methods or collaborators.
 
+### ConsoleUI: interaction responsibilities
+
+ConsoleUI displays menus, reads input, invokes services and presents
+results or error messages.
+
+Its registerSale method collects identifiers and warranty choices,
+then invokes SaleService.registerSale.
+
+The interface does not calculate the final sale amount or write
+sales records directly.
+
+Evidence:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+
+#### Controller boundary
+
+The sale interaction separates user input from application
+coordination: ConsoleUI gathers the request and SaleService
+coordinates the sale.
+
+This supports the reviewed sale-operation boundary. Other menu
+operations must be considered before assigning a complete verdict.
+
+#### High Cohesion
+
+The class contains interaction responsibilities for seven modules:
+products, people, sales, returns, warranties, promotions and accessories.
+
+Its size alone does not establish a violation. The assessment must
+consider whether changes to separate module interfaces create
+independent reasons to modify this class and whether separating
+those interactions would improve cohesion.
+
+A final decision about this observation remains pending.
+
+#### Low Coupling and type-dependent interaction
+
+ConsoleUI knows concrete service and model classes.
+
+During sale input, it identifies consoles to offer an extended
+warranty choice. This couples that interaction to the Console type.
+
+The review must distinguish presentation-specific decisions from
+business rules. The existence of a type check is not sufficient
+to confirm a Polymorphism violation.
+
+#### Error presentation
+
+showError centralizes the Spanish messages for exception categories.
+Numeric and date helpers translate parsing failures into
+InvalidDataException.
+
+This separates error presentation from repository file access,
+while retaining compatibility handling for existing exceptions.
+
+
 ## Descriptive observations: Main
 
 Main constructs repositories, then services and finally ConsoleUI.
@@ -243,6 +299,49 @@ application entry point, including persistence failures during loading.
 Main does not implement sale calculations or file serialization.
 Its construction responsibilities must be assessed separately from
 the creation of domain objects during business operations.
+
+### Main.main: responsibility review
+
+Main.main constructs the application's repositories, services
+and ConsoleUI. It supplies their collaborators and starts the UI.
+
+It also handles failures that reach the application entry point.
+It does not implement sale calculations, record serialization
+or the menu's operation dispatch.
+
+Evidence:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/Main.java
+
+#### High Cohesion
+
+The reviewed responsibilities belong to application assembly,
+startup and top-level failure handling.
+
+This supports a correct assessment for Main's startup role.
+It does not establish the verdict for other classes in the scope.
+
+#### Low Coupling
+
+Main explicitly knows concrete repositories, services and ConsoleUI.
+Changes to component construction can therefore require changes here.
+
+This dependency is expected at the application assembly point.
+The number of concrete classes alone does not demonstrate a violation.
+
+The review must distinguish this assembly responsibility from
+business classes unnecessarily constructing their own dependencies.
+
+#### Controller
+
+Main starts ConsoleUI but does not receive and coordinate individual
+sale operations. Sale-operation coordination is assessed separately
+in ConsoleUI and SaleService.
+
+#### Review status
+
+These conclusions concern Main's reviewed responsibilities only.
+Peer confirmation and the complete scope-wide verdicts remain pending.
+
 
 ## Descriptive observations: ProductService.restoreStock
 
@@ -275,12 +374,35 @@ The method changes the product before saving. Any failure-state
 issue must be distinguished from a design finding and recorded
 separately if it is outside the GRASP refactor scope.
 
+## Pattern assessment summary
+
+This table summarizes the current review status. It is not a
+declaration that the complete individual audit has been approved.
+
+| Pattern | Evidence reviewed | Current status | Remaining work |
+|---|---|---|---|
+| Information Expert | Sale calculations and ProductService.restoreStock | L-V01 confirmed by Jaime; sale calculations assessed separately | Assign consolidated ID and confirm the complete responsibility split |
+| Creator | SaleService.registerSale and SaleRepository.fromLine | Correct for the reviewed Sale creation paths | Complete the assessment of other creation responsibilities |
+| Controller | ConsoleUI-to-SaleService sale flow and Main's startup role | Sale coordination described; final scope verdict pending | Review the remaining operation boundaries |
+| Low Coupling | SaleRepository dependencies, Main assembly and service collaborators | Correct observations in persistence; broader assessment pending | Resolve the concrete catalog and service dependency observations |
+| High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 remains a candidate | Confirm or reject L-V02 with justification |
+| Polymorphism | Promotion.calculateDiscount and product descriptions | Correct for reviewed polymorphic calls | Assess console-specific warranty decisions |
+| Pure Fabrication | SaleRepository file access and record conversion | Correct for the reviewed persistence separation | Confirm coverage of other relevant technical responsibilities |
+| Indirection | ConsoleUI -> SaleService -> SaleRepository | Correct for the reviewed sale-operation path | Complete the remaining relevant collaborations |
+| Protected Variations | Promotion calculation through Promotion | Protection observed for discount formulas | Assess catalog and warranty variation points |
+
+Peer confirmation of a specific finding does not constitute approval
+of all assessments in this report.
+
+Candidates must be confirmed or rejected explicitly before the
+individual audit is presented as complete.
+
 ## 1. Information Expert
 
 ### Local finding L-V01: stock-increase responsibility
 
-Verdict: violation identified by the technical lead.
-Peer validation and consolidated ID assignment are pending.
+Verdict: violation identified by the technical lead and confirmed
+by Jaime in PR #31. Consolidated ID assignment remains pending.
 
 | Field | Content |
 |---|---|
@@ -292,8 +414,7 @@ Peer validation and consolidated ID assignment are pending.
 | Consequence | Callers that need to increase stock must reproduce the calculation and know how to update Product. A change to the stock-increase rule may require changes in those callers. |
 | Proposed solution | Give Product an operation for increasing its quantity. ProductService should locate the product, delegate the increase and persist the inventory. |
 | Other developer's code | Yes. ProductService.restoreStock belongs to Isabel; Product belongs to Jaime's scope. |
-| Review status | Pending peer review and consolidation |
-
+| Review status | Confirmed by Jaime in PR #31; definitive scope and consolidated ID remain pending |
 Evidence:
 https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/ProductService.java#L179-L185
 
@@ -476,6 +597,36 @@ Evidence:
 Source:
 https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
 
+### Candidate L-V02: module interaction concentrated in ConsoleUI
+
+Status: candidate finding; personal assessment and peer validation
+are pending.
+
+| Field | Content |
+|---|---|
+| Local ID | L-V02 |
+| Pattern | High Cohesion |
+| Module | Console interaction across the integrated modules |
+| Evidence | ConsoleUI contains showProductMenu, showPersonMenu, showSaleMenu, showReturnMenu, showWarrantyMenu, showPromotionMenu and showAccessoryMenu, together with their interaction methods |
+| Responsibility concern | Changes to the interaction of separate modules require modifications to the same class |
+| Consequence | Developers working on independent module interfaces must edit ConsoleUI, increasing coordination needs and the possibility of overlapping changes |
+| Proposed solution | Evaluate separating module-specific console interactions into focused UI collaborators while retaining main navigation in ConsoleUI |
+| Behavior constraint | Preserve menu options, prompts, output ordering, error messages and navigation |
+| Ownership | Shared contributions require method-level coordination with Jaime and Nicoll |
+
+Source:
+https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+
+The concern is not the number of lines alone. It is the concentration
+of module-specific interactions that can change independently.
+
+Before confirming a violation, the review must weigh the benefit
+of separating those responsibilities against the additional classes
+and coordination that the separation would introduce.
+
+No Java modification is authorized by this candidate entry.
+
+
 ### Other responsibilities to assess
 
 SaleService coordinates several steps within sale registration.
@@ -646,11 +797,31 @@ No definitive violation ID is assigned to these observations yet.
 
 L-V01 crosses the responsibilities of Isabel and Jaime.
 
-Isabel reports the quantity calculation in ProductService.restoreStock.
-Jaime must review the proposed operation in Product.
+Jaime confirmed in PR #31 that it matches a concern already
+reported in section 12 of developer1-audit.md.
 
-The finding is awaiting peer validation. No correction is authorized
-until the consolidated audit records the agreed solution and order.
+The agreed sequence, if retained in the consolidated audit, is:
+
+1. Jaime provides Product.increaseStock(int).
+2. Isabel updates ProductService.restoreStock to delegate to it.
+
+Both source reports must be referenced under one consolidated
+finding rather than counted as separate violations.
+
+Jaime also proposed including AccessoryService.restoreStock.
+That extension requires Nicoll's review and is not yet recorded
+as a confirmed responsibility assignment.
+
+Isabel's assessment of calculateSubtotal and calculateTotal
+will be the primary reference. Jaime will document his receipt
+and discount-field contributions, which Isabel will reference.
+
+Source discussion:
+https://github.com/iceledon/Gamezone-inova/pull/31
+
+Confirmation of L-V01 is not approval of the complete leader audit.
+Implementation remains deferred until the consolidated audit
+is reviewed and merged.
 
 ## Out-of-scope functional findings
 
@@ -686,3 +857,4 @@ it does not claim that Isabel executed tests confirming them.
 ## Peer review
 
 Pending.
+
