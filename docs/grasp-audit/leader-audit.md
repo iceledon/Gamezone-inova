@@ -385,7 +385,7 @@ declaration that the complete individual audit has been approved.
 | Creator | SaleService.registerSale and SaleRepository.fromLine | Correct for the reviewed Sale creation paths | Complete the assessment of other creation responsibilities |
 | Controller | ConsoleUI-to-SaleService sale flow and Main's startup role | Sale coordination described; final scope verdict pending | Review the remaining operation boundaries |
 | Low Coupling | SaleRepository dependencies, Main assembly and service collaborators | Correct observations in persistence; broader assessment pending | Resolve the concrete catalog and service dependency observations |
-| High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 remains a candidate | Confirm or reject L-V02 with justification |
+| High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 proposed as a violation | Author review and peer validation of L-V02 |responsibilities | Correct observations in persistence/startup; L-V02 remains a candidate | Confirm or reject L-V02 with justification |
 | Polymorphism | Promotion.calculateDiscount and product descriptions | Correct for reviewed polymorphic calls | Assess console-specific warranty decisions |
 | Pure Fabrication | SaleRepository file access and record conversion | Correct for the reviewed persistence separation | Confirm coverage of other relevant technical responsibilities |
 | Indirection | ConsoleUI -> SaleService -> SaleRepository | Correct for the reviewed sale-operation path | Complete the remaining relevant collaborations |
@@ -599,8 +599,8 @@ https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d
 
 ### Candidate L-V02: module interaction concentrated in ConsoleUI
 
-Status: candidate finding; personal assessment and peer validation
-are pending.
+Status: proposed violation supported by the responsibility analysis;
+author review and peer validation remain pending.
 
 | Field | Content |
 |---|---|
@@ -620,9 +620,25 @@ https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d
 The concern is not the number of lines alone. It is the concentration
 of module-specific interactions that can change independently.
 
-Before confirming a violation, the review must weigh the benefit
-of separating those responsibilities against the additional classes
-and coordination that the separation would introduce.
+The proposed High Cohesion violation is supported by independent
+module-specific interaction responsibilities sharing one class.
+
+For example, changing promotion-registration prompts and changing
+warranty-query interaction both require editing ConsoleUI, although
+they belong to separate use cases.
+
+The proposed correction is to move module-specific interactions
+into focused UI collaborators while retaining main navigation
+in ConsoleUI.
+
+This must preserve prompts, menu options, output ordering, error
+handling and navigation. Additional classes are justified only
+if they create focused responsibilities rather than merely
+redistributing methods.
+
+This is an AI-assisted proposal, not a completed personal assessment
+or peer-approved finding. It requires author review and validation
+before entering the definitive consolidated finding list.
 
 No Java modification is authorized by this candidate entry.
 
