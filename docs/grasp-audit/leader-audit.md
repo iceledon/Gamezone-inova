@@ -22,12 +22,12 @@ Method ownership must also be checked against Git history.
 
 | Area | Class or method | Review status |
 |---|---|---|
-| Sales model | Sale | Pending |
-| Sales persistence | SaleRepository | Pending |
-| Sales coordination | SaleService | Pending |
-| Console interface | ConsoleUI | Pending |
-| Application startup | Main | Pending |
-| Stock restoration | ProductService.restoreStock | Pending |
+| Sales model | Sale | Calculations assessed; shared contributions documented |
+| Sales persistence | SaleRepository | Persistence and reconstruction assessed; peer review pending |
+| Sales coordination | SaleService | Coordination and reviewed dependencies assessed; peer review pending |
+| Console interface | ConsoleUI | Delegation assessed; L-V02 proposed and awaiting validation |
+| Application startup | Main | Assembly and startup responsibilities assessed; peer review pending |
+| Stock restoration | ProductService.restoreStock | L-V01 confirmed by Jaime; consolidation pending |
 
 Methods contributed by other team members will be identified
 separately before assigning audit responsibility.
@@ -382,13 +382,13 @@ declaration that the complete individual audit has been approved.
 | Pattern | Evidence reviewed | Current status | Remaining work |
 |---|---|---|---|
 | Information Expert | Sale calculations and ProductService.restoreStock | L-V01 confirmed by Jaime; sale calculations assessed separately | Assign consolidated ID and confirm the complete responsibility split |
-| Creator | SaleService.registerSale and SaleRepository.fromLine | Correct for the reviewed Sale creation paths | Complete the assessment of other creation responsibilities |
-| Controller | ConsoleUI-to-SaleService sale flow and Main's startup role | Sale coordination described; final scope verdict pending | Review the remaining operation boundaries |
+| Creator | SaleService.registerSale and SaleRepository.fromLine | Correct for the reviewed Sale creation paths | Peer validation|
+| Controller | Delegation from the seven menu areas and Main's startup role | Correct for the reviewed UI/service boundary | Peer validation |
 | Low Coupling | Persistence boundaries, service coordination and Main assembly | Correct for the reviewed boundaries, with documented limitations | Peer validation |
 | High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 proposed as a violation | Author review and peer validation of L-V02 |
 | Polymorphism | Promotion formulas, product descriptions and console-specific warranty interaction | Correct for the reviewed responsibilities | Peer validation |
-| Pure Fabrication | SaleRepository file access and record conversion | Correct for the reviewed persistence separation | Confirm coverage of other relevant technical responsibilities |
-| Indirection | ConsoleUI -> SaleService -> SaleRepository | Correct for the reviewed sale-operation path | Complete the remaining relevant collaborations |
+| Pure Fabrication | SaleRepository file access and record conversion | Correct for the reviewed persistence separation | Peer validation |
+| Indirection | ConsoleUI -> SaleService -> SaleRepository | Correct for the reviewed sale-operation path | Peer validation|
 | Protected Variations | Promotion formula abstraction and separation of sales file details | Correct for the reviewed variation points | Peer validation |
 
 Peer confirmation of a specific finding does not constitute approval
@@ -498,37 +498,65 @@ Source files at the audited commit:
 - https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
 - https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
 
-The assessment does not claim that every creation responsibility
-in the leader's scope has been reviewed.
+### Application assembly and input construction
+
+Main creates repositories, services and ConsoleUI because it is
+responsible for assembling the application and supplying their
+collaborators. This technical construction role is distinct from
+creating domain objects during a business operation.
+
+ConsoleUI.registerCustomer constructs Customer from the data it
+collects, then delegates registration to PersonService. Having the
+initialization data supports that creation decision; the service
+retains registration and persistence coordination.
+
+Verdict: correct for the reviewed creation responsibilities in
+SaleService, SaleRepository, Main and ConsoleUI.
+
+This conclusion does not transfer ownership of shared methods.
+Peer validation remains pending.
 
 ## 3. Controller
 
-### Sale registration flow
+Verdict: correct for the reviewed separation between console
+interaction and application-operation coordination.
+Peer validation remains pending.
 
-ConsoleUI receives the user's input and invokes SaleService.
+ConsoleUI receives user input and delegates operations to services:
 
-SaleService.registerSale coordinates the operation: it resolves
-participants and items, invokes validators, requests promotion
-selection and warranty assignment, updates inventory through
-services and delegates sale persistence to SaleRepository.
+| Menu area | Collaborator |
+|---|---|
+| Products | ProductService |
+| People | PersonService |
+| Sales | SaleService |
+| Returns and monthly balance | ReturnService |
+| Warranties | WarrantyService |
+| Promotions | PromotionService |
+| Accessories | AccessoryService |
 
-The service does not read keyboard input or print console messages.
-ConsoleUI does not directly write the sales file.
+For sale registration, ConsoleUI collects identifiers and warranty
+choices. SaleService coordinates validation, participant and item
+resolution, promotions, warranties, inventory updates and persistence.
 
-This describes the separation between user interaction and
-sale-operation coordination.
+The console does not directly access repositories or write data
+files. SaleService does not read keyboard input or print messages.
 
-Evidence:
+Main constructs the components and starts ConsoleUI. It is the
+application assembly point, rather than the controller of individual
+sale operations.
 
-- ConsoleUI.registerSale
-- SaleService.registerSale
-- SaleRepository.save
+Evidence at the audited commit:
 
-Audited commit:
-701255d4209e070146c32ee5a663b08d3b4b0bb4
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
+- https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/Main.java
 
-The final Controller verdict remains pending review of the
-remaining responsibilities and agreement on shared ownership.
+This is a static assessment of responsibility delegation, not
+evidence that every menu operation was executed.
+
+The separate High Cohesion proposal L-V02 remains subject to
+review. Correct delegation does not automatically demonstrate
+high cohesion in the complete interface class.
 
 ## 4. Low Coupling
 
@@ -747,6 +775,25 @@ SaleRepository. A class is not justified merely because it is
 named Repository or Service; its responsibilities and dependencies
 must support that separation.
 
+### Scope conclusion
+
+Verdict: correct for the reviewed separation of technical
+responsibilities.
+
+SaleRepository isolates sales file access and record conversion.
+SaleService coordinates application operations without placing
+file serialization in Sale or ConsoleUI.
+
+Main performs application assembly. ConsoleUI handles interaction
+and error presentation.
+
+These roles are justified by their responsibilities, not simply
+by their class names. The separate cohesion proposal L-V02 does
+not invalidate the decision to keep UI responsibilities outside
+the domain model.
+
+Peer validation remains pending.
+
 ## 8. Indirection
 
 ### Separation between console interaction and persistence
@@ -781,6 +828,25 @@ Sources:
 
 The presence of an intermediary alone does not prove good design.
 Its responsibilities and dependencies must justify the separation.
+
+### Scope conclusion
+
+Verdict: correct for the reviewed interaction and persistence paths.
+
+ConsoleUI invokes the corresponding services for the seven menu
+areas. For sales, SaleService delegates storage to SaleRepository
+and invokes specialized collaborators for inventory, people,
+promotions and warranties.
+
+Main supplies these collaborators during application assembly.
+
+Directly reading returned model objects for presentation does not
+require an additional intermediary by itself.
+
+This conclusion concerns the reviewed collaborations, not an
+assertion that every dependency requires or already uses an interface.
+
+Peer validation remains pending.
 
 
 
