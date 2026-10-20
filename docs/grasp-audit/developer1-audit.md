@@ -110,7 +110,9 @@ agrees with that verdict.
 `Sale.generateReceipt()` and the discount fields of `Sale` were added by Developer 1, so this
 audit is their primary assessment (sections 3 and 7).
 
-Status: allocation proposed to the Technical Leader in PR #31, pending her confirmation.
+Status: allocation confirmed by the Technical Leader in PR #31. Her report is the primary
+reference for `calculateSubtotal` and `calculateTotal`, and it references this audit for
+`generateReceipt` and the discount fields.
 
 ## 4. Creator
 
@@ -264,6 +266,12 @@ finding, not two.
   each owner changes their `restoreStock` to call it (consumers). The behavior seen by the user
   must not change.
 - The definitive ID is assigned in the consolidated audit.
+- The functional concerns about `restoreStock` reported by Developer 2 in PR #34 (zero or
+  negative amounts, overflow, failed persistence) are a separate topic, as recorded in
+  `leader-audit.md` ("Out-of-scope functional findings"). `increaseStock` does not add new
+  validation, so this correction does not change them.
 
-Status: confirmed by Developer 1; inclusion of `AccessoryService.restoreStock` pending agreement
-with the Technical Leader and Developer 2.
+Status: one consolidated finding and the Phase 2 order (`Product.increaseStock` first, then
+`restoreStock`) confirmed by Developer 1 and the Technical Leader in PR #31. The inclusion of
+`AccessoryService.restoreStock` is pending review by Developer 2 before it enters the final
+scope.
