@@ -654,7 +654,34 @@ until the consolidated audit records the agreed solution and order.
 
 ## Out-of-scope functional findings
 
-Pending review.
+The following functional concerns were reported by Nicoll in PR #34,
+using the same reference commit as this audit:
+
+701255d4209e070146c32ee5a663b08d3b4b0bb4
+
+| Reported concern | Source | Status |
+|---|---|---|
+| restoreStock accepts zero or negative amounts and its addition may overflow | Nicoll's validation review | Reported; requires team verification |
+| Stock changes may remain in memory when persistence fails | Nicoll's validation review | Reported; requires team verification |
+| Sale registration can fail after some inventory or warranty changes | Nicoll's validation review | Reported; requires team verification |
+| Persisted monetary values may include non-finite values | Nicoll's validation review | Reported; requires team verification |
+
+Source:
+https://github.com/iceledon/Gamezone-inova/pull/34
+
+These concerns are distinct from L-V01, which evaluates where
+the stock-increase calculation belongs.
+
+They must not be treated as confirmed GRASP violations merely
+because they affect the same methods.
+
+Introducing new input restrictions or changing failure recovery
+may alter visible behavior. Such corrections require an explicit
+scope decision and must not be included silently in a
+behavior-preserving GRASP refactor.
+
+This section records another contributor's reported concerns;
+it does not claim that Isabel executed tests confirming them.
 
 ## Peer review
 
