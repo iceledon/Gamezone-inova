@@ -384,12 +384,12 @@ declaration that the complete individual audit has been approved.
 | Information Expert | Sale calculations and ProductService.restoreStock | L-V01 confirmed by Jaime; sale calculations assessed separately | Assign consolidated ID and confirm the complete responsibility split |
 | Creator | SaleService.registerSale and SaleRepository.fromLine | Correct for the reviewed Sale creation paths | Complete the assessment of other creation responsibilities |
 | Controller | ConsoleUI-to-SaleService sale flow and Main's startup role | Sale coordination described; final scope verdict pending | Review the remaining operation boundaries |
-| Low Coupling | SaleRepository dependencies, Main assembly and service collaborators | Correct observations in persistence; broader assessment pending | Resolve the concrete catalog and service dependency observations |
-| High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 proposed as a violation | Author review and peer validation of L-V02 |responsibilities | Correct observations in persistence/startup; L-V02 remains a candidate | Confirm or reject L-V02 with justification |
-| Polymorphism | Promotion.calculateDiscount and product descriptions | Correct for reviewed polymorphic calls | Assess console-specific warranty decisions |
+| Low Coupling | Persistence boundaries, service coordination and Main assembly | Correct for the reviewed boundaries, with documented limitations | Peer validation |
+| High Cohesion | SaleRepository, Main and ConsoleUI responsibilities | Correct observations in persistence/startup; L-V02 proposed as a violation | Author review and peer validation of L-V02 |
+| Polymorphism | Promotion formulas, product descriptions and console-specific warranty interaction | Correct for the reviewed responsibilities | Peer validation |
 | Pure Fabrication | SaleRepository file access and record conversion | Correct for the reviewed persistence separation | Confirm coverage of other relevant technical responsibilities |
 | Indirection | ConsoleUI -> SaleService -> SaleRepository | Correct for the reviewed sale-operation path | Complete the remaining relevant collaborations |
-| Protected Variations | Promotion calculation through Promotion | Protection observed for discount formulas | Assess catalog and warranty variation points |
+| Protected Variations | Promotion formula abstraction and separation of sales file details | Correct for the reviewed variation points | Peer validation |
 
 Peer confirmation of a specific finding does not constitute approval
 of all assessments in this report.
@@ -554,22 +554,28 @@ Evidence:
 
 Source:
 https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/persistence/SaleRepository.java
+### Assessment of the reviewed service dependencies
 
-### Dependencies requiring further discussion
+Verdict: correct for the reviewed dependency boundaries.
 
-SaleService depends on concrete services for products, people,
-promotions, accessories and warranties.
+SaleService needs collaborators for people, inventory, promotions,
+warranties and persistence to coordinate the existing sale operation.
 
-Its findItemById and updateStockOf methods explicitly coordinate
-the product and accessory catalogs.
+The product/accessory fallback explicitly reflects the two existing
+catalogs. This creates coupling to that organization, but the reviewed
+evidence does not establish that this dependency is unnecessary.
 
-ConsoleUI also knows several concrete service and model types.
+No additional violation is assigned solely because the collaborators
+are concrete classes. A proposed abstraction must identify the change
+it protects and demonstrate a benefit beyond adding another interface.
 
-The number of dependencies alone does not prove a violation.
-The team must assess which dependencies are necessary and whether
-a foreseeable change propagates unnecessarily across classes.
+Main concentrates component construction, while ConsoleUI invokes
+services rather than accessing repositories directly.
 
-No definitive violation ID is assigned to these observations yet.
+These conclusions accept the reviewed dependencies with their stated
+limitations. They do not establish compliance with every SOLID principle.
+
+Peer validation remains pending.
 
 ## 5. High Cohesion
 
@@ -687,20 +693,27 @@ Sources:
 
 - https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
 - https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/ui/ConsoleUI.java
+### Console-specific warranty behavior
 
-### Type-dependent behavior requiring discussion
+Verdict: correct for the reviewed polymorphic delegation and
+the existing console-specific warranty requirement.
 
-SaleService.registerSale explicitly checks whether a product is
-a Console before assigning warranties.
+Promotion formulas are delegated through Promotion.calculateDiscount.
+Product descriptions are obtained through polymorphic model methods.
 
-This is a concrete point for evaluating type-dependent behavior.
-The presence of instanceof alone does not establish a violation.
+SaleService identifies consoles before assigning their warranties.
+ConsoleUI identifies consoles when collecting the optional extended
+warranty choice.
 
-The team must determine whether this is necessary coordination
-under the existing requirements or behavior that should be
-assigned to a stable abstraction.
+These checks correspond to an existing operation restricted to consoles.
+Their presence alone does not demonstrate a missing polymorphic
+responsibility.
 
-No definitive violation ID is assigned to this observation yet.
+No additional violation is confirmed without showing how moving
+the decision would improve responsibility assignment while preserving
+the required interaction and behavior.
+
+Peer validation remains pending.
 
 ## 7. Pure Fabrication
 
@@ -739,8 +752,8 @@ must support that separation.
 ### Separation between console interaction and persistence
 
 Assessment: correct for the reviewed sale-operation path.
-The final verdict for the complete scope remains pending.
-
+The assessment below includes the reviewed console-specific
+warranty decisions. Peer validation remains pending.
 ConsoleUI invokes SaleService instead of accessing SaleRepository
 or the sales file directly.
 
@@ -794,20 +807,28 @@ Source:
 
 - https://github.com/iceledon/Gamezone-inova/blob/701255d4209e070146c32ee5a663b08d3b4b0bb4/src/main/java/com/gamezone/service/SaleService.java
 
-### Limits of the observed protection
+### Scope and limits of protection
 
-This does not establish that adding a promotion type requires
-no changes anywhere in the system. Registration and persistence
-may still require adaptations.
+Verdict: correct for the reviewed protection of discount formulas
+and separation of file-access details from console interaction.
 
-SaleService explicitly coordinates product and accessory catalogs
-and identifies consoles when assigning warranties.
+Promotion.calculateDiscount allows formulas to vary behind the
+Promotion abstraction.
 
-The team must assess how foreseeable catalog or warranty changes
-would affect those responsibilities before assigning the final
-Protected Variations verdict.
+SaleRepository concentrates the sales file representation.
+ConsoleUI does not need to know its path or record delimiters.
 
-No definitive violation ID is assigned to these observations yet.
+This does not mean that adding a promotion type or changing storage
+requires no changes anywhere. Registration, construction and persistence
+may still need adaptations.
+
+No additional violation is confirmed merely because the application
+does not anticipate every possible future extension.
+
+Any later finding must identify a concrete variation point,
+its affected responsibilities and the proposed stable boundary.
+
+Peer validation remains pending.
 
 ## Boundary reports
 
