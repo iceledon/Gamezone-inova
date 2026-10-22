@@ -42,6 +42,8 @@ Classes and methods audited, organized by module and requirement (section 4 of R
 | Exceptions and validations (Req. 6) | `ProductValidator` | `validateProductData`, `validateStockAvailability`, `validateProductExists`, `requireText` |
 | Exceptions and validations (Req. 6) | `PersonValidator` | `validatePersonData`, `validatePersonExists`, `validateUniquePerson`, `hasValidEmailFormat`, `requireText` |
 | Exceptions and validations (Req. 6) | `SaleValidator` | `validateSaleData`, `validateSaleExists` (`validateSaleProducts` was added by Developer 2 in PR #33 and is assessed by Developer 2) |
+| Promotions (Req. 2) | `ConsoleUI` (only these members) | `showPromotionMenu`, `registerPercentageDiscount`, `registerCategoryDiscount`, `registerBulkPurchaseDiscount`, `listAllPromotions`, `listActivePromotions`, `printPromotions`, `describePromotion` (added by Developer 1, commit `699d881`) |
+| Accessories (Req. 1) | `ConsoleUI` (only these members) | `showAccessoryMenu`, `registerController`, `registerCable`, `registerMemory`, `listAllAccessories`, `listAccessoriesByType`, `listCompatibleAccessories`, `printAccessories` (added by Developer 1, commit `ba82b93`) |
 
 How the other services use these exceptions and validators is assessed by their owners
 (`docs/grasp-audit/developer2-audit.md`, section 10, and `docs/grasp-audit/leader-audit.md`).
@@ -54,7 +56,7 @@ How the other services use these exceptions and validators is assessed by their 
 | 2 | Creator | correct | - |
 | 3 | Controller | correct | - |
 | 4 | Low Coupling | correct | - (the coupling problem in `Return` is registered once, as V-01) |
-| 5 | High Cohesion | correct | - |
+| 5 | High Cohesion | correct | - (my `ConsoleUI` submenus are part of L-V02, see section 12) |
 | 6 | Polymorphism | violation | V-02 |
 | 7 | Pure Fabrication | correct | - |
 | 8 | Indirection | correct | - |
@@ -159,6 +161,7 @@ My code does not receive events from the user directly; `ConsoleUI` (Technical L
 - Each validator has only the rules of one entity (`ProductValidator` for products, `PersonValidator` for people, `SaleValidator` for sales), and each exception class represents one category of error (invalid data, resource not found, business rule, persistence).
 - Noted, not a GRASP violation: the private method `requireText` is the same in `ProductValidator` (lines 64-68) and `PersonValidator` (lines 71-75). It is a small duplication of code, not a responsibility in the wrong class. Also, `ProductService` checks duplicate ids in its own `rejectIfIdExists` (lines 115-121), while `PersonService` uses `PersonValidator.validateUniquePerson`. Both work, but the style is not the same.
 - `Return.generateReturnReceipt()`, `Warranty.generateWarrantyCertificate()` and `Sale.generateReceipt()` build a text in the model. This was considered: the text only uses the object's own data and the requirements asked for these methods in these classes (for `Sale.generateReceipt()`, see `docs/promotion-analysis.md`, section 4), so they stay with their information expert. The console only prints the returned text (`ConsoleUI` line 436 for the sale receipt). If the system needed other output formats (for example, a PDF receipt), this would become a cohesion issue and the formatting could move to a separate class; that change is not in the current requirements.
+- My promotion and accessory submenus in `ConsoleUI` only collect input, call `PromotionService` or `AccessoryService` and print the result. Each method is focused, but they share one class with the submenus of five other modules. This is the Technical Leader's finding L-V02, so it is not registered again here (see section 12).
 
 ## 8. Polymorphism
 
@@ -243,7 +246,7 @@ Problems found during this audit whose origin is in another member's code (not a
 | `Sale.canBeReturned` | Developer 2 (git history) / Developer 1 (PDF table) | The PDF assigns this method to Developer 1, but commit `45c8cf2` ("feat(model): add canBeReturned method to Sale") is by Developer 2. Audited here (V-03) as the PDF says; please confirm the owner of the correction. |
 | `ProductService.restoreStock` (lines 179-185) | Technical Leader | Information Expert: it does `product.setQuantity(product.getQuantity() + amount)` instead of asking `Product` to increase its own stock (the opposite of `Product.decreaseStock`). Same finding as L-V01 in `leader-audit.md`: see "Boundary finding L-V01" below. |
 | `AccessoryService.restoreStock` (lines 170-174) | Developer 2 (commit `b9e12fb`) | Same problem as above (line 172: `accessory.setQuantity(accessory.getQuantity() + amount)`). Proposed to be part of the same consolidated finding as L-V01. |
-| `SaleService.registerSale` (line 143), `ReturnService.registerReturn` (lines 81 and 90), `ConsoleUI.registerSale` (line 337) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. |
+| `SaleService.registerSale` (line 143), `ReturnService.registerReturn` (lines 81 and 90), `ConsoleUI.registerSale` (line 337) | Technical Leader / Developer 2 | Polymorphism: `instanceof Console` / `instanceof Accessory` checks on products. If V-02 adds `Product.getCategory()`, these places could use it; the decision is theirs. Status: the Technical Leader assessed the console checks as correct (`leader-audit.md`, section 6, "Console-specific warranty behavior"). `ReturnService` is assessed by Developer 2. |
 | `PromotionService.isValidTargetCategory` (lines 160-163) | Developer 2 | Repeats the category strings `"VIDEOGAME"`, `"CONSOLE"`, `"ACCESSORY"`. Related to V-02. |
 | `Return` (`warrantyRefund` field, constructor parameter and receipt line) | Developer 2 (git history) | Added by Developer 2 in the warranty-refund integration; the JavaDoc of `Return` is in Spanish, which goes against the "comments in English" rule. Not a GRASP issue; noted for the Phase 2 change in `Return`. |
 | `SaleValidator.validateSaleProducts` (lines 21-41) | Developer 2 (PR #33) | The JavaDoc is in Spanish and there is no blank line before `validateSaleData`. Not a GRASP issue; noted so the style can be fixed if the class is changed in Phase 2. |
@@ -275,3 +278,21 @@ Status: one consolidated finding and the Phase 2 order (`Product.increaseStock` 
 `restoreStock`) confirmed by Developer 1 and the Technical Leader in PR #31. The inclusion of
 `AccessoryService.restoreStock` is pending review by Developer 2 before it enters the final
 scope.
+
+### Boundary finding L-V02 (Technical Leader, Developer 1 and Developer 2)
+
+The Technical Leader proposed L-V02 (High Cohesion) in `docs/grasp-audit/leader-audit.md` for
+`ConsoleUI`. Developer 1 confirms it:
+
+- `ConsoleUI` (1039 lines at the reference commit) holds the submenus of seven modules. The git
+  history shows they changed for independent reasons: each submenu was added in its own commit,
+  by different members and for different requirements (for example, `699d881` promotions and
+  `ba82b93` accessories, both by Developer 1).
+- **Developer 1's part:** the promotion and accessory submenus listed in section 1. If they move
+  to focused UI classes in Phase 2, Developer 1 reviews that change.
+- **Proposed condition for the solution:** `ask`, `askInt`, `askDouble`, `askDate` and
+  `showError` are used by every submenu. The new UI classes should share them (for example,
+  through one common input helper) instead of copying them.
+- The definitive ID is assigned in the consolidated audit.
+
+Status: confirmed by Developer 1; pending the Technical Leader's answer and Developer 2's review.
