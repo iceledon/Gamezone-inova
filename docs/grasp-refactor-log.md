@@ -94,3 +94,13 @@ data. Evidence: evidence/r7/replay-five-menus; verify-five-menus.ps1.
 V-08 remains partial until PromotionMenu/AccessoryMenu are integrated and
 remaining wrappers removed. Final integration review is still required.
 Implementation commit: 47096fa. Independent PR review pending.
+
+## 2026-10-23 - integration preparation (not final validation)
+
+Prepared verify-integration.ps1 to compile baseline/current code and compare
+all recorded scenarios, including special probes, with isolated data copies.
+PowerShell syntax parsing succeeds; the new combined runner has not executed.
+README documents current architecture, evidence links and pending integration.
+Maven is not available through Get-Command mvn on this workstation. No Maven
+build or final integrated acceptance is claimed. Remaining collaborators from
+Jaime and final after-diagram/review are still pending.
