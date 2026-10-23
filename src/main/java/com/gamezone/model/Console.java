@@ -33,6 +33,11 @@ public class Console extends Product {
         return getTitle() + " - Brand: " + brand + ", Model: " + model + ", Generation: " + generation;
     }
 
+    @Override
+    public String getCategory() {
+        return "CONSOLE";
+    }
+
     /**
      * @return the manufacturer of the console
      */
