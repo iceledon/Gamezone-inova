@@ -296,3 +296,118 @@ The Technical Leader proposed L-V02 (High Cohesion) in `docs/grasp-audit/leader-
 - The definitive ID is assigned in the consolidated audit.
 
 Status: confirmed by Developer 1; pending the Technical Leader's answer and Developer 2's review.
+
+## 13. Owner decisions for the consolidated audit
+
+Source: `docs/grasp-audit/consolidated-audit.md` (commit `f996c30`), sections 4, 5, 6 and 10.
+These are Developer 1's individual decisions. They are not an approval of the whole
+consolidation; that approval is given in the PR review.
+
+### Identifier mapping
+
+The local IDs of this report stay as they are. They map to the consolidated IDs like this:
+
+| This report | Consolidated ID | Pattern |
+|---|---|---|
+| Boundary finding L-V01 | V-01 | Information Expert |
+| V-01 (`Return.discountRatio`) | V-02 | Information Expert |
+| V-02 (`CategoryDiscount.matchesTargetCategory`) | V-03 | Polymorphism |
+| V-03 (`Sale.canBeReturned`) | V-04 | Protected Variations |
+| Boundary finding L-V02 | V-08 | High Cohesion |
+
+### V-01: stock increase (producer)
+
+I confirm that I am the producer. Contract:
+
+```java
+// Product
+public void increaseStock(int amount) {
+    this.quantity = this.quantity + amount;
+}
+```
+
+- Same style as `decreaseStock(int)`: only adds, no validation, no message, no exception.
+- `Accessory` extends `Product`, so `Controller`, `Cable` and `Memory` inherit it.
+  `AccessoryService.restoreStock` can call it without a cast.
+- Consumers: `ProductService.restoreStock` (Technical Leader) and
+  `AccessoryService.restoreStock` (Developer 2, confirmed in `developer2-audit.md` section 11).
+  They keep the lookup and the call to the repository.
+
+### V-02: sale discount ratio (consumer)
+
+I confirm that I am the consumer and the order: first the Technical Leader adds
+`Sale.calculateDiscountRatio()`, then I change `Return`.
+
+- Expected contract: `public double calculateDiscountRatio()` in `Sale`, with exactly the current
+  code of `Return.discountRatio()`: `subtotal <= 0` returns `0.0`; otherwise
+  `discountAmount / subtotal`.
+- My change: `calculateRefundAmount()` and `generateReturnReceipt()` call
+  `originalSale.calculateDiscountRatio()`, and the private `Return.discountRatio()` is removed.
+  Refund amounts and the receipt text do not change.
+
+### V-03: product category (owner)
+
+I confirm that I am the owner. Contract:
+
+```java
+// Product
+public abstract String getCategory();
+// VideoGame -> "VIDEOGAME", Console -> "CONSOLE", Accessory -> "ACCESSORY"
+```
+
+- `Controller`, `Cable` and `Memory` inherit `"ACCESSORY"` from `Accessory`.
+- `matchesTargetCategory` becomes `product.getCategory().equals(targetCategory)`.
+  This order keeps the current behavior when `targetCategory` is `null` (result `false`, no
+  exception). The comparison stays case-sensitive, and an unsupported category still gives
+  `false`. This corrects the expression in V-02 "Proposed solution" above
+  (`targetCategory.equals(...)`), which would throw an exception with a `null` target.
+- No change to the CSV formats, to `ProductRepository` or to the `instanceof Console` warranty
+  checks (assessed as correct in `leader-audit.md`, section 6).
+
+### V-04: return-date evaluation
+
+I agree that Developer 2 owns this correction, as she confirmed in `developer2-audit.md`
+section 11, with review by the Technical Leader because `Sale` is her class. This closes the
+ownership question in the first row of section 12. I am not responsible for this change.
+
+### V-06: accessory subtype (producer)
+
+Developer 2 accepted V-06, so I confirm that I am the producer. Contract:
+
+```java
+// Accessory
+public abstract String getAccessoryType();
+// Controller -> "CONTROLLER", Cable -> "CABLE", Memory -> "MEMORY"
+```
+
+- It is a different method from `getCategory()`: a `Cable` has category `"ACCESSORY"` and
+  accessory type `"CABLE"`. The two concepts are not mixed in one method.
+- `AccessoryService.typeOf` can return `accessory.getAccessoryType()`. The labels and the
+  case-insensitive filter stay the same.
+- Because the method is abstract, every concrete accessory must implement it, so the compiler
+  checks new subtypes. The current `IllegalArgumentException` branch is no longer reachable for
+  the existing subtypes; Developer 2 decides if she keeps it.
+
+### V-08: console interaction (my part)
+
+I confirm the finding and propose this method list for my part. All of it was added in my commits
+(`699d881` promotions, `ba82b93` accessories). The lines from the Technical Leader inside these
+methods (`try`/`switch` with `showError`, commits `201a74b0` and `1ad8b488`) are kept as they are.
+
+| Proposed class | Methods moved from `ConsoleUI` |
+|---|---|
+| Promotion menu | `showPromotionMenu`, `registerPercentageDiscount`, `registerCategoryDiscount`, `registerBulkPurchaseDiscount`, `listAllPromotions`, `listActivePromotions`, `printPromotions`, `describePromotion` |
+| Accessory menu | `showAccessoryMenu`, `registerController`, `registerCable`, `registerMemory`, `listAllAccessories`, `listAccessoriesByType`, `listCompatibleAccessories`, `printAccessories` |
+
+- The product submenu (`showProductMenu`, `registerVideoGame`, `registerConsole`,
+  `listProducts`) is mostly the Technical Leader's code; I do not claim it.
+- I use the shared input and error helper that the Technical Leader defines (`ask`, `askInt`,
+  `askDouble`, `askDate`, `showError` and one shared `Scanner`). I do not copy those methods.
+- Prompts, options, navigation, output order and the current behavior with the optional-module
+  constructors stay the same (my two submenus have no `null` check today, and none is added). `ConsoleUI` keeps the main menu and calls the new classes.
+- I start my extraction only after the helper exists in `feature/grasp-refactor`.
+
+### Decision status
+
+These decisions replace the earlier "pending" statuses in section 12 and in the boundary
+findings L-V01 and L-V02. No Java code is changed in this documentation update.
