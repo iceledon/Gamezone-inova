@@ -99,3 +99,27 @@ The ten operations were executed in the order defined by the workshop, feeding t
 file. The sale discounted exactly one unit of each product sold (5→4 and 3→2), and a second run
 confirmed that products, customers, sellers and the sale history were rebuilt correctly from
 `data/`. No defect was found in this round, so no fix commit was needed.
+
+
+## Requirement 7 — Phase 1: Audit
+
+### Entry: audit preparation and assisted drafting
+
+- Dates: 2026-10-17 to 2026-10-20.
+- Tool: ChatGPT.
+- Branch: feature/grasp-audit.
+- Goal: organize the technical lead's audit and understand the
+  responsibilities of the reviewed classes.
+- Assistance received: repository inspection, Git commands,
+  authorship checks, explanations of GRASP concepts, descriptive
+  observations and proposed English assessment paragraphs.
+- Material incorporated: scope and ownership notes, class
+  responsibility descriptions and partial pattern assessments.
+- Decision: the proposed text was incorporated as a working draft.
+  Final scope-wide verdicts, boundary decisions and peer review
+  remain pending.
+- Limitation: this was substantive drafting assistance, not only
+  navigation or command explanation. The team must check its
+  compatibility with the assignment's AI-use rules.
+- Related commits: 4b7beb3, 56651dc, 5275071, d9d1ee0,
+  02d6e4b and 87b5447.
