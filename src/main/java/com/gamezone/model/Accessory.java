@@ -23,6 +23,11 @@ public abstract class Accessory extends Product {
         this.compatibleConsoleIds = new ArrayList<>();
     }
 
+    @Override
+    public String getCategory() {
+        return "ACCESSORY";
+    }
+
     /**
      * @return the ids of the consoles this accessory is compatible with
      */

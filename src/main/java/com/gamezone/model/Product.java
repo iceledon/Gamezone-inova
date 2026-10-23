@@ -88,6 +88,11 @@ public abstract class Product {
     public abstract String getDescription();
 
     /**
+     * @return the category label of the product, used by category promotions
+     */
+    public abstract String getCategory();
+
+    /**
      * Subtracts the given amount from the available quantity.
      * Stock validation is the responsibility of the service layer, not this class.
      *
