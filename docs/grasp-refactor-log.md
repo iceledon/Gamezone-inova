@@ -104,3 +104,40 @@ README documents current architecture, evidence links and pending integration.
 Maven is not available through Get-Command mvn on this workstation. No Maven
 build or final integrated acceptance is claimed. Remaining collaborators from
 Jaime and final after-diagram/review are still pending.
+
+## 2026-10-23 - Developer 1 corrections (V-01, V-02, V-03, V-06, V-08)
+
+Implementer: Jaime Granados, with AI coding assistance (recorded in
+developer1-ai-log.md). Contracts: developer1-audit.md, section 13.
+
+| Class | Change | Violation ID | Pattern applied | Commit | PR / Responsible |
+|---|---|---|---|---|---|
+| Product | Added increaseStock(int): adds the amount to quantity, without validation (same style as decreaseStock) | V-01 | Information Expert | 2460560 | PR pending / Jaime |
+| Product, VideoGame, Console, Accessory | Added abstract getCategory(); each type returns VIDEOGAME, CONSOLE or ACCESSORY | V-03 | Polymorphism | ab79954 | PR pending / Jaime |
+| CategoryDiscount | matchesTargetCategory asks the product for its category instead of instanceof checks | V-03 | Polymorphism | ab79954 | PR pending / Jaime |
+| Accessory, Controller, Cable, Memory | Added abstract getAccessoryType(); each subtype returns CONTROLLER, CABLE or MEMORY | V-06 | Polymorphism | b0fd09e | PR pending / Jaime |
+| PromotionMenu (new) | Promotion submenu moved from ConsoleUI; uses the shared ConsoleSupport | V-08 | High Cohesion | 991faab | PR pending / Jaime |
+| AccessoryMenu (new) | Accessory submenu moved from ConsoleUI; uses the shared ConsoleSupport | V-08 | High Cohesion | 991faab | PR pending / Jaime |
+| Return | calculateRefundAmount and generateReturnReceipt use Sale.calculateDiscountRatio(); private discountRatio() removed | V-02 | Information Expert | 19e6326 | PR pending / Jaime |
+
+Behavior notes:
+
+- getCategory is compared as product.getCategory().equals(targetCategory), so a
+  null or unsupported target still gives false, and the match stays case-sensitive.
+- getCategory and getAccessoryType are separate methods: a Cable has category
+  ACCESSORY and accessory type CABLE.
+- The menus keep every prompt, option, output and catch block. Navigation reads
+  the option with support.ask("") after the same printed prompt, as the V-08
+  contract allows. ConsoleUI was not edited; Isabel integrates the two menus.
+- V-01 and V-06 consumers (restoreStock, typeOf) were changed in Isabel's
+  delivery e2aa8e7; V-02 producer Sale.calculateDiscountRatio is also in e2aa8e7.
+
+Validation: javac (Java 17) compiles the whole project. The 13 recorded baseline
+scenarios (seven menu scripts and E01/E02/E03/E04/E10/E11) were replayed at
+5af8633 with isolated copies of their input data. Exit codes are zero, resulting
+data match the baseline in all scenarios and stdout matches, except the encoding
+of the accented letter in "Garantia reembolsada" in the returns script, which
+depends on the console capture method, not on the code. PromotionMenu and
+AccessoryMenu were also checked wired into a temporary copy of ConsoleUI
+(promotions, accessories, E03, E11, sales): identical stdout and data.
+Maven was not run on this workstation.
