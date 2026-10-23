@@ -72,9 +72,7 @@ It does not certify complete method-level assessment or peer approval.
 - ProductService.restoreStock belongs to Isabel's reviewed contribution.
 - Nicoll's typed-validation and exception integration must be distinguished
   from the original implementation of shared classes.
-- Sale.canBeReturned has an ownership discrepancy documented in
-  Jaime's report. Its primary assessment responsibility must be
-  resolved explicitly before closing coverage.
+- Sale.canBeReturned ownership is resolved: Nicoll owns V-04; Isabel reviews the Sale integration. See developer2-audit section 11 and developer1-audit section 13.
 
 ### Reference reconciliation
 
@@ -115,8 +113,8 @@ finding must not be presented as approval of the complete consolidation.
 | Creator | correct | SaleService and repositories have initialization data; see the three individual reports |
 | Controller | correct | UI interaction delegates application operations to services; leader section 3 and developer reports |
 | Low Coupling | violation | V-05 ReturnRepository depends on services |
-| High Cohesion | violation | V-08 ConsoleUI, confirmed by Jaime; V-07 reporting extraction remains a candidate |
-| Polymorphism | violation | V-03 category matching; V-06 accessory type classification remains a candidate |
+| High Cohesion | violation | V-08 ConsoleUI, confirmed by Jaime; V-07 reporting extraction accepted by Nicoll |
+| Polymorphism | violation | V-03 category matching; V-06 accessory type classification accepted by Nicoll; producer confirmed by Jaime |
 | Pure Fabrication | correct | Dedicated repositories and validators; this does not negate V-05's dependency problem |
 | Indirection | violation | Same boundary problem as V-05; related pattern, not an additional finding |
 | Protected Variations | violation | V-04 return-policy/date dependency; related effects of V-03 and V-06 are not counted again |
@@ -131,7 +129,7 @@ that an unconfirmed candidate has been accepted.
 | V-01 | Isabel L-V01; Jaime section 12 / Boundary finding L-V01 | Product/ProductService split confirmed by Jaime and Isabel; Nicoll confirms the accessory consumer in section 11 |
 | V-02 | Jaime V-01: Return.discountRatio | Reported with evidence; proposed assignment below needs peer review |
 | V-03 | Jaime V-02: CategoryDiscount.matchesTargetCategory | Reported with evidence; proposed correction needs peer review |
-| V-04 | Jaime V-03: Sale.canBeReturned | Reported with evidence; ownership resolved below as a proposed coordination decision |
+| V-04 | Jaime V-03: Sale.canBeReturned | Reported with evidence; ownership confirmed by Nicoll section 11 and Jaime section 13; Isabel reviews Sale integration |
 | V-05 | Nicoll V-02: ReturnRepository service dependency | Evidence checked in the common baseline; Nicoll accepts ownership and solution direction; integration contract review pending |
 | V-06 | Nicoll candidate V-01: AccessoryService.typeOf | Accepted by Nicoll in section 11; producer contract with Jaime and team approval pending |
 | V-07 | Nicoll candidate V-03: monthly reporting in ReturnService | Accepted by Nicoll in section 11; team approval pending |
@@ -259,6 +257,70 @@ approved with the consolidated audit before source changes begin.
   integrate navigation only when those classes are available.
 - Jaime confirms the concern. Nicoll identifies her functional contributions to registerSale and findAnyItemById and formatting contributions to sales listings; she does not claim the people/return/warranty submenus. Exact extraction boundaries still require coordination.
 
+### V-08 shared helper contract and extraction allocation
+
+Lead decision proposed for review on 2026-10-23. This defines the planned API;
+it does not claim that the helper is already implemented or approved by peers.
+
+Package: com.gamezone.ui. Isabel provides public final class ConsoleSupport
+before any menu consumer is extracted. Its public contract is:
+
+```java
+public ConsoleSupport(Scanner scanner);
+public String ask(String prompt);
+public int askInt(String prompt);
+public double askDouble(String prompt);
+public LocalDate askDate(String prompt);
+public void showError(RuntimeException error);
+```
+
+- ConsoleUI creates exactly one Scanner(System.in) and one ConsoleSupport.
+  All module-menu instances receive that same ConsoleSupport object.
+- ConsoleSupport stores the injected Scanner in a private final field. It does
+  not create another scanner and does not close the scanner or System.in.
+- Move the five existing helper bodies without changing prompts, trim behavior,
+  parsing, finite-number validation, exception mapping, output or read count.
+- Navigation reads must preserve their original trimming and EOF behavior.
+  ConsoleUI may retain the shared Scanner reference where needed for an exact
+  move; consumers must not silently replace nextLine with ask if that changes it.
+- Menu classes keep their current System.out output and catch boundaries; the
+  helper only centralizes the existing input and error responsibilities.
+- Existing ConsoleUI constructor overloads and optional-service behavior remain.
+  Do not add null guards, retries, defaults, validation or new exception handling.
+
+Proposed menu collaborators are ProductMenu, PersonMenu, SaleMenu, ReturnMenu,
+WarrantyMenu, PromotionMenu and AccessoryMenu in com.gamezone.ui. ConsoleUI keeps
+main navigation and delegates to their public show() entry points. Each menu
+receives ConsoleSupport and only the existing services required by its methods.
+Finalize each constructor signature before implementing its consumer.
+
+| Contributor | Extraction responsibility |
+|---|---|
+| Isabel | ConsoleSupport, main navigation, collaborator wiring; product, people, return and warranty UI extraction; sales menu integration and sales history/receipt presentation |
+| Jaime | PromotionMenu and AccessoryMenu using the exact method lists in developer1-audit section 13; preserve Isabel's existing catch/showError contributions |
+| Nicoll | Move registerSale() and findAnyItemById(String) together into SaleMenu, preserving her functional contributions; Isabel reviews the shared code and owns the surrounding sales collaborator integration |
+
+SaleMenu receives the same ConsoleSupport, SaleService, ProductService and
+nullable AccessoryService. registerSale and findAnyItemById remain private.
+Isabel supplies SaleMenu's navigation and its existing showAllSales,
+showSalesByCustomer, showSalesBySeller, printSales and printSale methods.
+Nicoll moves the two contributed methods only after this scaffold and the
+helper exist. Coordinate sequential commits to SaleMenu, rather than editing
+that file concurrently. Do not create two SaleMenu classes or copies of helpers.
+
+Preserve product-first lookup, the nullable accessory-service branch, the exact
+caught exception types and null fallback in findAnyItemById. Preserve item/input
+order, extended-warranty questions and saleService.registerSale invocation in
+registerSale. It calls the same private printSale presentation in SaleMenu.
+Sales-formatting contributions remain credited to Nicoll even when Isabel
+performs the mechanical extraction. This is an implementation allocation,
+not a reassignment of historical authorship or a change to business behavior.
+
+Order: Isabel helper/scaffolds; Jaime's independent menu extractions; Nicoll's
+two-method sales move; Isabel completes navigation integration. All deliveries
+must compile and preserve the baseline. Peer acceptance of this exact contract
+is still pending; Jaime's already-recorded V-08 confirmation remains recorded.
+
 ### Fixed-source evidence index
 
 All links below use the common audited commit. Detailed excerpts remain in the
@@ -280,8 +342,8 @@ individual source findings; the owning report must retain their precise context.
 |---|---|---|
 | 0 | Isabel with both reviewers | Approve audit scope, decisions, contracts and remaining owner confirmations |
 | 1 | Isabel | Create phase-two baseline and before diagram on feature/grasp-refactor; provide Sale.calculateDiscountRatio for V-02 |
-| 2 | Jaime | Product.increaseStock for V-01; category operation for V-03; Return delegation after V-02 producer; accessory subtype query only if V-06 accepted |
-| 3 | Nicoll | Accessory stock delegation if accepted; V-04/V-05 after acknowledgment; V-06/V-07 only if confirmed |
+| 2 | Jaime | Product.increaseStock for V-01; category operation for V-03; Return delegation after V-02 producer; accessory subtype query for accepted V-06 (producer confirmed in developer1 section 13) |
+| 3 | Nicoll | Confirmed accessory stock delegation for V-01; accepted V-04/V-05; accepted V-06/V-07 following their producer dependencies |
 | 4 | Isabel and module owners | ProductService.restoreStock delegation; Main integration; coordinated V-08 extraction |
 | 5 | All; Isabel coordinates | Full regression, after diagram, traceability log, documentation and reviewed release |
 
@@ -338,7 +400,8 @@ a javac check must not be misreported as a Maven build.
 - [x] Nicoll accepts V-06 and V-07 with justification (report section 11).
 - [x] Nicoll acknowledges V-04 ownership and the V-05 solution direction; exact integration signatures still require coordination.
 - [x] Nicoll confirms the accessory consumer of V-01 (report section 11).
-- [ ] UI contributors confirm V-08 method ownership and shared helper contract.
+- [x] Jaime confirms V-08 and his promotion/accessory method lists (developer1 section 13).
+- [ ] Jaime and Nicoll accept the exact shared helper contract and sales extraction allocation below.
 - [ ] Reviewers accept the definitive IDs, decisions and dependency order.
 - [ ] Relevant individual reports and grasp-analysis are aligned with the decisions.
 - [ ] Individual audit deliveries and consolidated delivery receive independent review.
