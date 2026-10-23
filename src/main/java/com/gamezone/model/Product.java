@@ -96,4 +96,14 @@ public abstract class Product {
     public void decreaseStock(int amount) {
         this.quantity = this.quantity - amount;
     }
+
+    /**
+     * Adds the given amount to the available quantity.
+     * Like decreaseStock, it does not validate the amount.
+     *
+     * @param amount units to add back to inventory
+     */
+    public void increaseStock(int amount) {
+        this.quantity = this.quantity + amount;
+    }
 }
