@@ -23,6 +23,7 @@ public class ReturnService {
     private final WarrantyService warrantyService;
 
     private final List<Return> returns;
+    private final MonthlyBalanceReport monthlyReport = new MonthlyBalanceReport();
 
     /**
      * @param repository repositorio para guardar las devoluciones
@@ -148,7 +149,8 @@ Return newReturn = new Return(
      * @return balance del mes
      */
     public double generateMonthlyBalance(int month, int year) {
-        return calculateMonthlySales(month, year) - calculateMonthlyReturns(month, year);
+        return monthlyReport.generateMonthlyBalance(
+                saleService.getAllSales(), returns, month, year);
     }
 
     /**
@@ -159,15 +161,7 @@ Return newReturn = new Return(
      * @return total vendido en el mes
      */
     public double calculateMonthlySales(int month, int year) {
-        double totalSales = 0.0;
-        List<Sale> allSales = saleService.getAllSales();
-        for (int i = 0; i < allSales.size(); i++) {
-            Sale s = allSales.get(i);
-            if (s.getDate().getMonthValue() == month && s.getDate().getYear() == year) {
-                totalSales = totalSales + s.calculateTotal();
-            }
-        }
-        return totalSales;
+        return monthlyReport.calculateMonthlySales(saleService.getAllSales(), month, year);
     }
 
     /**
@@ -178,13 +172,6 @@ Return newReturn = new Return(
      * @return total devuelto en el mes
      */
     public double calculateMonthlyReturns(int month, int year) {
-        double totalReturns = 0.0;
-        for (int i = 0; i < returns.size(); i++) {
-            Return r = returns.get(i);
-            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
-                totalReturns = totalReturns + r.getRefundAmount();
-            }
-        }
-        return totalReturns;
+        return monthlyReport.calculateMonthlyReturns(returns, month, year);
     }
 }

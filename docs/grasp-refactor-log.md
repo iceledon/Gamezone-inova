@@ -49,3 +49,17 @@ ReturnDateProbe verifies day 30/day 31, future dates and no-argument delegation.
 Maven and final complete integration replay remain pending.
 
 Commit and PR: pending publication and independent review.
+
+## 2026-10-23 - V-07 monthly reporting
+
+Implementer: Isabel (assuming Nicoll's implementation work), with AI assistance.
+MonthlyBalanceReport now owns monthly sales/refunds/net calculations using
+model lists. ReturnService retains all three existing public signatures and
+delegates with the current sales and returns, avoiding stale snapshots.
+Iteration order, arithmetic, date filtering and UI presentation are unchanged.
+
+Validation: javac --release 17 succeeds. A baseline/current script registers
+the original return then compares October and September 2026, October 2025
+and January 2027 reports (populated periods, different year and empty period).
+stdout and resulting data match exactly. Evidence: evidence/r7/replay-monthly-report.
+Maven/final integration review are pending. Commit and PR pending publication.
