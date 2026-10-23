@@ -1,0 +1,10 @@
+﻿2
+1
+R7CBASE
+Cliente referencia R7
+3001112233
+r7@example.com
+2
+3
+0
+8

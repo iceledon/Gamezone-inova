@@ -1,0 +1,2 @@
+stdout comparison: 0
+data comparison: 0

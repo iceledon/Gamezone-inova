@@ -1,0 +1,68 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Los datos ingresados no son validos: El campo numero debe contener un numero decimal valido.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Cantidad en stock: Los datos ingresados no son validos: El campo numero entero debe contener un numero entero valido.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: Codigo de la promocion: Nombre de la promocion: Fecha de inicio (aaaa-mm-dd): Los datos ingresados no son validos: El campo fecha debe contener una fecha valida en formato aaaa-mm-dd.
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.
