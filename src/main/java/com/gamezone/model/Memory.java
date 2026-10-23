@@ -29,6 +29,11 @@ public class Memory extends Accessory {
         return getTitle() + " - Capacity: " + capacityGb + "GB, Type: " + memoryType;
     }
 
+    @Override
+    public String getAccessoryType() {
+        return "MEMORY";
+    }
+
     /**
      * @return the storage capacity, in gigabytes
      */

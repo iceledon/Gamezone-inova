@@ -29,6 +29,11 @@ public class Cable extends Accessory {
         return getTitle() + " - Length: " + lengthMeters + "m, Connector: " + connectorType;
     }
 
+    @Override
+    public String getAccessoryType() {
+        return "CABLE";
+    }
+
     /**
      * @return the length of the cable, in meters
      */

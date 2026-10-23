@@ -29,6 +29,11 @@ public abstract class Accessory extends Product {
     }
 
     /**
+     * @return the subtype label of the accessory (CONTROLLER, CABLE or MEMORY)
+     */
+    public abstract String getAccessoryType();
+
+    /**
      * @return the ids of the consoles this accessory is compatible with
      */
     public List<String> getCompatibleConsoleIds() {
