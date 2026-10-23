@@ -1,0 +1,59 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Identificacion: Nombre completo: Telefono: Correo electronico: No se puede completar la operacion: Ya existe una persona con el identificador C001.
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del cliente: Identificacion del vendedor: Cantidad de items a vender (productos o accesorios): No se puede completar la operacion: La venta debe contener al menos un producto.
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.
