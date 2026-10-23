@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-import com.gamezone.exceptions.BusinessRuleException;
-import com.gamezone.exceptions.InvalidDataException;
-import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.BulkPurchaseDiscount;
@@ -47,6 +44,7 @@ public class ConsoleUI {
     private final PromotionService promotionService;
     private final AccessoryService accessoryService;
     private final Scanner scanner;
+    private final ConsoleSupport support;
 
     /**
      * Crea la interfaz de consola con los servicios a los que delega.
@@ -70,6 +68,7 @@ public class ConsoleUI {
         this.promotionService = promotionService;
         this.accessoryService = accessoryService;
         this.scanner = new Scanner(System.in);
+        this.support = new ConsoleSupport(scanner);
     }
 
     /**
@@ -443,8 +442,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
      * @return what the user typed, without leading or trailing spaces
      */
     private String ask(String prompt) {
-        System.out.print(prompt);
-        return scanner.nextLine().trim();
+        return support.ask(prompt);
     }
 
     /**
@@ -455,13 +453,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
      * @throws InvalidDataException if the input is not a valid integer
      */
     private int askInt(String prompt) {
-        String value = ask(prompt);
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            throw new InvalidDataException("numero entero",
-                    "debe contener un numero entero valido");
-        }
+        return support.askInt(prompt);
     }
 
     /**
@@ -472,18 +464,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
      * @throws InvalidDataException if the input is not a finite number
      */
     private double askDouble(String prompt) {
-        String value = ask(prompt);
-        try {
-            double number = Double.parseDouble(value);
-            if (!Double.isFinite(number)) {
-                throw new InvalidDataException("numero",
-                        "debe contener un numero decimal finito");
-            }
-            return number;
-        } catch (NumberFormatException e) {
-            throw new InvalidDataException("numero",
-                    "debe contener un numero decimal valido");
-        }
+        return support.askDouble(prompt);
     }
 
     /**
@@ -494,13 +475,7 @@ private void printSales(List<Sale> sales, String emptyMessage) {
      * @throws InvalidDataException if the input is not a valid ISO date
      */
     private LocalDate askDate(String prompt) {
-        String value = ask(prompt);
-        try {
-            return LocalDate.parse(value);
-        } catch (java.time.format.DateTimeParseException e) {
-            throw new InvalidDataException("fecha",
-                    "debe contener una fecha valida en formato aaaa-mm-dd");
-        }
+        return support.askDate(prompt);
     }
 
     /**
@@ -980,60 +955,6 @@ private void printSales(List<Sale> sales, String emptyMessage) {
      * @param error the failure raised by an operation
      */
     private void showError(RuntimeException error) {
-        try {
-            throw error;
-
-        } catch (ResourceNotFoundException e) {
-            System.out.println(
-                    "No se encontro el recurso solicitado: " + e.getMessage()
-            );
-
-        } catch (BusinessRuleException e) {
-            System.out.println(
-                    "No se puede completar la operacion: " + e.getMessage()
-            );
-
-        } catch (InvalidDataException e) {
-            System.out.println(
-                    "Los datos ingresados no son validos: " + e.getMessage()
-            );
-
-        } catch (PersistenceException e) {
-            System.out.println(
-                    "Ocurrio un problema al acceder a los datos del sistema. "
-                    + "Contacte al administrador."
-            );
-
-        } catch (NumberFormatException e) {
-            System.out.println(
-                    "Los datos ingresados no son validos: "
-                    + "se esperaba un valor numerico."
-            );
-
-        } catch (java.time.format.DateTimeParseException e) {
-            System.out.println(
-                    "Los datos ingresados no son validos: "
-                    + "se esperaba una fecha en formato aaaa-mm-dd."
-            );
-
-        } catch (NoSuchElementException e) {
-            System.out.println(
-                    "No se encontro el recurso solicitado. "
-                    + "Revise el identificador ingresado."
-            );
-
-        } catch (IllegalArgumentException e) {
-            // Supports existing modules that still use legacy exceptions.
-            System.out.println(
-                    "No se puede completar la operacion. "
-                    + "Revise los datos y las reglas del modulo."
-            );
-
-        } catch (RuntimeException e) {
-            System.out.println(
-                    "Ocurrio un error inesperado. "
-                    + "Intente nuevamente o contacte al administrador."
-            );
-        }
+        support.showError(error);
     }
 }

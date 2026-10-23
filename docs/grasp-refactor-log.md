@@ -63,3 +63,17 @@ the original return then compares October and September 2026, October 2025
 and January 2027 reports (populated periods, different year and empty period).
 stdout and resulting data match exactly. Evidence: evidence/r7/replay-monthly-report.
 Maven/final integration review are pending. Commit and PR pending publication.
+
+## 2026-10-23 - V-08 shared UI helper (partial implementation)
+
+Isabel with AI assistance moved the five existing input/error implementations
+into ConsoleSupport. ConsoleUI creates one shared instance from its existing
+Scanner; temporary private wrappers delegate to it. No menu has been extracted
+in this delivery. Public helper and proposed collaborator constructor contracts
+are documented in grasp-audit/v08-integration-contract.md.
+
+Validation: Java 17 compilation succeeded; baseline/current comparisons cover
+all seven menu scripts and E01/E02/E03/E04/E10/E11. stdout, stderr and resulting
+data match in each scenario. Evidence: evidence/r7/replay-ui-support;
+runner: evidence/r7/verify-ui-support.ps1. Remaining menu extraction and final
+integration verification are pending. Commit and PR pending publication/review.
