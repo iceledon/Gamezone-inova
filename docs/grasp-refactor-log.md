@@ -23,7 +23,7 @@ A direct probe verifies zero-subtotal and 25-percent discount-ratio results.
 Maven was not executed in this delivery. Remaining special-case replay and final
 full integration checks are pending. No completed R7 claim is made here.
 
-Commit and PR: pending publication/review; replace with actual identifiers.
+Implementation commit: e2aa8e7. Independent PR review pending.
 ## 2026-10-23 - V-04 and V-05
 
 Implementer: Isabel, assuming Nicoll's implementation allocation with AI coding
@@ -48,7 +48,7 @@ legacy optional fields and persisted-data reload. Evidence is under
 ReturnDateProbe verifies day 30/day 31, future dates and no-argument delegation.
 Maven and final complete integration replay remain pending.
 
-Commit and PR: pending publication and independent review.
+Implementation commit: 2afd6ca. Independent PR review pending.
 
 ## 2026-10-23 - V-07 monthly reporting
 
@@ -62,7 +62,7 @@ Validation: javac --release 17 succeeds. A baseline/current script registers
 the original return then compares October and September 2026, October 2025
 and January 2027 reports (populated periods, different year and empty period).
 stdout and resulting data match exactly. Evidence: evidence/r7/replay-monthly-report.
-Maven/final integration review are pending. Commit and PR pending publication.
+Implementation commit: 49a1dac. Maven/final integration and independent PR review are pending.
 
 ## 2026-10-23 - V-08 shared UI helper (partial implementation)
 
@@ -76,4 +76,31 @@ Validation: Java 17 compilation succeeded; baseline/current comparisons cover
 all seven menu scripts and E01/E02/E03/E04/E10/E11. stdout, stderr and resulting
 data match in each scenario. Evidence: evidence/r7/replay-ui-support;
 runner: evidence/r7/verify-ui-support.ps1. Remaining menu extraction and final
-integration verification are pending. Commit and PR pending publication/review.
+integration verification are pending. Implementation commit: 0e6af5a; independent PR review pending.
+
+## 2026-10-23 - V-08 five module menus
+
+Isabel, assuming the agreed Nicoll implementation work and using AI coding
+assistance, extracted ProductMenu, PersonMenu, SaleMenu, ReturnMenu and
+WarrantyMenu. ConsoleUI retains main navigation, existing constructor overloads
+and temporary promotion/accessory methods pending Jaime's collaborators.
+All five menus receive the same ConsoleSupport and their required services.
+registerSale/findAnyItemById move together; lookup/catch order, null branches,
+receipt formatting and the original contribution authorship are preserved.
+
+Java 17 compilation succeeds. All seven menu scripts and the six additional
+UI groups (E01/E02/E03/E04/E10/E11) match baseline stdout/stderr and resulting
+data. Evidence: evidence/r7/replay-five-menus; verify-five-menus.ps1.
+V-08 remains partial until PromotionMenu/AccessoryMenu are integrated and
+remaining wrappers removed. Final integration review is still required.
+Implementation commit: 47096fa. Independent PR review pending.
+
+## 2026-10-23 - integration preparation (not final validation)
+
+Prepared verify-integration.ps1 to compile baseline/current code and compare
+all recorded scenarios, including special probes, with isolated data copies.
+PowerShell syntax parsing succeeds; the new combined runner has not executed.
+README documents current architecture, evidence links and pending integration.
+Maven is not available through Get-Command mvn on this workstation. No Maven
+build or final integrated acceptance is claimed. Remaining collaborators from
+Jaime and final after-diagram/review are still pending.

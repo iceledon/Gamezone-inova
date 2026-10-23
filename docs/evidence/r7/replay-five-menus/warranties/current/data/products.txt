@@ -1,0 +1,4 @@
+VIDEOGAME;VG001;The Legend of Zelda Tears of the Kingdom;259900.0;4;Nintendo Switch;Aventura;E10+
+CONSOLE;CN001;Nintendo Switch OLED;1499900.0;2;Nintendo;OLED;2
+VIDEOGAME;R7VGBASE;Juego referencia R7;100.0;4;PC;Aventura;E
+CONSOLE;R7CNBASE;Consola referencia R7;500.0;2;Nintendo;Modelo R7;1
