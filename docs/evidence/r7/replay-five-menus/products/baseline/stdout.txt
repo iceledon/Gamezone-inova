@@ -1,0 +1,52 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Cantidad en stock: Plataforma: Genero: Clasificacion por edad: Videojuego registrado correctamente.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Codigo del producto: Titulo: Precio: Cantidad en stock: Marca: Modelo: Generacion: Consola registrada correctamente.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Productos en inventario:
+  [VG001] The Legend of Zelda Tears of the Kingdom - Platform: Nintendo Switch, Genre: Aventura, Age Rating: E10+ | Precio: $259900,00 | Stock: 4
+  [CN001] Nintendo Switch OLED - Brand: Nintendo, Model: OLED, Generation: 2 | Precio: $1499900,00 | Stock: 2
+  [R7VGBASE] Juego referencia R7 - Platform: PC, Genre: Aventura, Age Rating: E | Precio: $100,00 | Stock: 5
+  [R7CNBASE] Consola referencia R7 - Brand: Nintendo, Model: Modelo R7, Generation: 1 | Precio: $500,00 | Stock: 3
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

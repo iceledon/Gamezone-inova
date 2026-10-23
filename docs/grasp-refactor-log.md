@@ -77,3 +77,20 @@ all seven menu scripts and E01/E02/E03/E04/E10/E11. stdout, stderr and resulting
 data match in each scenario. Evidence: evidence/r7/replay-ui-support;
 runner: evidence/r7/verify-ui-support.ps1. Remaining menu extraction and final
 integration verification are pending. Commit and PR pending publication/review.
+
+## 2026-10-23 - V-08 five module menus
+
+Isabel, assuming the agreed Nicoll implementation work and using AI coding
+assistance, extracted ProductMenu, PersonMenu, SaleMenu, ReturnMenu and
+WarrantyMenu. ConsoleUI retains main navigation, existing constructor overloads
+and temporary promotion/accessory methods pending Jaime's collaborators.
+All five menus receive the same ConsoleSupport and their required services.
+registerSale/findAnyItemById move together; lookup/catch order, null branches,
+receipt formatting and the original contribution authorship are preserved.
+
+Java 17 compilation succeeds. All seven menu scripts and the six additional
+UI groups (E01/E02/E03/E04/E10/E11) match baseline stdout/stderr and resulting
+data. Evidence: evidence/r7/replay-five-menus; verify-five-menus.ps1.
+V-08 remains partial until PromotionMenu/AccessoryMenu are integrated and
+remaining wrappers removed. Final integration review is still required.
+Commit/PR pending publication.

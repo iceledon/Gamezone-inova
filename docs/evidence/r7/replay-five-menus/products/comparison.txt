@@ -1,0 +1,1 @@
+stdoutDiff=0 dataDiff=0 stderrDiff=0
