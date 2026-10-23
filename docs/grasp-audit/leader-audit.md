@@ -471,7 +471,6 @@ or all responsibilities in SaleService.
 ### Creation of Sale objects
 
 Assessment: correct for the reviewed Sale creation paths.
-Other creation responsibilities remain pending.
 
 SaleService.registerSale obtains the customer, seller and sold
 products, generates the identifier and supplies the current date.
@@ -799,8 +798,8 @@ Peer validation remains pending.
 ### Separation between console interaction and persistence
 
 Assessment: correct for the reviewed sale-operation path.
-The assessment below includes the reviewed console-specific
-warranty decisions. Peer validation remains pending.
+The scope conclusion below extends the reviewed delegation paths.
+Peer validation remains pending.
 ConsoleUI invokes SaleService instead of accessing SaleRepository
 or the sales file directly.
 
