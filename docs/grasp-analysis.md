@@ -1,8 +1,6 @@
 # GRASP Analysis — Requirement 7
 
-Status: team discussion pending.
-This document currently contains Developer 2's proposed response
-to question 4. The other assigned responses remain pending.
+Status: working draft for team review. All five guiding questions have responses; final approval remains pending.
 
 ## 1. Criteria for GRASP assessments
 
@@ -112,7 +110,7 @@ The proposed responsibility change crosses two contributors:
 The proposal is to encapsulate the quantity increase in Product
 while retaining lookup and persistence coordination in ProductService.
 
-This remains a candidate solution pending peer validation.
+Consolidated V-01 records Jaime's confirmation and Nicoll's accessory-consumer acceptance in report section 11. Final team review remains pending.
 
 ### Recording and consolidation
 
@@ -153,12 +151,63 @@ from functional corrections.
 
 ### Current status
 
-Jaime's confirmation, the definitive identifier and the final
-correction order remain pending.
+V-01 identifies Jaime as the Product operation producer and Isabel and Nicoll as consumer owners. Precise contracts and final approval remain pending.
 
 The remaining cross-owner dependencies must be checked before
 claiming that all boundary cases have been covered.
 
+
+## 3. Related patterns and avoiding duplicate findings
+
+Responsible for review: Isabel Sofia Celedon Martinez with the team.
+
+Status: AI-assisted synthesis; final team review pending.
+
+The audit identifies responsibility problems that affect several GRASP
+patterns. Each problem receives one consolidated finding ID, a primary
+pattern and related patterns. Related verdicts reference the same ID
+instead of creating duplicate corrections.
+
+### V-02: Information Expert and Low Coupling
+
+Return.discountRatio reads Sale's subtotal and discount amount and
+interprets them to calculate a ratio. Sale owns the required information.
+Return also becomes coupled to the details of that calculation.
+
+Information Expert guides the correction: Isabel provides
+Sale.calculateDiscountRatio(), then Jaime delegates from Return.
+Low Coupling is a related benefit, not a second finding. Preserve the
+subtotal <= 0 guard and the existing discountAmount / subtotal expression.
+
+### V-05: Low Coupling and Indirection
+
+ReturnRepository depends on service objects to reconstruct return records.
+This couples persistence to the application-service layer and exposes a
+collaboration boundary that requires an agreed resolution mechanism.
+
+Low Coupling guides the correction: Nicoll removes the service dependency
+using agreed model-data inputs; Isabel coordinates Main integration.
+Indirection references V-05 because it describes the same boundary problem.
+Exact constructor and loading contracts still require agreement.
+
+### V-03: Polymorphism and Protected Variations
+
+CategoryDiscount.matchesTargetCategory branches on product types.
+The same branches expose promotion matching to category changes.
+
+Polymorphism guides the correction: Jaime provides the category operation
+on Product and its concrete types. Protected Variations is related to
+isolating category changes. Both verdicts reference V-03 and preserve the
+existing matching and fallback behavior.
+
+### Consolidation rule
+
+Retain one team ID, source-report identifiers, fixed baseline evidence,
+the primary and related patterns, owners and one coordinated correction.
+Choose the primary pattern from the misplaced responsibility and proposed
+change. Link the same verification evidence from the related verdicts.
+
+These proposals do not establish final team approval or implementation.
 
 ## 4. Non-regression strategy
 
@@ -274,8 +323,7 @@ or stored records must be investigated before merging.
 
 ### Current status
 
-The definitive finding list, correction sequence and phase-two
-baseline remain pending.
+The consolidation proposes V-01 through V-08 and their dependency order. Nicoll has recorded her owner decisions. Exact shared contracts, final team approval and the executed phase-two baseline remain pending. V-02 requires Isabel to provide Sale.calculateDiscountRatio before Jaime changes Return.
 
 The audit and refactor branches will be retained until the team
 clarifies the assignment's conflicting branch-retention instructions.
