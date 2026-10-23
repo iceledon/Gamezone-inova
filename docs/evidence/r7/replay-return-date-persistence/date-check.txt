@@ -1,0 +1,1 @@
+Day 30 accepted; day 31 rejected; future-date behavior preserved; no-arg delegates.

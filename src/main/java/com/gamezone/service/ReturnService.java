@@ -41,7 +41,9 @@ public class ReturnService {
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.warrantyService = warrantyService;
-        this.returns = new ArrayList<>(repository.loadAll());
+        this.returns = new ArrayList<>(repository.loadAll(
+                saleService.getAllSales(), productService.listAll(),
+                accessoryService.listAllAccessories()));
     }
 
     /**

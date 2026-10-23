@@ -24,3 +24,28 @@ Maven was not executed in this delivery. Remaining special-case replay and final
 full integration checks are pending. No completed R7 claim is made here.
 
 Commit and PR: pending publication/review; replace with actual identifiers.
+## 2026-10-23 - V-04 and V-05
+
+Implementer: Isabel, assuming Nicoll's implementation allocation with AI coding
+assistance. Original finding and contribution authorship remain unchanged.
+
+- V-04: Sale names RETURN_WINDOW_DAYS=30, adds canBeReturned(LocalDate), and
+  retains canBeReturned() delegating with LocalDate.now. Inclusive day 30 and
+  existing future-date behavior are unchanged.
+- V-05: ReturnRepository has no service fields/imports. loadAll receives
+  List<Sale> and separate product/accessory model collections. ReturnService
+  supplies the current collections at loading time; Main constructs the
+  repository with no service arguments. Resolution keeps first sale match,
+  product-first item lookup, missing-item skipping and legacy defaults.
+- No storage layout, refund arithmetic, return message or persistence exception
+  handling was changed.
+
+Validation: javac --release 17 succeeded. Baseline/current replay agrees exactly
+on stdout and resulting data for returns, warranties, overlapping catalog IDs,
+legacy optional fields and persisted-data reload. Evidence is under
+ evidence/r7/replay-return-date-persistence; runner is
+ evidence/r7/verify-return-date-persistence.ps1.
+ReturnDateProbe verifies day 30/day 31, future dates and no-argument delegation.
+Maven and final complete integration replay remain pending.
+
+Commit and PR: pending publication and independent review.
