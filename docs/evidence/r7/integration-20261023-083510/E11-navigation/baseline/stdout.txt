@@ -1,0 +1,201 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Opcion invalida.
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de productos ---
+1. Registrar videojuego
+2. Registrar consola
+3. Listar productos
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Opcion invalida.
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

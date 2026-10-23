@@ -26,6 +26,11 @@ public class Controller extends Accessory {
         return getTitle() + " - Connection: " + connectionType;
     }
 
+    @Override
+    public String getAccessoryType() {
+        return "CONTROLLER";
+    }
+
     /**
      * @return the connection type of the controller
      */

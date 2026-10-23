@@ -1,0 +1,4 @@
+HEAD: 5af86331d4ec4e8c8ee496048508a04c9114d073
+Source changes:  M src/main/java/com/gamezone/ui/ConsoleUI.java
+Captured: 2026-10-23T08:33:02.6947343-05:00
+Status: comparison of current working source, not an assertion of final acceptance.

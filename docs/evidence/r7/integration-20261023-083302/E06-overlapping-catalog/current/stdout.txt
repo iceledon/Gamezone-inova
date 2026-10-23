@@ -1,0 +1,44 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: 
+Devolucion D001 | Fecha: 2026-09-09
+  Venta original: V001
+  Productos devueltos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom | Precio: $259900,00, Descuento: -$0,00, Reembolsado: $259900,00
+  Motivo: El juego no era compatible con mi consola
+  Monto reembolsado: $259900,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

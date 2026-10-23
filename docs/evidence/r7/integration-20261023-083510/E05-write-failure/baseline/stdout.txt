@@ -1,0 +1,2 @@
+write failure category=PersistenceException
+rejected product remains in memory=false

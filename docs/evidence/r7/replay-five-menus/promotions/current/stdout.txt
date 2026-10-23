@@ -1,0 +1,82 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: Codigo de la promocion: Nombre de la promocion: Fecha de inicio (aaaa-mm-dd): Fecha de fin (aaaa-mm-dd): Porcentaje de descuento: Promocion registrada correctamente.
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: Codigo de la promocion: Nombre de la promocion: Fecha de inicio (aaaa-mm-dd): Fecha de fin (aaaa-mm-dd): Porcentaje de descuento: Categoria objetivo (VIDEOGAME/CONSOLE/ACCESSORY): Promocion registrada correctamente.
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: Codigo de la promocion: Nombre de la promocion: Fecha de inicio (aaaa-mm-dd): Fecha de fin (aaaa-mm-dd): Cantidad minima de productos: Porcentaje de descuento: Promocion registrada correctamente.
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion:   [PROMO001] Descuento de Temporada | Vigencia: 2026-09-01 al 2026-09-30 | 15% sobre el total
+  [PROMO002] Videojuegos en Oferta | Vigencia: 2026-09-01 al 2026-09-30 | 20% sobre VIDEOGAME
+  [PROMO003] Compra Mayorista | Vigencia: 2026-09-01 al 2026-09-30 | 10% desde 3 productos
+  [PROMO004] Descuento Accesorios | Vigencia: 2026-09-21 al 2026-09-26 | 15% sobre ACCESSORY
+  [R7PORC] Porcentaje referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 10% sobre el total
+  [R7CAT] Categoria referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 15% sobre VIDEOGAME
+  [R7VOL] Volumen referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 20% desde 2 productos
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion:   [R7PORC] Porcentaje referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 10% sobre el total
+  [R7CAT] Categoria referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 15% sobre VIDEOGAME
+  [R7VOL] Volumen referencia R7 | Vigencia: 2026-01-01 al 2027-12-31 | 20% desde 2 productos
+
+--- Gestion de promociones ---
+1. Registrar promocion por porcentaje
+2. Registrar promocion por categoria
+3. Registrar promocion por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

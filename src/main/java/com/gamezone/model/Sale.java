@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class Sale {
 
+    private static final int RETURN_WINDOW_DAYS = 30;
+
     private String id;
     private LocalDate date;
     private Customer customer;
@@ -144,6 +146,18 @@ public class Sale {
     }
 
     /**
+     * Calculates the fraction discounted from each product in this sale.
+     *
+     * @return zero for a nonpositive subtotal, otherwise discount divided by subtotal
+     */
+    public double calculateDiscountRatio() {
+        double subtotal = calculateSubtotal();
+        if (subtotal <= 0) {
+            return 0.0;
+        }
+        return discountAmount / subtotal;
+    }
+    /**
      * Calculates the final amount of the sale: the subtotal, plus the extra cost of any
      * extended warranties, minus the discount granted by the promotion applied, if any.
      *
@@ -160,12 +174,18 @@ public class Sale {
      * @return true si todavia se puede devolver, false si ya paso el plazo
      */
     public boolean canBeReturned() {
-        LocalDate limitDate = this.date.plusDays(30);
-        LocalDate today = LocalDate.now();
-        if (today.isAfter(limitDate)) {
-            return false;
-        }
-        return true;
+        return canBeReturned(LocalDate.now());
+    }
+
+    /**
+     * Evaluates the existing inclusive return window for an explicit date.
+     *
+     * @param referenceDate date on which the return policy is evaluated
+     * @return whether the return window has not expired
+     */
+    public boolean canBeReturned(LocalDate referenceDate) {
+        LocalDate limitDate = this.date.plusDays(RETURN_WINDOW_DAYS);
+        return !referenceDate.isAfter(limitDate);
     }
 
     /**

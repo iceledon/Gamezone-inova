@@ -99,7 +99,7 @@ public class Return {
      * @return el monto total a reembolsar
      */
     public double calculateRefundAmount() {
-        double ratio = discountRatio();
+        double ratio = originalSale.calculateDiscountRatio();
         double total = 0.0;
         for (Product product : returnedProducts) {
             total = total + product.getPrice() * (1 - ratio);
@@ -110,26 +110,13 @@ public class Return {
     }
 
     /**
-     * @return la fraccion del precio de cada producto que descuento la promocion de la
-     *         venta original, o 0.0 si la venta no tuvo descuento o no tiene productos
-     *         sobre los cuales calcular la proporcion
-     */
-    private double discountRatio() {
-        double subtotal = originalSale.calculateSubtotal();
-        if (subtotal <= 0) {
-            return 0.0;
-        }
-        return originalSale.getDiscountAmount() / subtotal;
-    }
-
-    /**
      * Arma un texto en español con el detalle de la devolucion, para mostrarlo como
      * comprobante en el menu de consola.
      *
      * @return el comprobante de la devolucion en forma de texto
      */
     public String generateReturnReceipt() {
-        double ratio = discountRatio();
+        double ratio = originalSale.calculateDiscountRatio();
         StringBuilder receipt = new StringBuilder();
         receipt.append("Devolucion ").append(id).append(" | Fecha: ").append(date).append("\n");
         receipt.append("  Venta original: ").append(originalSale.getId()).append("\n");

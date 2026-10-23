@@ -13,35 +13,18 @@ import java.util.List;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
-import com.gamezone.service.AccessoryService;
-import com.gamezone.service.ProductService;
-import com.gamezone.service.SaleService;
 
 /**
  * Guarda y lee las devoluciones del archivo data/returns.csv.
  * <p>
  * En el archivo solo se guardan los ids de la venta y de los productos,
- * no los objetos completos. Por eso usa los servicios para buscar esos ids.
+ * no los objetos completos. Recibe los modelos ya cargados para resolver esos ids.
  */
 public class ReturnRepository {
 
     private static final Path FILE_PATH = Path.of("data", "returns.csv");
     private static final String SEPARATOR = ";";
     private static final String PRODUCT_SEPARATOR = ",";
-
-    private final SaleService saleService;
-    private final ProductService productService;
-    private final AccessoryService accessoryService;
-
-    /**
-     * @param saleService servicio para buscar la venta original
-     * @param productService servicio para buscar los productos
-     */
-        public ReturnRepository(SaleService saleService, ProductService productService, AccessoryService accessoryService) {
-        this.saleService = saleService;
-        this.productService = productService;
-        this.accessoryService = accessoryService;
-    }
 
     /**
      * Guarda toda la lista de devoluciones en el archivo.
@@ -67,7 +50,8 @@ public class ReturnRepository {
      *
      * @return lista de devoluciones
      */
-    public List<Return> loadAll() {
+    public List<Return> loadAll(List<Sale> sales, List<? extends Product> products,
+                                List<? extends Product> accessories) {
         List<Return> returns = new ArrayList<>();
         if (!Files.exists(FILE_PATH)) {
             return returns;
@@ -76,7 +60,7 @@ public class ReturnRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.isBlank()) {
-                    returns.add(fromLine(line));
+                    returns.add(fromLine(line, sales, products, accessories));
                 }
             }
         } catch (IOException e) {
@@ -115,19 +99,21 @@ public class ReturnRepository {
      * @param line linea del archivo
      * @return devolucion armada
      */
-    private Return fromLine(String line) {
+    private Return fromLine(String line, List<Sale> sales,
+                            List<? extends Product> products,
+                            List<? extends Product> accessories) {
         String[] fields = line.split(SEPARATOR, -1);
         String id = fields[0];
         LocalDate date = LocalDate.parse(fields[1]);
-        Sale sale = saleService.findById(fields[2]);
+        Sale sale = findSale(sales, fields[2]);
         String reason = fields[4];
         double warrantyRefund = fields.length > 6 ? Double.parseDouble(fields[6]) : 0.0;
         List<Product> found = new ArrayList<>();
         String[] ids = fields[3].split(PRODUCT_SEPARATOR);
                for (int i = 0; i < ids.length; i++) {
-            Product item = findInList(productService.listAll(), ids[i]);
+            Product item = findInList(products, ids[i]);
             if (item == null) {
-                item = findInList(accessoryService.listAllAccessories(), ids[i]);
+                item = findInList(accessories, ids[i]);
             }
             if (item != null) {
                 found.add(item);
@@ -135,7 +121,15 @@ public class ReturnRepository {
         }
         return new Return(id, date, sale, found, reason, warrantyRefund);
     }
-        private Product findInList(List<? extends Product> items, String id) {
+    private Sale findSale(List<Sale> sales, String id) {
+        for (Sale sale : sales) {
+            if (sale.getId().equals(id)) {
+                return sale;
+            }
+        }
+        return null;
+    }
+    private Product findInList(List<? extends Product> items, String id) {
         for (Product item : items) {
             if (item.getId().equals(id)) {
                 return item;

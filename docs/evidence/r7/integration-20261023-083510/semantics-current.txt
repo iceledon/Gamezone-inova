@@ -1,0 +1,20 @@
+category=VIDEOGAME discount=10.0
+null-item category=VIDEOGAME discount=0.0
+category=CONSOLE discount=50.0
+null-item category=CONSOLE discount=0.0
+category=ACCESSORY discount=5.0
+null-item category=ACCESSORY discount=0.0
+category=videogame discount=0.0
+null-item category=videogame discount=0.0
+category=UNKNOWN discount=0.0
+null-item category=UNKNOWN discount=0.0
+category=null discount=0.0
+null-item category=null discount=0.0
+partial refund=90.0
+Devolucion R | Fecha: 2026-10-23
+  Venta original: S
+  Productos devueltos:
+    - [G] Game | Precio: $100,00, Descuento: -$10,00, Reembolsado: $90,00
+  Motivo: Partial
+  Monto reembolsado: $90,00
+full refund=635.0

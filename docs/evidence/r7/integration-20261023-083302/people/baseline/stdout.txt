@@ -1,0 +1,53 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Identificacion: Nombre completo: Telefono: Correo electronico: Cliente registrado correctamente.
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Clientes registrados:
+  [C001] Juan Rodriguez | Cliente | Telefono: 3101234567 | Correo: juan.rodriguez@example.com
+  [R7CBASE] Cliente referencia R7 | Cliente | Telefono: 3001112233 | Correo: r7@example.com
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: Vendedores registrados:
+  [S001] Carlos Perez | Vendedor | Codigo: EMP001 | Turno: Manana
+  [S002] Ana Gomez | Vendedor | Codigo: EMP002 | Turno: Tarde
+  [S003] Luis Martinez | Vendedor | Codigo: EMP003 | Turno: Noche
+
+--- Gestion de personas ---
+1. Registrar cliente
+2. Listar clientes
+3. Listar vendedores
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

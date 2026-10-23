@@ -33,6 +33,11 @@ public class VideoGame extends Product {
         return getTitle() + " - Platform: " + platform + ", Genre: " + genre + ", Age Rating: " + ageRating;
     }
 
+    @Override
+    public String getCategory() {
+        return "VIDEOGAME";
+    }
+
     /**
      * @return the platform the game was developed for
      */

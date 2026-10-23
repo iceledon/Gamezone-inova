@@ -1,0 +1,99 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Identificacion de la venta original: Cantidad de productos a devolver: Codigo del producto 1 a devolver: Codigo del producto 2 a devolver: Codigo del producto 3 a devolver: Motivo de la devolucion: Devolucion registrada correctamente.
+Devolucion D002 | Fecha: 2026-10-23
+  Venta original: V003
+  Productos devueltos:
+    - [R7VGBASE] Juego referencia R7 | Precio: $100,00, Descuento: -$0,00, Reembolsado: $100,00
+    - [R7CNBASE] Consola referencia R7 | Precio: $500,00, Descuento: -$0,00, Reembolsado: $500,00
+    - [AC001] Mando inalambrico Nintendo Switch | Precio: $149900,00, Descuento: -$0,00, Reembolsado: $149900,00
+  Motivo: Devolucion referencia R7
+  Garantía reembolsada: $50,00
+  Monto reembolsado: $150550,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Mes a consultar (1-12): Anio a consultar: 
+Balance de 10/2026
+  Total ventas:       $150550,00
+  Total devoluciones: $150550,00
+  Balance neto:       $0,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Mes a consultar (1-12): Anio a consultar: 
+Balance de 9/2026
+  Total ventas:       $2169600,00
+  Total devoluciones: $259900,00
+  Balance neto:       $1909700,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Mes a consultar (1-12): Anio a consultar: 
+Balance de 10/2025
+  Total ventas:       $0,00
+  Total devoluciones: $0,00
+  Balance neto:       $0,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: Mes a consultar (1-12): Anio a consultar: 
+Balance de 1/2027
+  Total ventas:       $0,00
+  Total devoluciones: $0,00
+  Balance neto:       $0,00
+
+--- Gestion de devoluciones ---
+1. Registrar devolucion
+2. Listar todas las devoluciones
+3. Devoluciones por cliente
+4. Devoluciones por venta
+5. Balance mensual
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

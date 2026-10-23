@@ -1,0 +1,2 @@
+exit=0 stdoutDiff=1 dataDiff=0
+baselineControlExit=0 sameCaptureStdoutDiff=0

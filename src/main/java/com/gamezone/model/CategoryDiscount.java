@@ -70,22 +70,13 @@ public class CategoryDiscount extends Promotion {
     }
 
     /**
-     * Checks whether a product belongs to this promotion's target category, using the
-     * product's concrete type instead of adding a category flag to {@link Product}.
+     * Checks whether a product belongs to this promotion's target category, asking the
+     * product for its own category.
      *
      * @param product the product to check
      * @return true if the product belongs to the target category
      */
     private boolean matchesTargetCategory(Product product) {
-        if ("VIDEOGAME".equals(targetCategory)) {
-            return product instanceof VideoGame;
-        }
-        if ("CONSOLE".equals(targetCategory)) {
-            return product instanceof Console;
-        }
-        if ("ACCESSORY".equals(targetCategory)) {
-            return product instanceof Accessory;
-        }
-        return false;
+        return product != null && product.getCategory().equals(targetCategory);
     }
 }

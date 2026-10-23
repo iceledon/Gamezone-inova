@@ -123,3 +123,17 @@ confirmed that products, customers, sellers and the sale history were rebuilt co
   compatibility with the assignment's AI-use rules.
 - Related commits: 4b7beb3, 56651dc, 5275071, d9d1ee0,
   02d6e4b and 87b5447.
+## Requirement 7 - Phase 2 implementation assistance, 2026-10-23
+
+- Tool: Codex / ChatGPT, with direct local file edits and terminal execution.
+- Assistance: substantial Java implementation for V-01/V-06 service consumers,
+  V-02 Sale ratio producer, V-04 explicit return date, V-05 repository decoupling,
+  V-07 reporting extraction and V-08 helper/five-menu extraction.
+- Additional assistance: baseline/replay PowerShell scripts, Java probes,
+  evidence comparisons, refactor log and diagram drafting.
+- Existing authorship is retained; Isabel assumes the agreed Nicoll correction
+  allocation. Jaime's model/category/type producers remain his contributions.
+- Validation observed by the assistant is recorded in docs/evidence/r7; peer
+  review, assignment-rule review and final integration acceptance are pending.
+- This entry discloses coding and drafting assistance; it is not a claim that
+  the code or the audit text was produced without AI.

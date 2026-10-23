@@ -1,0 +1,137 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del cliente: Identificacion del vendedor: Cantidad de items a vender (productos o accesorios): Codigo del producto o accesorio 1: Codigo del producto o accesorio 2: Desea garantia extendida para esta consola? (s/n): Codigo del producto o accesorio 3: Venta registrada correctamente.
+
+Recibo de venta V003 | Fecha: 2026-10-23
+  Cliente:  [R7CBASE] Cliente referencia R7
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R7VGBASE] Juego referencia R7 ($100.0)
+    - [R7CNBASE] Consola referencia R7 ($500.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $150500,00
+  Garantias extendidas: +$50,00
+  Total: $150550,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+Recibo de venta V001 | Fecha: 2026-09-08
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [CN001] Nintendo Switch OLED ($1499900.0)
+  Subtotal: $1759800,00
+  Total: $1759800,00
+
+Recibo de venta V002 | Fecha: 2026-09-15
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $409800,00
+  Total: $409800,00
+
+Recibo de venta V003 | Fecha: 2026-10-23
+  Cliente:  [R7CBASE] Cliente referencia R7
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R7VGBASE] Juego referencia R7 ($100.0)
+    - [R7CNBASE] Consola referencia R7 ($500.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $150500,00
+  Garantias extendidas: +$50,00
+  Total: $150550,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del cliente: 
+Recibo de venta V003 | Fecha: 2026-10-23
+  Cliente:  [R7CBASE] Cliente referencia R7
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R7VGBASE] Juego referencia R7 ($100.0)
+    - [R7CNBASE] Consola referencia R7 ($500.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $150500,00
+  Garantias extendidas: +$50,00
+  Total: $150550,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: Identificacion del vendedor: 
+Recibo de venta V001 | Fecha: 2026-09-08
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [CN001] Nintendo Switch OLED ($1499900.0)
+  Subtotal: $1759800,00
+  Total: $1759800,00
+
+Recibo de venta V002 | Fecha: 2026-09-15
+  Cliente:  [C001] Juan Rodriguez
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [VG001] The Legend of Zelda Tears of the Kingdom ($259900.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $409800,00
+  Total: $409800,00
+
+Recibo de venta V003 | Fecha: 2026-10-23
+  Cliente:  [R7CBASE] Cliente referencia R7
+  Vendedor: [S001] Carlos Perez
+  Productos:
+    - [R7VGBASE] Juego referencia R7 ($100.0)
+    - [R7CNBASE] Consola referencia R7 ($500.0)
+    - [AC001] Mando inalambrico Nintendo Switch ($149900.0)
+  Subtotal: $150500,00
+  Garantias extendidas: +$50,00
+  Total: $150550,00
+
+--- Gestion de ventas ---
+1. Registrar venta
+2. Historial completo de ventas
+3. Historial por cliente
+4. Historial por vendedor
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

@@ -1,0 +1,28 @@
+7
+1
+R7CONTROL
+Control referencia R7
+100
+5
+inalambrico
+2
+R7CABLE
+Cable referencia R7
+50
+5
+2
+HDMI
+3
+R7MEMORIA
+Memoria referencia R7
+80
+5
+128
+microSD
+4
+5
+control
+6
+CN001
+0
+8

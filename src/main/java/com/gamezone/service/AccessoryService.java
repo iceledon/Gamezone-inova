@@ -137,14 +137,7 @@ public class AccessoryService {
     }
 
     private String typeOf(Accessory accessory) {
-        if (accessory instanceof Controller) {
-            return "CONTROLLER";
-        } else if (accessory instanceof Cable) {
-            return "CABLE";
-        } else if (accessory instanceof Memory) {
-            return "MEMORY";
-        }
-        throw new IllegalArgumentException("Unknown accessory type: " + accessory.getClass());
+        return accessory.getAccessoryType();
     }
 
     private void rejectIfIdExists(String id) {
@@ -169,7 +162,7 @@ public class AccessoryService {
      */
     public void restoreStock(String accessoryId, int amount) {
         Accessory accessory = findById(accessoryId);
-        accessory.setQuantity(accessory.getQuantity() + amount);
+        accessory.increaseStock(amount);
         repository.saveAll(accessories);
     }
 }

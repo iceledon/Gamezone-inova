@@ -1,0 +1,4 @@
+﻿Baseline commit: b416df28c8ca38b11b4a9965a5501ad96e64ec3d
+Branch: feature/grasp-refactor
+Captured: 2026-10-23T07:44:00.5776056-05:00
+Status: preparation only; regression scenarios not executed.

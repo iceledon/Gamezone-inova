@@ -134,15 +134,16 @@ The application has four packages under `com.gamezone`:
 | `model` | Products, people, accessories, promotions, sales, warranties and returns. |
 | `persistence` | File access through the corresponding repositories. |
 | `service` | Business rules and coordination across modules. |
-| `ui` | Console interaction through `ConsoleUI`. |
+| `ui` | Main navigation in `ConsoleUI`, module menus and shared `ConsoleSupport`. |
 
 `Main` constructs and connects the application components.
 
 The intended layer direction is `ui -> service -> persistence -> model`,
 with services also using model objects and the UI reading returned objects.
 
-An existing exception is `ReturnRepository`, which depends on
-`SaleService`, `ProductService` and `AccessoryService` to resolve identifiers.
+`ReturnRepository` receives loaded sales, products and accessories through
+its loading method. `ReturnService` supplies those model collections; the
+repository no longer depends on application services.
 See [the layers diagram](docs/layers-diagram.md).
 
 `WarrantyService` receives `SaleRepository`, `ProductService`,
@@ -354,3 +355,51 @@ their actual results.
 
 The presence of a handler does not, by itself, demonstrate that every
 service or repository path already produces the expected exception type.
+## GRASP audit and corrections - Requirement 7
+
+Status on this branch: the eight corrections are implemented and the recorded
+integration comparisons match. Independent review and PR integration remain
+pending; this is not a completed release.
+
+Implemented responsibilities include product-owned stock increases and category
+queries, accessory-owned subtype queries, Sale's discount-ratio operation and
+explicit return-date evaluation, service-independent return loading and a
+focused MonthlyBalanceReport. ReturnService preserves its public report methods.
+
+ConsoleSupport shares the existing scanner, parsing and error presentation.
+ProductMenu, PersonMenu, SaleMenu, ReturnMenu, WarrantyMenu, PromotionMenu and
+AccessoryMenu own module interaction. Return delegates its discount ratio to
+Sale. See the readiness record for the implementation and review state.
+
+- [Audit and team findings](docs/grasp-audit/consolidated-audit.md)
+- [Analysis of the five guiding questions](docs/grasp-analysis.md)
+- [Implementation and verification log](docs/grasp-refactor-log.md)
+- [Integration readiness](docs/grasp-audit/refactor-readiness.md)
+- [Before diagram](docs/diagrams/grasp-before.md)
+- [After diagram](docs/diagrams/grasp-after.md)
+- [Integrated verification](docs/evidence/r7/integration-20261023-083510/verification-report.md)
+- [Baseline menu evidence](docs/evidence/r7/baseline-b416df2/menu-summary.md)
+- [Additional baseline evidence](docs/evidence/r7/baseline-b416df2/additional-summary.md)
+- [Special baseline evidence](docs/evidence/r7/baseline-b416df2/special-summary.md)
+
+After integrating the remaining source changes, run the comparison from the
+repository root in PowerShell:
+
+```powershell
+& ./docs/evidence/r7/verify-integration.ps1
+```
+
+The runner compiles the archived baseline and current working source separately,
+replays all recorded scenarios in disposable data directories, and compares
+stdout, stderr, exit statuses and resulting data. It records source hashes and
+any uncommitted source diff. Evidence uses a new timestamped directory; original
+data must remain unchanged. Baseline scripts rely on dates and the Java runtime;
+review date-related differences instead of silently accepting them.
+
+The recorded integrated run completed all 19 scenario groups with matching
+stdout, stderr and resulting data. The category/refund probe also matches.
+The after diagram describes the integrated working source. Publication commit
+and actual review/PR references must be linked before final release acceptance.
+
+Maven was unavailable on the checked workstation on 2026-10-23. Recorded javac
+compilation and scripted comparisons must not be represented as a Maven build.
