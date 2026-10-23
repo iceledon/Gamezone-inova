@@ -33,6 +33,10 @@ try {
   if ($LASTEXITCODE -ne 0) { throw "Compilation failed: $variant" }
   & javac --release 17 -encoding UTF-8 -cp $classes -d $probes "$PSScriptRoot/R7BaselineProbe.java"
   if ($LASTEXITCODE -ne 0) { throw "Probe compilation failed: $variant" }
+  & javac --release 17 -encoding UTF-8 -cp $classes -d $probes "$PSScriptRoot/RefactorSemanticsProbe.java"
+  if ($LASTEXITCODE -ne 0) { throw "Semantics compilation failed: $variant" }
+  & java -cp "$classes;$probes" RefactorSemanticsProbe 1> "$OutputDirectory/semantics-$variant.txt" 2> "$OutputDirectory/semantics-$variant-stderr.txt"
+  if ($LASTEXITCODE -ne 0) { throw "Semantics execution failed: $variant" }
  }
  $cases = @('products','people','sales','returns','warranties','promotions','accessories',
   'E01-missing-resources','E02-insufficient-stock','E03-invalid-inputs','E04-duplicate-empty-sale',
@@ -76,6 +80,8 @@ try {
   $results | Export-Csv -LiteralPath "$OutputDirectory/results.csv" -NoTypeInformation
   Write-Output "$case : passed=$passed"
  }
+ & git diff --no-index --quiet -- "$OutputDirectory/semantics-baseline.txt" "$OutputDirectory/semantics-current.txt"
+ if ($LASTEXITCODE -ne 0) { throw 'Category/refund semantics differ from baseline.' }
  $afterHashes = @(Get-ChildItem data -Recurse -File | Get-FileHash | Sort-Object Path | ForEach-Object {"$($_.Path)|$($_.Hash)"})
  $originalUnchanged = !(Compare-Object $originalHashes $afterHashes)
  "Original data unchanged: $originalUnchanged" | Set-Content -LiteralPath "$OutputDirectory/original-data-check.txt"

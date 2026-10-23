@@ -1,0 +1,104 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: Codigo del producto: Identificacion de la venta: Certificado de garantia
+ Garantia: G001 (Garantia Basica)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/04/2027
+ Costo adicional: $0,00
+
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: 
+Certificado de garantia
+ Garantia: G001 (Garantia Basica)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/04/2027
+ Costo adicional: $0,00
+
+Certificado de garantia
+ Garantia: G002 (Garantia Extendida)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/10/2027
+ Costo adicional: $50,00
+
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: 
+Certificado de garantia
+ Garantia: G001 (Garantia Basica)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/04/2027
+ Costo adicional: $0,00
+
+Certificado de garantia
+ Garantia: G002 (Garantia Extendida)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/10/2027
+ Costo adicional: $50,00
+
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: Dias de anticipacion: 
+Certificado de garantia
+ Garantia: G001 (Garantia Basica)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/04/2027
+ Costo adicional: $0,00
+
+Certificado de garantia
+ Garantia: G002 (Garantia Extendida)
+ Producto: [R7CNBASE] Consola referencia R7
+ Venta: V003
+ Vigencia: 23/10/2026 al 23/10/2027
+ Costo adicional: $50,00
+
+--- Gestion de garantias ---
+1. Consultar garantia de un producto en una venta
+2. Listar todas las garantias
+3. Listar garantias vigentes
+4. Listar garantias proximas a vencer
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

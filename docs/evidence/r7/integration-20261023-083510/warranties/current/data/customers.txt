@@ -1,0 +1,2 @@
+C001;Juan Rodriguez;3101234567;juan.rodriguez@example.com
+R7CBASE;Cliente referencia R7;3001112233;r7@example.com

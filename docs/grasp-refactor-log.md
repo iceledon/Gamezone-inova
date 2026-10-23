@@ -124,6 +124,8 @@ Behavior notes:
 
 - getCategory is compared as product.getCategory().equals(targetCategory), so a
   null or unsupported target still gives false, and the match stays case-sensitive.
+  A null product also gave false before; Isabel's integration review restored that
+  case with a null guard (see the next section).
 - getCategory and getAccessoryType are separate methods: a Cable has category
   ACCESSORY and accessory type CABLE.
 - The menus keep every prompt, option, output and catch block. Navigation reads
@@ -141,3 +143,26 @@ depends on the console capture method, not on the code. PromotionMenu and
 AccessoryMenu were also checked wired into a temporary copy of ConsoleUI
 (promotions, accessories, E03, E11, sales): identical stdout and data.
 Maven was not run on this workstation.
+
+## 2026-10-23 - integrated V-02/V-08 and final recorded comparison
+
+Jaime supplied PromotionMenu/AccessoryMenu in 991faab and Return delegation
+in 19e6326. Isabel with AI assistance wires the two menus into ConsoleUI and
+removes obsolete submenu implementations/helper wrappers. The seven menus
+share one ConsoleSupport/Scanner. Existing constructor overloads remain.
+
+Integration review found CategoryDiscount's polymorphic query dereferenced null
+where baseline instanceof checks returned false. Isabel restored a null guard;
+category behavior for null/lowercase/unknown targets and null entries now
+matches baseline. This preserves behavior, not a new validation restriction.
+
+All 19 integrated recorded groups match baseline stdout/stderr/exit status and
+resulting data; original data hashes match. Fresh baseline/current compilation
+uses Java 17. Category/partial-discounted-return/full-warranty-refund semantics
+also match. Evidence/report: evidence/r7/integration-20261023-083510.
+Earlier integration-20261023-083302 predates the null-product guard and is kept
+as intermediate evidence, not the final source reference.
+
+After diagram: diagrams/grasp-after.md. README/readiness updated. Maven is
+unavailable; independent review, actual PR references and final branch integration
+remain pending. Integration commit to be assigned on publication.
