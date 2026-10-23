@@ -24,7 +24,7 @@ differences from their original baseline.
 | Report | Contributor | Consolidation status |
 |---|---|---|
 | developer1-audit.md | Jaime Granados | Updated reference reported; evidence validation pending |
-| developer2-audit.md | Nicoll Gómez | Review and reference reconciliation pending |
+| developer2-audit.md | Nicoll Gómez | Common reference reconciled and owner decisions recorded in section 11; complete peer approval pending |
 | leader-audit.md | Isabel Celedon Martinez | Draft assessments published; peer validation pending |
 
 Additional source:
@@ -84,15 +84,14 @@ Jaime's updated report uses the agreed reference:
 
 Isabel's report uses the same reference.
 
-Nicoll's main GRASP report still declares:
+Nicoll's original baseline was 3dff9c12c7c523bd8658e448eeb236b11ec94818.
+Section 11 of her report now reconciles it with the common 701255d reference.
+She records that the Java differences affect ConsoleUI and SaleValidator,
+while the service/repository evidence is unchanged between those revisions.
+She also identifies her integration contributions in shared classes.
 
-3dff9c12c7c523bd8658e448eeb236b11ec94818
-
-Her separate validation review uses 701255d, but does not automatically
-update the baseline or coverage of her main GRASP report.
-
-Nicoll must reconcile the relevant differences and record the result.
-Changing only the hash without reviewing those differences is insufficient.
+This reconciliation is an inspection record, not a claim of a new test run.
+Source update: commit 7b44c40ae9b961cc41b80b5a13329d288b97666f.
 
 ### Coverage status
 
@@ -129,14 +128,14 @@ that an unconfirmed candidate has been accepted.
 
 | Consolidated ID | Original source | Review status |
 |---|---|---|
-| V-01 | Isabel L-V01; Jaime section 12 / Boundary finding L-V01 | Jaime and Isabel confirmed the Product/ProductService split; accessory extension needs Nicoll's confirmation |
+| V-01 | Isabel L-V01; Jaime section 12 / Boundary finding L-V01 | Product/ProductService split confirmed by Jaime and Isabel; Nicoll confirms the accessory consumer in section 11 |
 | V-02 | Jaime V-01: Return.discountRatio | Reported with evidence; proposed assignment below needs peer review |
 | V-03 | Jaime V-02: CategoryDiscount.matchesTargetCategory | Reported with evidence; proposed correction needs peer review |
 | V-04 | Jaime V-03: Sale.canBeReturned | Reported with evidence; ownership resolved below as a proposed coordination decision |
-| V-05 | Nicoll V-02: ReturnRepository service dependency | Evidence checked in the common baseline; peer confirmation remains pending |
-| V-06 | Nicoll candidate V-01: AccessoryService.typeOf | Candidate, requires Nicoll/Jaime confirmation |
-| V-07 | Nicoll candidate V-03: monthly reporting in ReturnService | Candidate, requires Nicoll confirmation |
-| V-08 | Isabel L-V02; Jaime Boundary finding L-V02 | Jaime confirmed High Cohesion concern and shared input/error helper requirement; complete cross-owner scope needs Nicoll review |
+| V-05 | Nicoll V-02: ReturnRepository service dependency | Evidence checked in the common baseline; Nicoll accepts ownership and solution direction; integration contract review pending |
+| V-06 | Nicoll candidate V-01: AccessoryService.typeOf | Accepted by Nicoll in section 11; producer contract with Jaime and team approval pending |
+| V-07 | Nicoll candidate V-03: monthly reporting in ReturnService | Accepted by Nicoll in section 11; team approval pending |
+| V-08 | Isabel L-V02; Jaime Boundary finding L-V02 | Jaime confirms cohesion concern; Nicoll identifies shared sales-method contributions and accepts common helper coordination; exact extraction boundaries still need agreement |
 
 Original report identifiers are retained in source documents and cross-referenced
 here. Do not rename individual IDs in a way that loses their provenance.
@@ -155,8 +154,8 @@ approved with the consolidated audit before source changes begin.
 - Consequence: callers reproduce the stock-increase calculation.
 - Producer: Jaime adds Product.increaseStock(int).
 - Consumer: Isabel delegates ProductService.restoreStock to that operation.
-- Proposed additional consumer: Nicoll delegates AccessoryService.restoreStock,
-  subject to her explicit confirmation of that extension.
+- Additional consumer: Nicoll confirms AccessoryService.restoreStock in her
+  report section 11 and will delegate to the Product operation after it exists.
 - Constraint: preserve accepted amounts, integer arithmetic, setter behavior,
   persistence timing and messages. No new negative-amount, overflow or rollback fix.
 - Order: producer first, then each owner changes their consumer.
@@ -200,7 +199,7 @@ approved with the consolidated audit before source changes begin.
   The existing no-argument method delegates using LocalDate.now().
 - Preserve inclusive boundary, existing treatment of future dates and the exact
   ReturnService message. Do not change the policy to a different number of days.
-- Ownership needs Nicoll's acknowledgment before implementation.
+- Nicoll acknowledges this ownership in her report section 11; Sale integration remains coordinated with Isabel.
 
 ### V-05 — Remove persistence-to-service dependency in returns
 
@@ -218,7 +217,7 @@ approved with the consolidated audit before source changes begin.
 - Order: agree the repository/service contracts, implement them in a compiling
   delivery, then adjust Main in the coordinated integration delivery.
 
-### V-06 — Accessory type classification (candidate)
+### V-06 — Accessory type classification (accepted by its consumer owner)
 
 - Primary pattern: Polymorphism; related pattern: Protected Variations.
 - Evidence: AccessoryService.typeOf explicitly tests Controller, Cable and Memory.
@@ -228,9 +227,9 @@ approved with the consolidated audit before source changes begin.
   current fallback for unrecognized subtypes. Do not force a new null policy.
 - Distinct from V-03: category identity and accessory subtype labels are different
   concepts and must not be collapsed into one incompatible method.
-- Status: requires producer/consumer confirmation before entering approved scope.
+- Status: Nicoll accepts the finding; the producer contract and full team approval remain pending.
 
-### V-07 — Monthly reporting responsibility (candidate)
+### V-07 — Monthly reporting responsibility (accepted by its owner)
 
 - Primary pattern: High Cohesion.
 - Evidence: ReturnService handles return registration and queries as well as
@@ -240,7 +239,7 @@ approved with the consolidated audit before source changes begin.
   methods if needed so that callers are not forced to change together.
 - Preserve date filtering, totals, iteration behavior, numerical arithmetic and
   exact monthly balance presentation. This is not a financial-rules correction.
-- Status: Nicoll must confirm the finding or document why she rejects it.
+- Status: Nicoll accepts the finding and compatibility-delegation approach in section 11; peer approval of this consolidation remains pending.
 
 ### V-08 — Focus module-specific console interaction
 
@@ -258,7 +257,7 @@ approved with the consolidated audit before source changes begin.
   optional-module constructor behavior and input consumption.
 - Order: agree the UI helper contract; provide it before dependent menu classes;
   integrate navigation only when those classes are available.
-- Jaime confirmed the concern; Nicoll's method-level participation needs review.
+- Jaime confirms the concern. Nicoll identifies her functional contributions to registerSale and findAnyItemById and formatting contributions to sales listings; she does not claim the people/return/warranty submenus. Exact extraction boundaries still require coordination.
 
 ### Fixed-source evidence index
 
@@ -311,11 +310,10 @@ not claim every reported concern has been reproduced by Isabel.
 - Individual source findings and their responsibility proposals were inspected.
 - The common reference is 701255d4209e070146c32ee5a663b08d3b4b0bb4.
 - Jaime updated his report to that reference.
-- Nicoll's original report uses 3dff9c1. The src differences from 3dff9c1 to
-  701255d are ConsoleUI and SaleValidator. Her existing service/repository
-  evidence must be checked at the common reference, and she must acknowledge
-  the updated validation/UI coverage. Her supplemental PR #34 is not a
-  replacement for this acknowledgment.
+- Nicoll reconciles 3dff9c1 with 701255d in section 11 of her main report.
+  The src differences are ConsoleUI and SaleValidator. She records the unchanged
+  service/repository evidence and updated validation/UI coverage. This is now
+  documented in her main audit, not inferred from supplemental PR #34.
 - L-V01 and L-V02 have supporting confirmation from Jaime in PR #31.
 - Full contributor and team approvals are NOT inferred from these confirmations.
 
@@ -336,10 +334,10 @@ a javac check must not be misreported as a Maven build.
 
 ## 10. Peer approval checklist
 
-- [ ] Nicoll acknowledges the common reference and validation/UI coverage.
-- [ ] Nicoll confirms or rejects V-06 and V-07 with justification.
-- [ ] Nicoll acknowledges V-04 ownership and V-05 solution contract.
-- [ ] Nicoll confirms the accessory consumer of V-01, or it remains excluded.
+- [x] Nicoll acknowledges the common reference and validation/UI coverage (report section 11).
+- [x] Nicoll accepts V-06 and V-07 with justification (report section 11).
+- [x] Nicoll acknowledges V-04 ownership and the V-05 solution direction; exact integration signatures still require coordination.
+- [x] Nicoll confirms the accessory consumer of V-01 (report section 11).
 - [ ] UI contributors confirm V-08 method ownership and shared helper contract.
 - [ ] Reviewers accept the definitive IDs, decisions and dependency order.
 - [ ] Relevant individual reports and grasp-analysis are aligned with the decisions.
@@ -349,3 +347,20 @@ a javac check must not be misreported as a Maven build.
 The technical lead's proposed assignments are now concrete, but this checklist
 must be completed with real reviewer responses. Do not mark it complete merely
 to begin Requirement 8. Requirement 8's exact entry conditions require its plan.
+
+
+## Owner-decision update — Nicoll, 7b44c40
+
+Source: developer2-audit.md, section 11, commit
+7b44c40ae9b961cc41b80b5a13329d288b97666f.
+
+This source confirms the baseline reconciliation, accessory stock consumer,
+return-date ownership, return-persistence solution direction, acceptance of
+accessory classification and monthly-reporting findings, and UI coordination.
+
+These are Nicoll's individual decisions. They do not represent a GitHub
+approval by Jaime or Isabel or a completed phase-two implementation.
+
+Before merging the audit delivery, reviewers must finalize the definitive
+finding list, exact cross-owner contracts, ownership boundaries and recorded
+assessment criteria. Phase-two preparation follows the accepted audit revision.
