@@ -1,0 +1,25 @@
+6
+1
+R7PORC
+Porcentaje referencia R7
+2026-01-01
+2027-12-31
+10
+2
+R7CAT
+Categoria referencia R7
+2026-01-01
+2027-12-31
+15
+VIDEOGAME
+3
+R7VOL
+Volumen referencia R7
+2026-01-01
+2027-12-31
+2
+20
+4
+5
+0
+8

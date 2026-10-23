@@ -1,0 +1,97 @@
+
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: 
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Codigo del accesorio: Titulo: Precio: Cantidad en stock: Tipo de conexion (inalambrico/alambrico): Control registrado correctamente.
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Codigo del accesorio: Titulo: Precio: Cantidad en stock: Longitud (metros): Tipo de conector (HDMI/USB/optico/etc): Cable registrado correctamente.
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Codigo del accesorio: Titulo: Precio: Cantidad en stock: Capacidad (GB): Tipo de memoria (SD/microSD/tarjeta interna): Memoria registrada correctamente.
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion:   [AC001] Mando inalambrico Nintendo Switch - Connection: Inalambrico | Precio: $149900,00 | Stock: 9
+  [AC002] Cable HDMI 2 metros - Length: 2.0m, Connector: HDMI | Precio: $29900,00 | Stock: 20
+  [AC003] Tarjeta microSD 128GB - Capacity: 128GB, Type: microSD | Precio: $89900,00 | Stock: 15
+  [R7CONTROL] Control referencia R7 - Connection: inalambrico | Precio: $100,00 | Stock: 5
+  [R7CABLE] Cable referencia R7 - Length: 2.0m, Connector: HDMI | Precio: $50,00 | Stock: 5
+  [R7MEMORIA] Memoria referencia R7 - Capacity: 128GB, Type: microSD | Precio: $80,00 | Stock: 5
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Tipo (control/cable/memoria):   [AC001] Mando inalambrico Nintendo Switch - Connection: Inalambrico | Precio: $149900,00 | Stock: 9
+  [R7CONTROL] Control referencia R7 - Connection: inalambrico | Precio: $100,00 | Stock: 5
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: Codigo de la consola:   [AC001] Mando inalambrico Nintendo Switch - Connection: Inalambrico | Precio: $149900,00 | Stock: 9
+  [AC003] Tarjeta microSD 128GB - Capacity: 128GB, Type: microSD | Precio: $89900,00 | Stock: 15
+
+--- Gestion de accesorios ---
+1. Registrar control
+2. Registrar cable
+3. Registrar memoria
+4. Listar todos los accesorios
+5. Listar accesorios por tipo
+6. Consultar accesorios compatibles con una consola
+0. Volver
+Seleccione una opcion: 
+=== GameZone Inova ===
+1. Gestion de productos
+2. Gestion de personas
+3. Gestion de ventas
+4. Gestion de devoluciones
+5. Gestion de garantias
+6. Gestion de promociones
+7. Gestion de accesorios
+8. Salir
+Seleccione una opcion: Gracias por usar GameZone Inova.

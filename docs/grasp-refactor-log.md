@@ -104,3 +104,26 @@ README documents current architecture, evidence links and pending integration.
 Maven is not available through Get-Command mvn on this workstation. No Maven
 build or final integrated acceptance is claimed. Remaining collaborators from
 Jaime and final after-diagram/review are still pending.
+
+## 2026-10-23 - integrated V-02/V-08 and final recorded comparison
+
+Jaime supplied PromotionMenu/AccessoryMenu in 991faab and Return delegation
+in 19e6326. Isabel with AI assistance wires the two menus into ConsoleUI and
+removes obsolete submenu implementations/helper wrappers. The seven menus
+share one ConsoleSupport/Scanner. Existing constructor overloads remain.
+
+Integration review found CategoryDiscount's polymorphic query dereferenced null
+where baseline instanceof checks returned false. Isabel restored a null guard;
+category behavior for null/lowercase/unknown targets and null entries now
+matches baseline. This preserves behavior, not a new validation restriction.
+
+All 19 integrated recorded groups match baseline stdout/stderr/exit status and
+resulting data; original data hashes match. Fresh baseline/current compilation
+uses Java 17. Category/partial-discounted-return/full-warranty-refund semantics
+also match. Evidence/report: evidence/r7/integration-20261023-083510.
+Earlier integration-20261023-083302 predates the null-product guard and is kept
+as intermediate evidence, not the final source reference.
+
+After diagram: diagrams/grasp-after.md. README/readiness updated. Maven is
+unavailable; independent review, actual PR references and final branch integration
+remain pending. Integration commit to be assigned on publication.

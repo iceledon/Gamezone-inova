@@ -77,6 +77,6 @@ public class CategoryDiscount extends Promotion {
      * @return true if the product belongs to the target category
      */
     private boolean matchesTargetCategory(Product product) {
-        return product.getCategory().equals(targetCategory);
+        return product != null && product.getCategory().equals(targetCategory);
     }
 }

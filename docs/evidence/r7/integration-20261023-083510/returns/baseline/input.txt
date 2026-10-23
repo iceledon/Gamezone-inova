@@ -1,0 +1,18 @@
+4
+1
+V003
+3
+R7VGBASE
+R7CNBASE
+AC001
+Devolucion referencia R7
+2
+3
+R7CBASE
+4
+V003
+5
+10
+2026
+0
+8
