@@ -178,9 +178,7 @@ public class ProductService {
      */
     public void restoreStock(String productId, int amount) {
         Product product = findById(productId);
-        int newQuantity = product.getQuantity() + amount;
-
-        product.setQuantity(newQuantity);
+        product.increaseStock(amount);
         repository.save(products);
     }
 }

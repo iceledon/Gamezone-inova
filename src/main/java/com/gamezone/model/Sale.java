@@ -144,6 +144,18 @@ public class Sale {
     }
 
     /**
+     * Calculates the fraction discounted from each product in this sale.
+     *
+     * @return zero for a nonpositive subtotal, otherwise discount divided by subtotal
+     */
+    public double calculateDiscountRatio() {
+        double subtotal = calculateSubtotal();
+        if (subtotal <= 0) {
+            return 0.0;
+        }
+        return discountAmount / subtotal;
+    }
+    /**
      * Calculates the final amount of the sale: the subtotal, plus the extra cost of any
      * extended warranties, minus the discount granted by the promotion applied, if any.
      *
