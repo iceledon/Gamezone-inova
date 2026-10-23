@@ -821,3 +821,126 @@ and error handling.
 
 Validator and exception definitions belong to Jaime's audit.
 This section assesses their usage within Nicoll's assigned modules.
+
+## 11. Baseline reconciliation and owner decisions
+
+### Reference reconciliation
+
+The common audited reference is:
+701255d4209e070146c32ee5a663b08d3b4b0bb4.
+
+My original report used:
+3dff9c12c7c523bd8658e448eeb236b11ec94818.
+
+The Java source differences between these references affect
+ConsoleUI and SaleValidator.
+
+ConsoleUI changes clarify invalid-input messages.
+SaleValidator.validateSaleProducts additionally rejects null entries.
+
+The service and repository source files covered by my original
+report are unchanged between these references. Their existing
+evidence remains applicable.
+
+My coverage also includes my validation and exception integration
+in shared classes. Original validator and exception definitions
+remain assigned to Jaime.
+
+The initial compilation result above belongs to the original
+audit execution. This reconciliation does not claim a new test run.
+
+### V-01: accessory stock restoration
+
+I confirm the inclusion of AccessoryService.restoreStock.
+
+The method reads quantity, adds the requested amount and assigns
+the result. Product owns that state.
+
+After Jaime provides Product.increaseStock(int), I will delegate
+the calculation to that operation and retain persistence coordination.
+
+No new validation, overflow handling or rollback behavior is included.
+
+### V-04: return-date evaluation
+
+I acknowledge responsibility for the canBeReturned contribution.
+
+I will coordinate the Sale change with Isabel: a named 30-day
+constant and canBeReturned(LocalDate referenceDate), retaining
+the no-argument method as a delegate using LocalDate.now().
+
+The inclusive boundary and current treatment of future dates
+must remain unchanged.
+
+### V-05: return persistence dependencies
+
+I confirm responsibility for ReturnRepository and the loading
+coordination in ReturnService.
+
+Repository loading will receive already-loaded model collections
+instead of depending on service objects.
+
+I will coordinate the constructor and loading contracts with Isabel
+before her Main integration.
+
+File formats, lookup order, missing-reference behavior, exception
+types/messages and refund reconstruction must remain unchanged.
+
+### V-06: accessory classification
+
+I accept the finding under Polymorphism.
+
+AccessoryService.typeOf explicitly identifies Controller, Cable
+and Memory. Supporting another recognized subtype requires
+changing this classification method.
+
+After Jaime provides the agreed type-query operation, I will
+delegate classification to the accessory.
+
+Existing labels, case-insensitive filtering and unknown-subtype
+behavior must remain unchanged.
+
+### V-07: monthly reporting
+
+I accept the finding under High Cohesion.
+
+ReturnService coordinates return registration and queries, while
+also aggregating monthly sales and refunds.
+
+I propose extracting a reporting collaborator so that reporting
+changes do not require modifying return-registration coordination.
+
+Existing public reporting methods will remain as delegates where
+needed. Date filters, arithmetic, iteration order and presentation
+must remain unchanged.
+
+### V-08: shared console contributions
+
+My functional contributions include changes to registerSale
+and findAnyItemById in commit 61f1393.
+
+That commit also modifies presentation or formatting in
+showAllSales, showSalesByCustomer, showSalesBySeller and printSales.
+These edits do not establish sole ownership of those methods.
+
+I will coordinate my contributions with Isabel before extraction.
+The sales UI remains shared; I do not claim authorship of the
+people, return or warranty submenus based on service ownership.
+
+I agree to use the shared input and error helper contract,
+without duplicating readers or changing prompts and navigation.
+
+### Decision status
+
+These are my individual review decisions for team consolidation.
+They do not represent approval by Jaime or Isabel.
+
+Original local IDs remain unchanged:
+local V-01 maps to consolidated V-06;
+local V-02 maps to consolidated V-05;
+local V-03 maps to consolidated V-07.
+
+Earlier pending statuses for these local findings are superseded
+by my decisions here. Team approval remains pending.
+
+No Java corrections are included in this documentation update.
