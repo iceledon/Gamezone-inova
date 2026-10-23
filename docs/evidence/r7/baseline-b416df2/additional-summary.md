@@ -12,7 +12,6 @@ Each process exited 0; stderr was empty. stdout and resulting data were
 identical between both runs. Observed messages match each scenario and E10
 reload displays V003 and D002. This is baseline behavior, not refactor validation.
 
-E05 persistence failure, E06 overlapping catalog IDs, E07 return boundary,
-E08 equal promotion discounts and E09 legacy optional fields remain pending.
+The remaining groups were subsequently executed with run-special-baseline.ps1; see special-summary.md for exact coverage and the expected startup exit code.
 E10 establishes these recorded fixtures reload; it does not prove every
 historical format or serialization edge case.
